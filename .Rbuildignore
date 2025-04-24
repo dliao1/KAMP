@@ -1,2 +1,4 @@
-^kperm\.Rproj$
+^data-raw$
+^.*\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$

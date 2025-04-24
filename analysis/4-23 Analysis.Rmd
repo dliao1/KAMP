@@ -1,0 +1,46 @@
+---
+title: "4-23 Analysis"
+output: html_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+devtools::load_all()
+library(kperm)
+library(tidyverse)
+library(spatstat.random)
+
+```
+
+```{r}
+sim_data <- get_sim_data(lambda_n = 200, 
+                    abundance = 0.3,
+                    type = "inhom",
+                    clust = TRUE)
+marksvar = "immune"
+rvalues = seq(0, 1, length.out = 50)
+
+#w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])
+
+# define pp_obj
+# pp_obj = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])
+
+pp_obj <- sim_data
+
+df_back <- as.data.frame(pp_obj) %>%
+  as_tibble()
+
+df_back
+
+
+as_tibble(pp_obj) %>%
+    ggplot(aes(x,y, color = marks)) +
+    geom_point()
+```
+

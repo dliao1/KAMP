@@ -1,0 +1,82 @@
+---
+title: "my-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(kperm)
+library(tidyverse)
+library(spatstat.random)
+
+```
+
+```{r}
+sim_data <- get_sim_data(lambda_n = 200, 
+                    abundance = 0.3,
+                    type = "hom",
+                    clust = FALSE)
+marksvar = "immune"
+rvalues = seq(0, 1, length.out = 50)
+
+#w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])
+
+# define pp_obj
+# pp_obj = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])
+
+pp_obj <- sim_data
+
+df_back <- as.data.frame(pp_obj) %>%
+  as_tibble()
+
+df_back
+
+
+as_tibble(pp_obj) %>%
+    ggplot(aes(x,y, color = marks)) +
+    geom_point()
+```
+
+move helpers to utils file
+
+no need for timing stuff
+think abt user facing stuff
+10000 cells use border correction
+thinning percentage = 0
+whole separate function for bivariate
+unit tests with small spatstat generated datasets
+https://github.com/julia-wrobel/registr/blob/master/R/register_fpca.R (documentation example)
+
+SIMULATION SETUP:
+can compare traditional K (trans border correction), with Kinhom, Kperm (with 100 permutations), and KAMP
+
+
+images should be: random, clustered, and inhomogenous (generate and show images)
+
+4 nulls total:
+2 null: NO CLUSTERING and CLUSTERING
+within each, have homogenous and inhomogenous background
+
+
+Varied rate of total cells (n) and immune cell abundance (p)
+n ∈(100, 500, 1000) # maybe tweak bc i decreased
+p ∈(0.01, 0.1, 0.5)
+
+3*3 = 9 images for each subset null hypothesis so 9x4 = 36 total, assuming im avging for the barplots and stuff?
+
+Compare: accuracy (bar plots of fundiff and should be centered at 0) and computation time
+
+can also compare power and type I error # yah idk how i can compare ? if fundiff > 0 thats clustering? are we getting the variance for the perm and KAMP dist and comparing CIs?? need to look at the code
+
+
+
