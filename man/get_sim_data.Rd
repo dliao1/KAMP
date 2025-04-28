@@ -16,7 +16,7 @@ get_sim_data(lambda_n, abundance, type = c("hom", "inhom"), clust = FALSE)
 \item{clust}{should an image be simulated with or without holes}
 }
 \value{
-A point pattern object of class "ppp" from the spatstat package.
+A point pattern object of class "ppp" from the spatstat package where the two cell types are background and immune.
 }
 \description{
 Title

@@ -4,12 +4,12 @@
 \alias{get_kamp_variance_helper}
 \title{Title}
 \usage{
-get_kamp_variance_helper(ppp_obj, rvec, correction)
+get_kamp_variance_helper(rvalue, ppp_obj, correction = "trans")
 }
 \arguments{
-\item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
+\item{rvalue}{A radius at which to calculate the KAMP variance.}
 
-\item{rvec}{A vector of radii at which to calculate the KAMP variance.}
+\item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
 
 \item{correction}{Type of border correction}
 }

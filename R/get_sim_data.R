@@ -5,7 +5,7 @@
 #' @param type defines the distribution of the point process- homogeneous, inhomogeneous, or clustered
 #' @param clust should an image be simulated with or without holes
 #'
-#' @returns A point pattern object of class "ppp" from the spatstat package.
+#' @returns A point pattern object of class "ppp" from the spatstat package where the two cell types are background and immune.
 #'
 #' @importFrom spatstat.explore Kcross Kest
 #' @importFrom spatstat.geom area.owin ppp as.owin
@@ -32,8 +32,12 @@ get_sim_data <- function(lambda_n,
   pp_obj = NULL
 
   if (clust == FALSE) {
-    lambda_immune = round((lambda_n * abundance)/(1-abundance))
-    lambda_background = lambda_n - lambda_immune
+    #lambda_immune = round((lambda_n * abundance)/(1-abundance))
+    #lambda_background = lambda_n - lambda_immune
+
+    lambda_immune <- round(lambda_n * abundance)
+    lambda_background <- lambda_n * (1 - abundance)
+
 
     if(type %in% c("inhom")){
       lams <- list(function(x,y){lambda_immune*5*x^2},

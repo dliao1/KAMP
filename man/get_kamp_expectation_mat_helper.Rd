@@ -4,12 +4,12 @@
 \alias{get_kamp_expectation_mat_helper}
 \title{get_kamp_expectation_mat_helper}
 \usage{
-get_kamp_expectation_mat_helper(ppp_obj, rvalue, markvar = "immune")
+get_kamp_expectation_mat_helper(rvalue, ppp_obj, markvar = "immune")
 }
 \arguments{
-\item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
-
 \item{rvalue}{A single radius at which to calculate the KAMP expectation.}
+
+\item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
 
 \item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
 }

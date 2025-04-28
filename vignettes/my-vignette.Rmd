@@ -70,7 +70,7 @@ within each, have homogenous and inhomogenous background
 
 Varied rate of total cells (n) and immune cell abundance (p)
 n ∈(100, 500, 1000) # maybe tweak bc i decreased
-p ∈(0.01, 0.1, 0.5)
+p ∈(0.1, 0.3, 0.5)
 
 3*3 = 9 images for each subset null hypothesis so 9x4 = 36 total, assuming im avging for the barplots and stuff?
 

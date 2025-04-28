@@ -8,24 +8,58 @@ get_kamp_expectation(
   ppp_obj,
   rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar = "immune"
+  markvar = "immune",
+  thin_pct = 0
 )
 }
 \arguments{
-\item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
+\item{ppp_obj}{A point pattern object of class \code{ppp} from the \pkg{spatstat.geom} package.}
 
-\item{rvec}{A vector of radii at which to calculate the KAMP expectation.}
+\item{rvec}{A numeric vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
 
-\item{correction}{Type of border correction}
+\item{correction}{A character string specifying the edge correction method to be used. Passed to \code{Kcross} and \code{Kest}.
+Common options include \code{"border"} and \code{"trans"}.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
+\item{markvar}{A character string naming the subset of marked points (e.g., \code{"immune"}) used for calculating \code{Kcross}.}
+
+\item{thin_pct}{A placeholder argument for future functionality related to thinning; currently unused.}
 }
 \value{
-A tibble containing the sample_id, r values, K statistic, theoretical CSR, KAMP CSR, FUNDIFF
+A tibble with the following columns:
+\describe{
+\item{r}{The radius at which the K-function was calculated.}
+\item{theo_csr}{The theoretical K-function under CSR from \code{Kcross}.}
+\item{kamp_csr}{The adjusted CSR baseline from \code{Kest}, representing the permuted or thinned baseline expectation.}
+\item{k}{The observed K-function value from \code{Kcross}.}
+\item{kamp_fundiff}{The functional difference between observed K and KAMP baseline (\code{k - kamp_csr}).}
+}
 }
 \description{
-Calculates the KAMP expectation for a given point pattern object.
+Computes the KAMP (K-function Adjusted for Marked Permutations) expectation for a given spatial point pattern.
+This function calculates a version of Ripley's K-function using both the traditional inhomogeneous theoretical expectation
+(based on \code{Kcross}) and the KAMP-adjusted CSR baseline (based on \code{Kest}), then compares them to produce a functional difference ("FUNDIFF").
 }
 \details{
-Title KAMP Expectation
+Compute KAMP Expectation
+
+This function is used in the context of analyzing spatial point patterns, particularly when comparing observed
+clustering to expected clustering under different null hypotheses:
+\itemize{
+\item \code{Kcross()} calculates the expected K-function under CSR (complete spatial randomness) for the subset of points defined by \code{markvar}.
+\item \code{Kest()} calculates a standard K-function on the full dataset.
+\item The difference between these two (\code{kamp_fundiff}) quantifies how much the observed K deviates from what would be expected under a permuted CSR-like null model.
+}
+}
+\examples{
+if (requireNamespace("spatstat.geom", quietly = TRUE)) {
+  # simulate a simple spatial point pattern with two types
+  win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+  pp <- spatstat.random::rpoispp(lambda = 100, win = win)
+  marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
+  marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+
+  # compute KAMP expectation
+  kamp_result <- get_kamp_expectation(marked_pp, markvar = "immune")
+  print(kamp_result)
+}
 }

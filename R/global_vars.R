@@ -11,4 +11,5 @@ utils::globalVariables(c("trans",
                          "Cell 1 Assignment",
                          "Hole Assignment",
                          "hole",
-                         "immune"))
+                         "immune",
+                         "k"))

@@ -17,7 +17,7 @@ get_kamp_expectation_mat(ppp_obj, rvec, markvar = "immune")
 A tibble containing the radius, expectation, and time taken to compute the expectation.
 }
 \description{
-Wrapper function for mapping across multiple radii to calculate the KAMP expectation.
+Wrapper function for mapping across multiple radii to calculate the KAMP expectation using matrices.
 }
 \details{
 Title
