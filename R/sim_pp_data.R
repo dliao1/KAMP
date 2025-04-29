@@ -1,9 +1,12 @@
-#' Title
+#' @title Simulates spatial data
+#' @description Simulates a spatial point pattern with two cell types: background and immune.
 #'
-#' @param lambda_n intensity for background cells
-#' @param abundance intensity for marker positive cells
-#' @param type defines the distribution of the point process- homogeneous, inhomogeneous, or clustered
-#' @param clust should an image be simulated with or without holes
+#' @param lambda_n Number of total cells in image
+#' @param abundance Percentage intensity for marker positive cells
+#' @param clust Determines whether an image is simulated with or without clustering (TRUE/FALSE)
+#' @param cell_type1 Marker positive cell type (default is "immune")
+#' @param cell_type2 Marker negative cell type (default is "background")
+#' @param distribution Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")
 #'
 #' @returns A point pattern object of class "ppp" from the spatstat package where the two cell types are background and immune.
 #'
@@ -23,10 +26,24 @@
 #' @export
 #'
 #' @examples
-get_sim_data <- function(lambda_n,
-                         abundance, # needs to be divisible by 5
-                         type = c("hom", "inhom"),
-                         clust = FALSE){
+#' if (requireNamespace("dplyr", quietly = TRUE) &&
+#'    requireNamespace("ggplot2", quietly = TRUE) &&
+#'    requireNamespace("tibble", quietly = TRUE) &&
+#'    requireNamespace("magrittr", quietly = TRUE)) {
+#'   pp_obj <- sim_pp_data(lambda_n = 200, abundance = 0.3)
+#'   magrittr::`%>%`(
+#'   tibble::as_tibble(pp_obj),
+#'   ggplot2::ggplot(ggplot2::aes(x, y, color = marks))
+#'   ) +
+#'   ggplot2::geom_point()
+#' }
+#'
+sim_pp_data <- function(lambda_n,
+                        abundance, # needs to be divisible by 5
+                        cell_type1 = "immune",
+                        cell_type2 = "background",
+                        distribution = "hom",
+                        clust = FALSE){
 
   wm <- spatstat.geom::owin(xrange = c(0, 1), yrange = c(0, 1))
   pp_obj = NULL
@@ -39,28 +56,24 @@ get_sim_data <- function(lambda_n,
     lambda_background <- lambda_n * (1 - abundance)
 
 
-    if(type %in% c("inhom")){
+    if(distribution == c("inhom")){
       lams <- list(function(x,y){lambda_immune*5*x^2},
                    function(x,y){lambda_background*5*x^2}
       )
     }
 
-    if(type == "hom"){
+    if(distribution == "hom"){
       # homogeneous background and immune
-      pp_obj = rmpoispp(c(lambda_immune, lambda_background), types = c("immune", "background"),
+      pp_obj = rmpoispp(c(lambda_immune, lambda_background), types = c(cell_type1, cell_type2),
                         win = wm)
-    }else if(type == "inhom"){
+    }else if(distribution == "inhom"){
       # inhomogeneous background and inhomogeneous immune
-      pp_obj = rmpoispp(lams, types = c("immune", "background"),
+      pp_obj = rmpoispp(lams, types = c(cell_type1, cell_type2),
                         win = wm)
     }
 
-    as_tibble(pp_obj) %>%
-      ggplot(aes(x,y, color = marks)) +
-      geom_point()
-
   } else {
-    # larger window
+    # larger window for clustering
     wm <- spatstat.geom::owin(xrange = c(0, 10), yrange = c(0, 10))
     sim_object = CreateSimulationObject(sims = 1, cell_types = 1, window = wm)
     sim_object = GenerateSpatialPattern(sim_object,
@@ -73,7 +86,7 @@ get_sim_data <- function(lambda_n,
                                         probs = c(0.0, 1))
 
     # Generate holes for inhomogeneity
-    if(type == "inhom"){
+    if(distribution == "inhom"){
       sim_object = GenerateHoles(sim_object, step_size = 0.1, cores = 1)
     }
 
@@ -90,7 +103,7 @@ get_sim_data <- function(lambda_n,
       pp$immune[sample(indices, nthin)] <- 0
     }
 
-    if(type == "inhom"){
+    if(distribution == "inhom"){
       pp = pp %>%
         rename(hole = `Hole Assignment`) %>%
         filter(hole == "Keep") %>%
@@ -99,7 +112,7 @@ get_sim_data <- function(lambda_n,
     }
 
     pp = pp %>%
-      mutate(immune = ifelse(immune == 0, "background", "immune"))
+      mutate(immune = ifelse(immune == 0, cell_type2, cell_type1))
 
     pp_obj = spatstat.geom::ppp(pp$x, pp$y, window = wm,  marks = factor(pp$immune))
 

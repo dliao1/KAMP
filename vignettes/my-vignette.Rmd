@@ -14,17 +14,22 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r}
 library(kperm)
+library(devtools)
 library(tidyverse)
 library(spatstat.random)
+devtools::load_all()
 
 ```
 
+# Simulating and plotting data
 ```{r}
-sim_data <- get_sim_data(lambda_n = 200, 
+sim_data <- sim_pp_data(lambda_n = 200, 
                     abundance = 0.3,
-                    type = "hom",
+                    cell_type1 = "immune",
+                    cell_type2 = "background",
+                    distribution = "hom",
                     clust = FALSE)
 marksvar = "immune"
 rvalues = seq(0, 1, length.out = 50)
@@ -45,7 +50,39 @@ df_back
 as_tibble(pp_obj) %>%
     ggplot(aes(x,y, color = marks)) +
     geom_point()
+
 ```
+
+# KAMP Expectation
+```{r}
+kamp_expec = kamp_expectation(ppp_obj = pp_obj,
+                            rvec = rvalues,
+                            markvar = marksvar) %>% 
+  mutate(og_fundiff = k - theo_csr,
+         method = "kamp") %>%
+  drop_na()
+
+kamp_expec
+
+
+kamp_expec_mat = kamp_expectation_mat(ppp_obj = pp_obj,
+                                    rvec = rvalues,
+                                    markvar = marksvar) %>% 
+  drop_na()
+
+kamp_expec_mat
+
+```
+
+```{r}
+kamp_var = kamp_variance(ppp_obj = pp_obj,
+                         rvec = rvalues,
+                         markvar = marksvar) %>% 
+  drop_na()
+
+kamp_var
+```
+
 
 move helpers to utils file
 
@@ -79,4 +116,12 @@ Compare: accuracy (bar plots of fundiff and should be centered at 0) and computa
 can also compare power and type I error # yah idk how i can compare ? if fundiff > 0 thats clustering? are we getting the variance for the perm and KAMP dist and comparing CIs?? need to look at the code
 
 
+for building site
+https://pkgdown.r-lib.org/
+pkgdown::build_site()
+
+
+devtools::document()
+devtools::install()
+devtools::build_vignettes()
 
