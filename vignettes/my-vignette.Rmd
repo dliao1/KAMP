@@ -16,14 +16,16 @@ knitr::opts_chunk$set(
 
 ```{r}
 library(kperm)
-library(devtools)
+#library(devtools)
 library(tidyverse)
 library(spatstat.random)
-devtools::load_all()
-
+#devtools::load_all()
+set.seed(50)
 ```
 
-# Simulating and plotting data
+# Univariate
+
+## Simulating
 ```{r}
 sim_data <- sim_pp_data(lambda_n = 200, 
                     abundance = 0.3,
@@ -53,11 +55,12 @@ as_tibble(pp_obj) %>%
 
 ```
 
-# KAMP Expectation
+## Expectation
 ```{r}
 kamp_expec = kamp_expectation(ppp_obj = pp_obj,
                             rvec = rvalues,
-                            markvar = marksvar) %>% 
+                            markvar = marksvar,
+                            thin_pct = 0.75) %>% 
   mutate(og_fundiff = k - theo_csr,
          method = "kamp") %>%
   drop_na()
@@ -73,7 +76,7 @@ kamp_expec_mat = kamp_expectation_mat(ppp_obj = pp_obj,
 kamp_expec_mat
 
 ```
-
+## Variance
 ```{r}
 kamp_var = kamp_variance(ppp_obj = pp_obj,
                          rvec = rvalues,
@@ -81,6 +84,35 @@ kamp_var = kamp_variance(ppp_obj = pp_obj,
   drop_na()
 
 kamp_var
+```
+
+# Bivariate
+
+## Simulating
+```{r}
+sim_data_biv <- sim_pp_data_bivariate(lambda_n = 200, 
+                    abundance = 0.3,
+                    cell_type1 = "immune1",
+                    cell_type2 = "immune2",
+                    cell_type3 = "background",
+                    distribution = "inhom",
+                    clust = TRUE)
+
+
+marksvar = "immune"
+rvalues = seq(0, 1, length.out = 50)
+
+pp_obj <- sim_data_biv
+
+df_back <- as.data.frame(pp_obj) %>%
+  as_tibble()
+
+df_back
+
+
+as_tibble(pp_obj) %>%
+    ggplot(aes(x,y, color = marks)) +
+    geom_point()
 ```
 
 

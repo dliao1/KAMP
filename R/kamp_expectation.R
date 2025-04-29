@@ -61,10 +61,6 @@ kamp_expectation <- function(ppp_obj,
                              thin_pct = 0) {
 
   if (thin_pct != 0) {
-    # Thin the point pattern object
-    #npts = npoints(ppp_obj)
-    #npts_thin = round(npts * (1 - thin_pct))
-    #ppp_obj = ppp_obj[sample(1:npts, npts_thin), ]
     ppp_obj = rthin(ppp_obj, 1 - thin_pct)
   }
 
@@ -112,6 +108,7 @@ kamp_expectation <- function(ppp_obj,
 #' @param rvec A vector of radii at which to calculate the KAMP expectation.
 #' @param correction Type of border correction (can either be translational or border)
 #' @param markvar The variable used to mark the points in the point pattern object. Default is "immune".
+#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -139,7 +136,12 @@ kamp_expectation <- function(ppp_obj,
 kamp_expectation_mat = function(ppp_obj,
                                 rvec = c(0, .05, .075, .1, .15, .2),
                                 correction = "trans",
-                                markvar = "immune") {
+                                markvar = "immune",
+                                thin_pct = 0) {
+  if (thin_pct != 0) {
+    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
+  }
+
   map_dfr(rvec,
           ~kamp_expectation_mat_helper(ppp_obj = ppp_obj,
                                        rvalue = .x,

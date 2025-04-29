@@ -2,7 +2,6 @@
 #' @title kamp_variance
 #'
 #' @description
-#'
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) variance
 #' for a given spatial point pattern. Also returns the KAMP expectation,
 #' z-statistic, and p-value.
@@ -14,6 +13,7 @@
 #' @param rvec A vector of radii at which to calculate the KAMP variance.
 #' @param correction Type of border correction (can either be translational or border)
 #' @param markvar The variable used to mark the points in the point pattern object. Default is "immune".
+#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -42,7 +42,15 @@
 #'   kamp_result <- kamp_variance(marked_pp, markvar = "immune")
 #'   print(kamp_result)
 #' }
-kamp_variance = function(ppp_obj, rvec = c(0, .05, .075, .1, .15, .2), correction = "trans", markvar = "immune") {
+kamp_variance = function(ppp_obj,
+                         rvec = c(0, .05, .075, .1, .15, .2),
+                         correction = "trans",
+                         markvar = "immune",
+                         thin_pct = 0) {
+  if (thin_pct != 0) {
+    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
+  }
+
   map_dfr(rvec,
           ~kamp_variance_helper(ppp_obj = ppp_obj,
                                 rvalue = .x,

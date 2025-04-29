@@ -8,7 +8,8 @@ kamp_variance(
   ppp_obj,
   rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar = "immune"
+  markvar = "immune",
+  thin_pct = 0
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ kamp_variance(
 \item{correction}{Type of border correction (can either be translational or border)}
 
 \item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
+
+\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object.}
 }
 \value{
 A dataframe with the following columns:

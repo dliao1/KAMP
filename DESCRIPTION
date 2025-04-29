@@ -1,5 +1,5 @@
 Package: kperm
-Title: What the Package Does (One Line, Title Case)
+Title: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Daisy",

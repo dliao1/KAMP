@@ -1,6 +1,8 @@
 #' KAMP Expectation Helper
 #' @title kamp_expectation_mat_helper
+#'
 #' @description Helper function to calculate the KAMP expectation for a given point pattern object and radius.
+#'
 #' @param ppp_obj A point pattern object "ppp" from the spatstat package.
 #' @param rvalue A single radius
 #' @param markvar The variable used to mark the points in the point pattern object - default is "immune".
@@ -75,6 +77,7 @@ kamp_expectation_mat_helper = function(ppp_obj,
 
 #' KAMP Variance Helper
 #' @title kamp_variance_helper
+#'
 #' @description Helper function to calculate the KAMP variance for a point pattern object and single radius.
 #'
 #' @param ppp_obj A point pattern object "ppp" from the spatstat package.
