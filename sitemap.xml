@@ -6,15 +6,22 @@
 <url><loc>https://dliao1.github.io/kperm/articles/my-vignette.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/authors.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/index.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/check_valid_inputs_biv.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/check_valid_inputs_univ.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/index.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation_biv.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation_biv_mat.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation_biv_mat_helper.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation_mat.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kamp_expectation_mat_helper.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kamp_variance.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/kamp_variance_biv.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/kamp_variance_biv_helper.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kamp_variance_helper.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/kperm-package.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/pipe.html</loc></url>
 <url><loc>https://dliao1.github.io/kperm/reference/sim_pp_data.html</loc></url>
-<url><loc>https://dliao1.github.io/kperm/reference/sim_pp_data_bivariate.html</loc></url>
+<url><loc>https://dliao1.github.io/kperm/reference/sim_pp_data_biv.html</loc></url>
 </urlset>
 
