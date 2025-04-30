@@ -69,9 +69,13 @@ kamp_expectation <- function(ppp_obj,
                              markvar = "immune",
                              thin_pct = 0) {
 
-  if (thin_pct != 0) {
-    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
-  }
+
+  check_valid_inputs_univ(ppp_obj = ppp_obj,
+                          rvec = rvec,
+                          correction = correction,
+                          markvar = markvar,
+                          thin_pct = thin_pct)
+
 
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
@@ -147,6 +151,13 @@ kamp_expectation_mat = function(ppp_obj,
                                 correction = "trans",
                                 markvar = "immune",
                                 thin_pct = 0) {
+
+  check_valid_inputs_univ(ppp_obj = ppp_obj,
+                          rvec = rvec,
+                          correction = correction,
+                          markvar = markvar,
+                          thin_pct = thin_pct)
+
   if (thin_pct != 0) {
     ppp_obj = rthin(ppp_obj, 1 - thin_pct)
   }

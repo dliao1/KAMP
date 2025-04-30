@@ -180,3 +180,70 @@ kamp_variance_biv_helper <- function(ppp_obj,
 
 }
 
+
+#' Checks the validity of inputs for bivariate KAMP functions
+#'
+#' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
+#' @param rvec Vector of radii
+#' @param correction Type of edge correction.
+#' @param markvar1 Variable used to mark the points in the point pattern object for the first type
+#' @param markvar2 Variable used to mark the points in the point pattern object for the second type
+#' @param thin_pct Thinning percentage
+#'
+#' @returns TRUE only if all the parameter checks pass
+#' @keywords internal
+#'
+check_valid_inputs_biv <- function(ppp_obj,
+                                   rvec,
+                                   correction,
+                                   markvar1,
+                                   markvar2,
+                                   thin_pct) {
+  # Makes sure ppp_obj is not NULL
+  if (is.null(ppp_obj)) {
+    stop("The point pattern object cannot be NULL.")
+  }
+
+  # Check if rvec is numeric
+  if (!is.numeric(rvec)) {
+    stop("rvec must be numeric.")
+  }
+
+  # Check if correction is translational or isotropic
+  if (correction %in% c("trans", "iso") == FALSE) {
+    stop("Currently only isotropic and translational edge correction are supported.")
+  }
+
+  # Ensure there are marks
+  if (is.null(ppp_obj$marks)) {
+    stop("The point pattern object must have marks.")
+  }
+
+  # Check if the specified marks are present
+  if (markvar1 %in% levels(ppp_obj$marks) == FALSE) {
+    stop("markvar1 is not a mark in the point pattern object.")
+  }
+
+  if (markvar2 %in% levels(ppp_obj$marks) == FALSE) {
+    stop("markvar2 is not a mark in the point pattern object.")
+  }
+
+  # Check if the specified marks are different
+  if (markvar1 == markvar2) {
+    stop("markvar1 and markvar2 must be different.")
+  }
+
+  # Check if thin_pct is numeric
+  if (!is.numeric(thin_pct)) {
+    stop("thin_pct must be numeric.")
+  }
+
+  # Check if thin_pct is between 0 and 1
+  if (thin_pct < 0 || thin_pct > 1) {
+    stop("thin_pct must be between 0 and 1.")
+  }
+
+  return(TRUE)
+
+}
+

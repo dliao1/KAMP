@@ -78,7 +78,7 @@ sim_pp_data <- function(lambda_n,
       # inhomogeneous background and inhomogeneous immune
       lams <- list(function(x,y){lambda_immune*5*x^2},
                    function(x,y){lambda_background*5*x^2}
-                   )
+      )
 
       pp_obj = rmpoispp(lams, types = c(cell_type1, cell_type2),
                         win = wm)
@@ -172,13 +172,13 @@ sim_pp_data <- function(lambda_n,
 #'   ggplot2::geom_point()
 #' }
 #'
-sim_pp_data_bivariate <- function(lambda_n,
-                                  abundance,
-                                  cell_type1 = "immune1",
-                                  cell_type2 = "immune2",
-                                  cell_type3 = "background",
-                                  distribution = "hom",
-                                  clust = FALSE){
+sim_pp_data_biv <- function(lambda_n,
+                            abundance,
+                            cell_type1 = "immune1",
+                            cell_type2 = "immune2",
+                            cell_type3 = "background",
+                            distribution = "hom",
+                            clust = FALSE){
 
   if (distribution %in% c("inhom", "hom") == FALSE) {
     stop("distribution must be either 'inhom' or 'hom'")

@@ -19,7 +19,7 @@ library(kperm)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
-devtools::load_all()
+#devtools::load_all()
 set.seed(50)
 ```
 
@@ -90,7 +90,7 @@ kamp_var
 
 ## Simulating
 ```{r}
-sim_data_biv <- sim_pp_data_bivariate(lambda_n = 200, 
+sim_data_biv <- sim_pp_data_biv(lambda_n = 200, 
                     abundance = 0.3,
                     cell_type1 = "immune1",
                     cell_type2 = "immune2",
@@ -202,5 +202,6 @@ devtools::build_vignettes()
 TESTING
 
 usethis::use_test("name of test")
+devtools::test()
 
 

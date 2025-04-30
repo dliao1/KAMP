@@ -39,4 +39,30 @@ test_that("kamp_variance_biv_thinning", {
   expect_false(all(thin_result$k == full_result$k))
 })
 
+test_that("kamp_variance_biv_errors", {
+  win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+  pp <- spatstat.random::rpoispp(lambda = 100, win = win)
+
+  expect_error(kamp_variance_biv(pp),
+               "The point pattern object must have marks")
+
+  marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE)
+  marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+  expect_error(kamp_variance_biv(marked_pp, correction = "border"),
+               "Currently only isotropic and translational edge correction are supported")
+
+  expect_error(kamp_variance_biv(marked_pp, thin_pct = "a lot"),
+               "thin_pct must be numeric")
+
+  expect_error(kamp_variance_biv(marked_pp, thin_pct = -0.1),
+               "thin_pct must be between 0 and 1")
+  expect_error(kamp_variance_biv(marked_pp, thin_pct = 1.5),
+               "thin_pct must be between 0 and 1")
+
+  expect_error(kamp_variance_biv(marked_pp, markvar1 = "alien"),
+               "markvar1 is not a mark in the point pattern object")
+
+  expect_error(kamp_variance_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune1"),
+               "markvar1 and markvar2 must be different.")
+})
 

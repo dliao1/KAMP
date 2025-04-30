@@ -76,25 +76,12 @@ kamp_variance_biv <- function(ppp_obj,
                                  markvar2 = "immune2",
                                  thin_pct = 0) {
 
-  if (correction %in% c("trans", "isotropic") == FALSE) {
-    stop("Currently only isotropic and translational edge correction are supported.")
-  }
-
-  if (is.null(ppp_obj$marks)) {
-    stop("The point pattern object must have marks.")
-  }
-
-  if (markvar1 == markvar2) {
-    stop("markvar1 and markvar2 must be different.")
-  }
-
-  if (!is.numeric(thin_pct)) {
-    stop("thin_pct must be numeric.")
-  }
-
-  if (thin_pct < 0 || thin_pct > 1) {
-    stop("thin_pct must be between 0 and 1.")
-  }
+  check_valid_inputs_biv(ppp_obj = ppp_obj,
+                        rvec = rvec,
+                        correction = correction,
+                        markvar1 = markvar1,
+                        markvar2 = markvar2,
+                        thin_pct = thin_pct)
 
 
   if (thin_pct != 0) {

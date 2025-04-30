@@ -72,17 +72,12 @@ kamp_expectation_biv <- function(ppp_obj,
                              markvar2 = "immune2",
                              thin_pct = 0) {
 
-  if (!is.numeric(thin_pct)) {
-    stop("thin_pct must be numeric.")
-  }
-
-  if (thin_pct < 0 || thin_pct > 1) {
-    stop("thin_pct must be between 0 and 1.")
-  }
-
-  if (markvar1 == markvar2) {
-    stop("markvar1 and markvar2 must be different.")
-  }
+  check_valid_inputs_biv(ppp_obj = ppp_obj,
+                         rvec = rvec,
+                         correction = correction,
+                         markvar1 = markvar1,
+                         markvar2 = markvar2,
+                         thin_pct = thin_pct)
 
   if (thin_pct != 0) {
     ppp_obj = rthin(ppp_obj, 1 - thin_pct)
@@ -171,17 +166,12 @@ kamp_expectation_biv_mat <- function(ppp_obj,
                                      markvar2 = "immune2",
                                      thin_pct = 0) {
 
-  if (!is.numeric(thin_pct)) {
-    stop("thin_pct must be numeric.")
-  }
-
-  if (thin_pct < 0 || thin_pct > 1) {
-    stop("thin_pct must be between 0 and 1.")
-  }
-
-  if (markvar1 == markvar2) {
-    stop("markvar1 and markvar2 must be different.")
-  }
+  check_valid_inputs_biv(ppp_obj = ppp_obj,
+                         rvec = rvec,
+                         correction = correction,
+                         markvar1 = markvar1,
+                         markvar2 = markvar2,
+                         thin_pct = thin_pct)
 
   if (thin_pct != 0) {
     ppp_obj = rthin(ppp_obj, 1 - thin_pct)

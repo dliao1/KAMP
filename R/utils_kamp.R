@@ -173,3 +173,59 @@ kamp_variance_helper = function(ppp_obj,
   return(result)
 }
 
+#' Checks the validity of inputs for univariate KAMP functions
+#'
+#' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
+#' @param rvec Vector of radii
+#' @param correction Type of edge correction.
+#' @param markvar The variable used to mark the points in the point pattern object.
+#' @param thin_pct Thinning percentage
+#'
+#' @returns TRUE only if all the parameter checks pass
+#' @keywords internal
+#'
+check_valid_inputs_univ <- function(ppp_obj,
+                                    rvec,
+                                    correction,
+                                    markvar,
+                                    thin_pct) {
+
+  # Makes sure ppp_obj is not NULL
+  if (is.null(ppp_obj)) {
+    stop("The point pattern object cannot be NULL.")
+  }
+
+  # Check if rvec is numeric
+  if (!is.numeric(rvec)) {
+    stop("rvec must be numeric.")
+  }
+
+  # Check if correction is translational or isotropic
+  if (correction %in% c("trans", "iso") == FALSE) {
+    stop("Currently only isotropic and translational edge correction are supported.")
+  }
+
+  # Ensure there are marks
+  if (is.null(ppp_obj$marks)) {
+    stop("The point pattern object must have marks.")
+  }
+
+  # Check if the specified marks are present
+  if (markvar %in% levels(ppp_obj$marks) == FALSE) {
+    stop("markvar is not a mark in the point pattern object.")
+  }
+
+  # Check if thin_pct is numeric
+  if (!is.numeric(thin_pct)) {
+    stop("thin_pct must be numeric.")
+  }
+
+  # Check if thin_pct is between 0 and 1
+  if (thin_pct < 0 || thin_pct > 1) {
+    stop("thin_pct must be between 0 and 1.")
+  }
+
+  return(TRUE)
+
+}
+
