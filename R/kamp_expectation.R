@@ -87,12 +87,23 @@ kamp_expectation <- function(ppp_obj,
   kamp = Kest(ppp_obj,
               r = rvec,
               correction = correction) %>%
-    as_tibble() %>%
-    mutate(kamp_csr = trans,
-           k = k_orig$trans, # takes calculated K from Kcross
-           theo_csr = k_orig$theo,
-           kamp_fundiff = k - kamp_csr) %>% # takes calculated theoretical K from Kcross
-    select(r, k, theo_csr, kamp_csr, kamp_fundiff) # gets r, k, theo_csr, kamp_csr, kamp_fundiff
+    as_tibble()
+
+  if (correction == "trans") {
+    kamp = kamp %>%
+      mutate(kamp_csr = trans,
+             k = k_orig$trans, # takes calculated K from Kcross
+             theo_csr = k_orig$theo,
+             kamp_fundiff = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+  } else {
+    kamp = kamp %>%
+      mutate(kamp_csr = iso,
+             k = k_orig$iso, # takes calculated K from Kcross
+             theo_csr = k_orig$theo,
+             kamp_fundiff = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+  }
 
   return(kamp)
 }

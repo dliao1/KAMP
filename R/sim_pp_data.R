@@ -12,7 +12,7 @@
 #'
 #' @importFrom spatstat.explore Kcross Kest
 #' @importFrom spatstat.geom area.owin ppp as.owin
-#' @importFrom dplyr mutate select rename filter
+#' @importFrom dplyr mutate select rename filter case_when
 #' @importFrom tibble as_tibble
 #' @importFrom magrittr %>%
 #' @importFrom ggplot2 ggplot aes geom_point
@@ -150,7 +150,7 @@ sim_pp_data <- function(lambda_n,
 #'
 #' @importFrom spatstat.explore Kcross Kest
 #' @importFrom spatstat.geom area.owin ppp as.owin
-#' @importFrom dplyr mutate select rename filter
+#' @importFrom dplyr mutate select rename filter case_when
 #' @importFrom tibble as_tibble
 #' @importFrom magrittr %>%
 #' @importFrom ggplot2 ggplot aes geom_point

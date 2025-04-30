@@ -5,7 +5,7 @@ test_that("kamp_expectation_biv_default", {
   marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE)
   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 
-  result <- kamp_expectation_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
+  result <- kamp_expectation_biv(marked_pp, correction = "iso", markvar1 = "immune1", markvar2 = "immune2")
 
   expect_true(all(c("r", "k", "theo_csr", "kamp_csr", "kamp_fundiff") %in% names(result)))
   expect_equal(nrow(result), length(c(0, .05, .075, .1, .15, .2)))
