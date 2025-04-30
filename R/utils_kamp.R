@@ -5,7 +5,8 @@
 #'
 #' @param ppp_obj A point pattern object "ppp" from the spatstat package.
 #' @param rvalue A single radius
-#' @param markvar The variable used to mark the points in the point pattern object - default is "immune".
+#' @param correction Type of edge correction. Defaults to translational
+#' @param markvar The variable used to mark the points in the point pattern object. Defaults to "immune".
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -75,15 +76,15 @@ kamp_expectation_mat_helper = function(ppp_obj,
   return(df)
 }
 
-#' KAMP Variance Helper
+#' Helper function for KAMP Variance
 #' @title kamp_variance_helper
 #'
 #' @description Helper function to calculate the KAMP variance for a point pattern object and single radius.
 #'
 #' @param ppp_obj A point pattern object "ppp" from the spatstat package.
 #' @param rvalue A single radius
-#' @param correction Type of border correction (can either be translational or border)
-#' @param markvar The variable used to mark the points in the point pattern object (default is "immune")
+#' @param correction Type of edge correction. Defaults to translational.
+#' @param markvar The variable used to mark the points in the point pattern object. Defaults to "immune".
 #'
 #' @returns
 #' A single-row dataframe with the following columns:

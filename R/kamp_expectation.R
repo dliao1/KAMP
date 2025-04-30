@@ -1,6 +1,6 @@
 #' Compute KAMP Expectation
 #'
-#' @title kamp_expectation
+#' @title KAMP univariate Expectation
 #'
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) expectation
@@ -8,22 +8,31 @@
 #' using both the traditional Ripley's K method (based on `Kcross`)
 #' and the KAMP-adjusted CSR baseline (based on `Kest`).
 #'
-#' The KAMP-adjusted CSR represents a more realistic baseline for K (compared
+#' The KAMP-adjusted CSR represents a more robust baseline for K (compared
 #' to traditional CSR) that accounts for spatial clustering or inhomogeneity
 #' in a point pattern compared to the traditional CSR assumption, while
 #' avoiding the computational burden of permuting the point pattern.
 #'
+#' Notes:
+#'
+#' This function uses the `spatstat` package under the hood, which
+#' automatically uses border correction when the number of
+#' points in the point pattern is more than 3000.
+#'
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
-#' See `get_kamp_expectation_mat` for the matrix-based implementation.
+#'
+#' See `kamp_expectation_mat` for the matrix-based implementation.
+#'
+#'
 #'
 #
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
 #' @param rvec Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
-#' @param correction Specifies the edge correction method to be used and passed to `Kcross` and `Kest`.
-#' @param markvar Identifies subset of marked points, defaults to immune
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object.
+#' @param correction Type of edge correction method to be used and passed to `Kcross` and `Kest`. Defaults to translational edge correction.
+#' @param markvar Identifies subset of marked points. Defaults to immune.
+#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
 #'
-#' @return
+#' @returns
 #' A dataframe with the following columns:
 #' \describe{
 #'   \item{r}{The radius at which K was calculated.}
@@ -79,14 +88,14 @@ kamp_expectation <- function(ppp_obj,
            k = k_orig$trans, # takes calculated K from Kcross
            theo_csr = k_orig$theo,
            kamp_fundiff = k - kamp_csr) %>% # takes calculated theoretical K from Kcross
-    select(r, k, theo_csr, kamp_csr, kamp_fundiff) # gets r, kamp CSR, K statistic, method
+    select(r, k, theo_csr, kamp_csr, kamp_fundiff) # gets r, k, theo_csr, kamp_csr, kamp_fundiff
 
   return(kamp)
 }
 
 
 #' Computes KAMP Expectation using matrices
-#' @title kamp_expectation_mat
+#' @title KAMP univariate Expectation (Matrix Implementation)
 #'
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) expectation
@@ -106,9 +115,9 @@ kamp_expectation <- function(ppp_obj,
 #'
 #' @param ppp_obj  A point pattern object of class "ppp" from the spatstat package.
 #' @param rvec A vector of radii at which to calculate the KAMP expectation.
-#' @param correction Type of border correction (can either be translational or border)
-#' @param markvar The variable used to mark the points in the point pattern object. Default is "immune".
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object.
+#' @param correction Type of edge correction. Defaults to translational.
+#' @param markvar The variable used to mark the points in the point pattern object. Defaults to "immune".
+#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
 #'
 #' @returns
 #' A dataframe with the following columns:

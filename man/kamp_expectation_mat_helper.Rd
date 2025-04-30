@@ -16,7 +16,9 @@ kamp_expectation_mat_helper(
 
 \item{rvalue}{A single radius}
 
-\item{markvar}{The variable used to mark the points in the point pattern object - default is "immune".}
+\item{correction}{Type of edge correction. Defaults to translational}
+
+\item{markvar}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
 }
 \value{
 A dataframe with the following columns:

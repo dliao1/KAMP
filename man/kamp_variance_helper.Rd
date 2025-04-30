@@ -11,9 +11,9 @@ kamp_variance_helper(ppp_obj, rvalue, correction = "trans", markvar = "immune")
 
 \item{rvalue}{A single radius}
 
-\item{correction}{Type of border correction (can either be translational or border)}
+\item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object (default is "immune")}
+\item{markvar}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
 }
 \value{
 A single-row dataframe with the following columns:
@@ -32,6 +32,6 @@ A single-row dataframe with the following columns:
 Helper function to calculate the KAMP variance for a point pattern object and single radius.
 }
 \details{
-KAMP Variance Helper
+Helper function for KAMP Variance
 }
 \keyword{internal}

@@ -41,6 +41,24 @@ sim_pp_data <- function(lambda_n,
                         distribution = "hom",
                         clust = FALSE){
 
+  if (distribution %in% c("inhom", "hom") == FALSE) {
+    stop("distribution must be either 'inhom' or 'hom'")
+  }
+
+  if (abundance < 0 || abundance > 1) {
+    stop("abundance must be between 0 and 1")
+  }
+
+  if (lambda_n <= 0) {
+    stop("lambda_n must be greater than 0")
+  }
+
+  if (cell_type1 == cell_type2) {
+    stop("cell_type1 and cell_type2 must be different")
+  }
+
+
+
   wm <- spatstat.geom::owin(xrange = c(0, 1), yrange = c(0, 1))
   pp_obj = NULL
 
@@ -128,9 +146,9 @@ sim_pp_data <- function(lambda_n,
 #' @param distribution Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")
 #' @param clust Determines whether an image is simulated with or without clustering (TRUE/FALSE)
 #'
-#' @returns
+#' @returns A point pattern object of class "ppp" from the spatstat package where the three cell types are background, immune1, and immune2.
 #'
-#' #' @importFrom spatstat.explore Kcross Kest
+#' @importFrom spatstat.explore Kcross Kest
 #' @importFrom spatstat.geom area.owin ppp as.owin
 #' @importFrom dplyr mutate select rename filter
 #' @importFrom tibble as_tibble
@@ -161,6 +179,27 @@ sim_pp_data_bivariate <- function(lambda_n,
                                   cell_type3 = "background",
                                   distribution = "hom",
                                   clust = FALSE){
+
+  if (distribution %in% c("inhom", "hom") == FALSE) {
+    stop("distribution must be either 'inhom' or 'hom'")
+  }
+
+  if (cell_type1 == cell_type2) {
+    stop("cell_type1 and cell_type2 must be different")
+  }
+
+  if (cell_type1 == cell_type3 || cell_type2 == cell_type3) {
+    stop("cell_type1 and cell_type3, or cell_type2 and cell_type3 must be different")
+  }
+
+  if (abundance < 0 || abundance > 1) {
+    stop("abundance must be between 0 and 1")
+  }
+
+  if (lambda_n <= 0) {
+    stop("lambda_n must be greater than 0")
+  }
+
 
   wm <- spatstat.geom::owin(xrange = c(0, 1), yrange = c(0, 1))
   pp_obj = NULL

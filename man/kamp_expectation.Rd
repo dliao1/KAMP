@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_expectation.R
 \name{kamp_expectation}
 \alias{kamp_expectation}
-\title{kamp_expectation}
+\title{KAMP univariate Expectation}
 \usage{
 kamp_expectation(
   ppp_obj,
@@ -17,11 +17,11 @@ kamp_expectation(
 
 \item{rvec}{Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
 
-\item{correction}{Specifies the edge correction method to be used and passed to \code{Kcross} and \code{Kest}.}
+\item{correction}{Type of edge correction method to be used and passed to \code{Kcross} and \code{Kest}. Defaults to translational edge correction.}
 
-\item{markvar}{Identifies subset of marked points, defaults to immune}
+\item{markvar}{Identifies subset of marked points. Defaults to immune.}
 
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object.}
+\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.}
 }
 \value{
 A dataframe with the following columns:
@@ -39,13 +39,20 @@ for a given spatial point pattern. This function calculates Ripley's K
 using both the traditional Ripley's K method (based on \code{Kcross})
 and the KAMP-adjusted CSR baseline (based on \code{Kest}).
 
-The KAMP-adjusted CSR represents a more realistic baseline for K (compared
+The KAMP-adjusted CSR represents a more robust baseline for K (compared
 to traditional CSR) that accounts for spatial clustering or inhomogeneity
 in a point pattern compared to the traditional CSR assumption, while
 avoiding the computational burden of permuting the point pattern.
 
+Notes:
+
+This function uses the \code{spatstat} package under the hood, which
+automatically uses border correction when the number of
+points in the point pattern is more than 3000.
+
 See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
-See \code{get_kamp_expectation_mat} for the matrix-based implementation.
+
+See \code{kamp_expectation_mat} for the matrix-based implementation.
 }
 \details{
 Compute KAMP Expectation

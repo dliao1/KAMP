@@ -2,8 +2,11 @@
 
 export("%>%")
 export(kamp_expectation)
+export(kamp_expectation_biv)
+export(kamp_expectation_biv_mat)
 export(kamp_expectation_mat)
 export(kamp_variance)
+export(kamp_variance_biv)
 export(sim_pp_data)
 export(sim_pp_data_bivariate)
 importFrom(dplyr,filter)

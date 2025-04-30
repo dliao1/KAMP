@@ -1,5 +1,5 @@
 #' KAMP Variance
-#' @title kamp_variance
+#' @title Computes univariate KAMP variance
 #'
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) variance
@@ -7,11 +7,13 @@
 #' z-statistic, and p-value.
 #'
 #' Note: this a matrix-based implementation of the KAMP variance that
-#' does not use the `spatstat` package.
+#' does not use the `spatstat` package. It is a wrapper around the
+#' `kamp_variance_helper` function that calculates the KAMP variance at
+#' one radius and maps it over a vector of radii.
 #'
 #' @param ppp_obj A point pattern object of class "ppp" from the spatstat package.
 #' @param rvec A vector of radii at which to calculate the KAMP variance.
-#' @param correction Type of border correction (can either be translational or border)
+#' @param correction Type of edge correction. Defaults to translational.
 #' @param markvar The variable used to mark the points in the point pattern object. Default is "immune".
 #' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object.
 #'
@@ -47,6 +49,25 @@ kamp_variance = function(ppp_obj,
                          correction = "trans",
                          markvar = "immune",
                          thin_pct = 0) {
+
+  if (correction %in% c("trans", "isotropic") == FALSE) {
+    stop("Currently only isotropic and translational edge correction are supported.")
+  }
+
+  if (is.null(ppp_obj$marks)) {
+    stop("The point pattern object must have marks.")
+  }
+
+  if (!is.numeric(thin_pct)) {
+    stop("thin_pct must be numeric.")
+  }
+
+  if (thin_pct < 0 || thin_pct > 1) {
+    stop("thin_pct must be between 0 and 1.")
+  }
+
+
+
   if (thin_pct != 0) {
     ppp_obj = rthin(ppp_obj, 1 - thin_pct)
   }

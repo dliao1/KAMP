@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_variance.R
 \name{kamp_variance}
 \alias{kamp_variance}
-\title{kamp_variance}
+\title{Computes univariate KAMP variance}
 \usage{
 kamp_variance(
   ppp_obj,
@@ -17,7 +17,7 @@ kamp_variance(
 
 \item{rvec}{A vector of radii at which to calculate the KAMP variance.}
 
-\item{correction}{Type of border correction (can either be translational or border)}
+\item{correction}{Type of edge correction. Defaults to translational.}
 
 \item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
 
@@ -42,7 +42,9 @@ for a given spatial point pattern. Also returns the KAMP expectation,
 z-statistic, and p-value.
 
 Note: this a matrix-based implementation of the KAMP variance that
-does not use the \code{spatstat} package.
+does not use the \code{spatstat} package. It is a wrapper around the
+\code{kamp_variance_helper} function that calculates the KAMP variance at
+one radius and maps it over a vector of radii.
 }
 \details{
 KAMP Variance

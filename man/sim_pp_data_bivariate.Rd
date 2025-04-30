@@ -30,7 +30,7 @@ sim_pp_data_bivariate(
 \item{clust}{Determines whether an image is simulated with or without clustering (TRUE/FALSE)}
 }
 \value{
-#' @importFrom spatstat.explore Kcross Kest
+A point pattern object of class "ppp" from the spatstat package where the three cell types are background, immune1, and immune2.
 }
 \description{
 Simulates a spatial point pattern with three cell types: background, immune1, and immune2.

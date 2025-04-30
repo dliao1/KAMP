@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_expectation.R
 \name{kamp_expectation_mat}
 \alias{kamp_expectation_mat}
-\title{kamp_expectation_mat}
+\title{KAMP univariate Expectation (Matrix Implementation)}
 \usage{
 kamp_expectation_mat(
   ppp_obj,
@@ -17,11 +17,11 @@ kamp_expectation_mat(
 
 \item{rvec}{A vector of radii at which to calculate the KAMP expectation.}
 
-\item{correction}{Type of border correction (can either be translational or border)}
+\item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
+\item{markvar}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
 
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object.}
+\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.}
 }
 \value{
 A dataframe with the following columns:

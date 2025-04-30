@@ -19,7 +19,7 @@ library(kperm)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
-#devtools::load_all()
+devtools::load_all()
 set.seed(50)
 ```
 
@@ -115,6 +115,47 @@ as_tibble(pp_obj) %>%
     geom_point()
 ```
 
+## Expectation
+```{r}
+kamp_expec_biv = kamp_expectation_biv(ppp_obj = pp_obj,
+                            rvec = rvalues,
+                            #markvar = marksvar,
+                            thin_pct = 0.5) %>% 
+  drop_na()
+
+kamp_expec_biv
+
+kamp_expec_biv_mat = kamp_expectation_biv_mat(ppp_obj = pp_obj,
+                                    rvec = rvalues) %>% 
+  drop_na()
+
+kamp_expec_biv_mat
+```
+
+## Variance
+```{r}
+kamp_biv_var = kamp_variance_biv(ppp_obj = pp_obj,
+                         rvec = rvalues) %>% 
+  drop_na()
+
+kamp_biv_var
+```
+
+## wtf
+```{r}
+win <- owin(c(0, 1), c(0, 1))
+
+pp <- rpoispp(lambda = 100, win = win)
+marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE)
+marked_pp <- ppp(pp$x, pp$y, window = win, marks = factor(marks))
+result <- kamp_variance_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
+result
+
+print(names(result))
+
+```
+
+
 
 move helpers to utils file
 
@@ -156,4 +197,10 @@ pkgdown::build_site()
 devtools::document()
 devtools::install()
 devtools::build_vignettes()
+
+
+TESTING
+
+usethis::use_test("name of test")
+
 
