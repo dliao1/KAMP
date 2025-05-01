@@ -50,8 +50,63 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><p>test</p>
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h1></div>
+<p><code>kperm</code> is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called <strong>KAMP</strong> (K adjusted by Analytical Moments of the Permutation distribution).</p>
+<p>KAMP avoids the need for computationally expensive permutations while accounting for spatial inhomogeneity, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.</p>
+</div>
+<div class="section level1">
+<h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h1>
+<p>This package provides functions to compute both <strong>univariate</strong> and <strong>bivariate</strong> KAMP expectation and variance (<code>spatstat</code> and matrix-based implementation both included). At this time, the only edge correction methods supported are translational (<code>trans</code>) and isotropic (<code>iso</code>).</p>
+</div>
+<div class="section level1">
+<h1 id="basic-functionality-and-examples">Basic Functionality and Examples<a class="anchor" aria-label="anchor" href="#basic-functionality-and-examples"></a>
+</h1>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dliao1/kperm"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/kperm/">kperm</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate a point pattern</span></span>
+<span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute KAMP expectation</span></span>
+<span><span class="va">kamp_expec_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_expectation.html">kamp_expectation</a></span><span class="op">(</span><span class="va">pp</span>, markvar <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_univ</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute KAMP variance</span></span>
+<span><span class="va">kamp_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_variance.html">kamp_variance</a></span><span class="op">(</span><span class="va">pp</span>, markvar <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/kperm/">kperm</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate a point pattern</span></span>
+<span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute KAMP expectation</span></span>
+<span><span class="va">kamp_expec_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_expectation_biv.html">kamp_expectation_biv</a></span><span class="op">(</span><span class="va">pp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_biv</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute KAMP variance</span></span>
+<span><span class="va">kamp_var_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_variance_biv.html">kamp_variance_biv</a></span><span class="op">(</span><span class="va">pp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var_biv</span><span class="op">)</span></span></code></pre></div>
 <p><!-- badges: start --> <a href="https://app.codecov.io/gh/dliao1/kperm" class="external-link"><img src="https://codecov.io/gh/dliao1/kperm/graph/badge.svg" alt="Codecov test coverage"></a> <!-- badges: end --></p>
+</div>
+</div>
 
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
