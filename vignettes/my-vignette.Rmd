@@ -26,7 +26,7 @@ library(kperm)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
-devtools::load_all()
+#devtools::load_all()
 set.seed(50)
 ```
 
