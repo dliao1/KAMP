@@ -45,6 +45,9 @@ kamp_var_biv <- kamp_variance_biv(pp)
 print(kamp_var_biv)
 ```
 
+# Documentation
+Link to documentation and vignettes: https://dliao1.github.io/kperm/
+
   <!-- badges: start -->
   [![Codecov test coverage](https://codecov.io/gh/dliao1/kperm/graph/badge.svg)](https://app.codecov.io/gh/dliao1/kperm)
   <!-- badges: end -->
