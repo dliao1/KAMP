@@ -14,4 +14,5 @@ utils::globalVariables(c("trans",
                          "immune",
                          "k",
                          "Cell 2 Assignment",
-                         "case_when"))
+                         "case_when",
+                         "iso"))

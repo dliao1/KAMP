@@ -1,6 +1,6 @@
 #' Computes KAMP Expectation for Bivariate Point Patterns
 #'
-#' @title KAMP bivariate Expectation
+#' @title KAMP bivariate expectation
 #'
 #' @description Computes the KAMP (K-function Adjusted for Marked Permutations) expectation
 #' for bivariate point patterns. This function calculates Ripley's K

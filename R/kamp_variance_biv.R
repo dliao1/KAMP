@@ -1,6 +1,6 @@
 #' Computes KAMP Variance for Bivariate Point Patterns
 #'
-#' @title Computes bivariate KAMP variance
+#' @title KAMP bivariate variance
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) variance
 #' for bivariate point patterns. This function calculates Ripley's K

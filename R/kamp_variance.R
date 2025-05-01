@@ -1,5 +1,5 @@
 #' KAMP Variance
-#' @title Computes univariate KAMP variance
+#' @title KAMP univariate variance
 #'
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) variance

@@ -1,6 +1,6 @@
 #' Compute KAMP Expectation
 #'
-#' @title KAMP univariate Expectation
+#' @title KAMP univariate expectation
 #'
 #' @description
 #' Computes the KAMP (K-function Adjusted for Marked Permutations) expectation

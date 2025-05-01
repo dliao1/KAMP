@@ -43,7 +43,7 @@ if (requireNamespace("dplyr", quietly = TRUE) &&
    requireNamespace("ggplot2", quietly = TRUE) &&
    requireNamespace("tibble", quietly = TRUE) &&
    requireNamespace("magrittr", quietly = TRUE)) {
-  pp_obj <- sim_pp_data_bivariate(lambda_n = 200, abundance = 0.3)
+  pp_obj <- sim_pp_data_biv(lambda_n = 200, abundance = 0.3)
   magrittr::`\%>\%`(
   tibble::as_tibble(pp_obj),
   ggplot2::ggplot(ggplot2::aes(x, y, color = marks))
