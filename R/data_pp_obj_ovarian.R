@@ -12,8 +12,4 @@
 #'
 #' @source Subset of `HumanOvarianCancerVP()` from the VectraPolarisData package.
 #'
-#' @examples
-#' if (requireNamespace("spatstat.geom", quietly = TRUE)) {
-#'   plot(pp_obj_ovarian)
-#' }
 "pp_obj_ovarian"

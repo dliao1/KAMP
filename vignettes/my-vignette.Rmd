@@ -1,8 +1,8 @@
 ---
-title: "my-vignette"
+title: "Introduction to kperm"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{my-vignette}
+  %\VignetteIndexEntry{Introduction to kperm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,194 +14,237 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+Hello and welcome to the `kperm` package! 
+This package is designed to calculate the expectation and variance of KAMP (K adjustment by Analytical Moments of the Permutation distribution) for point patterns with marks. The package is partially built on the `spatstat` package, which is a powerful tool for analyzing spatial data in R.
+The `kperm` package provides functions to simulate point patterns, calculate the KAMP CSR, and visualize the results. The package is designed to be user-friendly and easy to use, with a focus on providing clear and concise output.
+The package is still in development, and we welcome any feedback or suggestions for improvement. If you have any questions or issues, please feel free to reach out to us.
+
+# Setup
 ```{r}
 library(kperm)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
-#devtools::load_all()
+devtools::load_all()
 set.seed(50)
 ```
 
-# Univariate
+# Simulating Data
+The `sim_pp_data` function can be used to simulate univariate point patterns, while the `sim_pp_data_biv` function can be used to simulate bivariate point patterns.
 
-## Simulating
+The `sim_pp_data` function takes the following arguments:
+
+- `lambda_n`: The number of points to simulate.
+
+- `abundance`: The abundance of the point pattern.
+
+- `cell_type1`: The name of the first cell type. Defaults to "immune".
+
+- `cell_type2`: The name of the second cell type. Defaults to "background".
+
+- `distribution`: The distribution of the point pattern. This can be either "hom" for homogeneous or "inhom" for inhomogeneous.
+
+- `clust`: A logical value indicating whether to cluster the points or not.
+
+
+The `sim_pp_data_biv` function takes the same arguments as `sim_pp_data`, but also includes an additional argument for the third cell type.
+
+- `cell_type3`: The name of the third cell type. Defaults to "background".
+
+The `sim_pp_data` and `sim_pp_data_biv` functions return a `ppp` object, which is a class in the `spatstat` package that represents a point pattern. The `ppp` object contains the x and y coordinates of the points, as well as the marks associated with each point.
+
+## Univariate
+
 ```{r}
-sim_data <- sim_pp_data(lambda_n = 200, 
+univ_data <- sim_pp_data(lambda_n = 200, 
                     abundance = 0.3,
                     cell_type1 = "immune",
                     cell_type2 = "background",
                     distribution = "hom",
                     clust = FALSE)
-marksvar = "immune"
-rvalues = seq(0, 1, length.out = 50)
 
-#w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])
+```
 
-# define pp_obj
-# pp_obj = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])
+We can plot this using `ggplot`:
 
-pp_obj <- sim_data
-
-df_back <- as.data.frame(pp_obj) %>%
-  as_tibble()
-
-df_back
-
-
-as_tibble(pp_obj) %>%
+```{r}
+as_tibble(univ_data) %>%
     ggplot(aes(x,y, color = marks)) +
     geom_point()
 
 ```
 
-## Expectation
+## Bivariate
 ```{r}
-kamp_expec = kamp_expectation(ppp_obj = pp_obj,
-                            rvec = rvalues,
-                            markvar = marksvar,
-                            thin_pct = 0.75) %>% 
-  mutate(og_fundiff = k - theo_csr,
-         method = "kamp") %>%
-  drop_na()
-
-kamp_expec
-
-
-kamp_expec_mat = kamp_expectation_mat(ppp_obj = pp_obj,
-                                    rvec = rvalues,
-                                    markvar = marksvar) %>% 
-  drop_na()
-
-kamp_expec_mat
-
-```
-## Variance
-```{r}
-kamp_var = kamp_variance(ppp_obj = pp_obj,
-                         rvec = rvalues,
-                         markvar = marksvar) %>% 
-  drop_na()
-
-kamp_var
-```
-
-# Bivariate
-
-## Simulating
-```{r}
-sim_data_biv <- sim_pp_data_biv(lambda_n = 200, 
+biv_data <- sim_pp_data_biv(lambda_n = 200, 
                     abundance = 0.3,
                     cell_type1 = "immune1",
                     cell_type2 = "immune2",
                     cell_type3 = "background",
                     distribution = "inhom",
                     clust = TRUE)
+```
 
+We can plot this using `ggplot`:
 
-marksvar = "immune"
-rvalues = seq(0, 1, length.out = 50)
-
-pp_obj <- sim_data_biv
-
-df_back <- as.data.frame(pp_obj) %>%
-  as_tibble()
-
-df_back
-
-
-as_tibble(pp_obj) %>%
+```{r}
+as_tibble(biv_data) %>%
     ggplot(aes(x,y, color = marks)) +
     geom_point()
 ```
 
-## Expectation
+# Expectation
+
+The `kamp_expectation` function calculates the expectation of KAMP for a given point pattern. The function takes the following arguments:
+
+- `ppp`: The point pattern object. 
+
+- `rvec`: A vector of distances at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2)
+
+- `correction`: Edge correction method. This can either be "iso" or "trans" for isotropic or translation correction, respectively. The default is "trans".
+
+- `markvar`: Identifies subset of marked points. Defaults to immune.
+
+- `thin_pct`: The percentage of points to thin from the point pattern. This is used to reduce the number of points in the pattern and speed up the calculation. The default is 0.
+
+The `kamp_expectation` function returns a data frame with the following columns:
+
+- `r`: The distance at which the KAMP expectation was calculated.
+
+- `K`: The KAMP expectation value.
+
+- `theo_csr`: The theoretical CSR value.
+
+- `kamp_csr`: The KAMP CSR value.
+
+- `kamp_fundiff`: The difference between K and the KAMP CSR.
+
+Running this code below calculates the KAMP expectation for the univariate point pattern.
 ```{r}
-kamp_expec_biv = kamp_expectation_biv(ppp_obj = pp_obj,
-                            rvec = rvalues,
-                            #markvar = marksvar,
-                            thin_pct = 0.5) %>% 
-  drop_na()
+univ_kamp_expectation <- kamp_expectation(ppp_obj = univ_data,
+                                          rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                          correction = "trans",
+                                          markvar = "immune",
+                                          thin_pct = 0)
 
-kamp_expec_biv
-
-kamp_expec_biv_mat = kamp_expectation_biv_mat(ppp_obj = pp_obj,
-                                    rvec = rvalues) %>% 
-  drop_na()
-
-kamp_expec_biv_mat
+univ_kamp_expectation
 ```
 
-## Variance
+Here is the matrix-based equivalent:
 ```{r}
-kamp_biv_var = kamp_variance_biv(ppp_obj = pp_obj,
-                         rvec = rvalues) %>% 
-  drop_na()
+univ_kamp_expectation_mat <- kamp_expectation_mat(ppp_obj = univ_data,
+                                                  rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                                  correction = "trans",
+                                                  markvar = "immune",
+                                                  thin_pct = 0)
 
-kamp_biv_var
+univ_kamp_expectation_mat
 ```
 
-## wtf
+We can plot the `kamp_fundiff` values for the univariate point pattern using `ggplot`:
 ```{r}
-win <- owin(c(0, 1), c(0, 1))
+as_tibble(univ_kamp_expectation) %>%
+    ggplot(aes(r, kamp_fundiff)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Distance (r)", y = "fundiff = K - KAMP CSR") +
+    theme_minimal()
+```
 
-pp <- rpoispp(lambda = 100, win = win)
-marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE)
-marked_pp <- ppp(pp$x, pp$y, window = win, marks = factor(marks))
-result <- kamp_variance_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
-result
+Likewise, this code calculates the KAMP expectation for the bivariate point pattern.
+```{r}
+biv_kamp_expectation <- kamp_expectation_biv(ppp_obj = biv_data,
+                                             rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                             correction = "trans",
+                                             markvar1 = "immune1",
+                                             markvar2 = "immune2",
+                                             thin_pct = 0
+                                             )
+biv_kamp_expectation
+```
 
-print(names(result))
+And here is the matrix-based equivalent:
+```{r}
+biv_kamp_expectation_mat <- kamp_expectation_biv_mat(ppp_obj = biv_data,
+                                                     rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                                     correction = "trans",
+                                                     markvar1 = "immune1",
+                                                     markvar2 = "immune2",
+                                                     thin_pct = 0
+                                                     )
+biv_kamp_expectation_mat
+```
 
+We can plot the `kamp_fundiff` values for the bivariate point pattern using `ggplot`:
+```{r}
+as_tibble(biv_kamp_expectation) %>%
+    ggplot(aes(r, kamp_fundiff)) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Distance (r)", y = "fundiff = K - KAMP CSR") +
+    theme_minimal()
 ```
 
 
+# Variance
 
-move helpers to utils file
+The `kamp_variance` function calculates the variance of KAMP for a given point pattern. The function takes the following arguments:
 
-no need for timing stuff
-think abt user facing stuff
-10000 cells use border correction
-thinning percentage = 0
-whole separate function for bivariate
-unit tests with small spatstat generated datasets
-https://github.com/julia-wrobel/registr/blob/master/R/register_fpca.R (documentation example)
+- `ppp`: The point pattern object.
 
-SIMULATION SETUP:
-can compare traditional K (trans border correction), with Kinhom, Kperm (with 100 permutations), and KAMP
+- `rvec`: A vector of distances at which to calculate the KAMP variance. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2)
 
+- `correction`: Edge correction method. This can either be "iso" or "trans" for isotropic or translation correction, respectively. The default is "trans".
 
-images should be: random, clustered, and inhomogenous (generate and show images)
+- `markvar`: Identifies subset of marked points. Defaults to immune.
 
-4 nulls total:
-2 null: NO CLUSTERING and CLUSTERING
-within each, have homogenous and inhomogenous background
+- `thin_pct`: The percentage of points to thin from the point pattern. This is used to reduce the number of points in the pattern and speed up the calculation. The default is 0.
 
 
-Varied rate of total cells (n) and immune cell abundance (p)
-n ∈(100, 500, 1000) # maybe tweak bc i decreased
-p ∈(0.1, 0.3, 0.5)
+The `kamp_variance` function returns a data frame with the following columns:
 
-3*3 = 9 images for each subset null hypothesis so 9x4 = 36 total, assuming im avging for the barplots and stuff?
+- `r`: The distance at which the KAMP variance was calculated.
 
-Compare: accuracy (bar plots of fundiff and should be centered at 0) and computation time
+- `K`: The KAMP variance value.
 
-can also compare power and type I error # yah idk how i can compare ? if fundiff > 0 thats clustering? are we getting the variance for the perm and KAMP dist and comparing CIs?? need to look at the code
+- `theo_csr`: The theoretical CSR value.
 
+- `kamp_csr`: The KAMP CSR value.
 
-for building site
-https://pkgdown.r-lib.org/
-pkgdown::build_site()
+- `kamp_fundiff`: The difference between K and the KAMP CSR.
 
+- `var`: The variance of the KAMP expectation.
 
-devtools::document()
-devtools::install()
-devtools::build_vignettes()
+- `z`: The z-score of the KAMP expectation.
 
+- `pval`: The p-value of the KAMP expectation.
 
-TESTING
+Note: there is no spatstat equivalent for the variance function.
 
-usethis::use_test("name of test")
-devtools::test()
+Running this code below calculates the KAMP variance for the univariate point pattern.
+```{r}
+univ_kamp_variance <- kamp_variance(ppp_obj = univ_data,
+                                          rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                          correction = "trans",
+                                          markvar = "immune",
+                                          thin_pct = 0)
+
+univ_kamp_variance
+```
+
+Here it is for the bivariate point pattern:
+```{r}
+biv_kamp_variance <- kamp_variance_biv(ppp_obj = biv_data,
+                                       rvec = c(0, 0.05, 0.1, 0.15, 0.2),
+                                       correction = "trans",
+                                       markvar1 = "immune1",
+                                       markvar2 = "immune2",
+                                       thin_pct = 0
+                                       )
+
+biv_kamp_variance
+```
+
 
 

@@ -22,9 +22,4 @@ pp_obj_ovarian
 A processed spatial point pattern object derived from the VectraPolaris ovarian cancer dataset.
 This object contains immune and background cells within the tumor region of one image.
 }
-\examples{
-if (requireNamespace("spatstat.geom", quietly = TRUE)) {
-  plot(pp_obj_ovarian)
-}
-}
 \keyword{datasets}

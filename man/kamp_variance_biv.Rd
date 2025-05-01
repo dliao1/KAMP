@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_variance_biv.R
 \name{kamp_variance_biv}
 \alias{kamp_variance_biv}
-\title{Computes bivariate KAMP variance}
+\title{KAMP bivariate variance}
 \usage{
 kamp_variance_biv(
   ppp_obj,

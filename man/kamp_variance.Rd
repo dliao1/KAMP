@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_variance.R
 \name{kamp_variance}
 \alias{kamp_variance}
-\title{Computes univariate KAMP variance}
+\title{KAMP univariate variance}
 \usage{
 kamp_variance(
   ppp_obj,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_expectation_biv.R
 \name{kamp_expectation_biv}
 \alias{kamp_expectation_biv}
-\title{KAMP bivariate Expectation}
+\title{KAMP bivariate expectation}
 \usage{
 kamp_expectation_biv(
   ppp_obj,

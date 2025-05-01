@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp_expectation.R
 \name{kamp_expectation}
 \alias{kamp_expectation}
-\title{KAMP univariate Expectation}
+\title{KAMP univariate expectation}
 \usage{
 kamp_expectation(
   ppp_obj,
