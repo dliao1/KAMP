@@ -83,6 +83,7 @@ biv_data <- sim_pp_data_biv(lambda_n = 200,
                     cell_type3 = "background",
                     distribution = "inhom",
                     clust = TRUE)
+
 ```
 
 We can plot this using `ggplot`:
