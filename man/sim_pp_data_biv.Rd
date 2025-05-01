@@ -7,9 +7,9 @@
 sim_pp_data_biv(
   lambda_n,
   abundance,
-  cell_type1 = "immune1",
-  cell_type2 = "immune2",
-  cell_type3 = "background",
+  markvar1 = "immune1",
+  markvar2 = "immune2",
+  markvar3 = "background",
   distribution = "hom",
   clust = FALSE
 )
@@ -19,11 +19,11 @@ sim_pp_data_biv(
 
 \item{abundance}{Percentage intensity for marker positive cells}
 
-\item{cell_type1}{Marker positive cell type (default is "immune1")}
+\item{markvar1}{Marker positive cell type (default is "immune1")}
 
-\item{cell_type2}{Marker positive cell type (default is "immune2")}
+\item{markvar2}{Marker positive cell type (default is "immune2")}
 
-\item{cell_type3}{Marker negative cell type (default is "background")}
+\item{markvar3}{Marker negative cell type (default is "background")}
 
 \item{distribution}{Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")}
 

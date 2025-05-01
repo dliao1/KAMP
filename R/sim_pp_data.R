@@ -4,8 +4,8 @@
 #' @param lambda_n Number of total cells in image
 #' @param abundance Percentage intensity for marker positive cells
 #' @param clust Determines whether an image is simulated with or without clustering (TRUE/FALSE)
-#' @param cell_type1 Marker positive cell type (default is "immune")
-#' @param cell_type2 Marker negative cell type (default is "background")
+#' @param markvar1 Marker positive cell type (default is "immune")
+#' @param markvar2 Marker negative cell type (default is "background")
 #' @param distribution Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")
 #'
 #' @returns A point pattern object of class "ppp" from the spatstat package where the two cell types are background and immune.
@@ -36,8 +36,8 @@
 #'
 sim_pp_data <- function(lambda_n,
                         abundance, # needs to be divisible by 5
-                        cell_type1 = "immune",
-                        cell_type2 = "background",
+                        markvar1 = "immune",
+                        markvar2 = "background",
                         distribution = "hom",
                         clust = FALSE){
 
@@ -53,8 +53,8 @@ sim_pp_data <- function(lambda_n,
     stop("lambda_n must be greater than 0")
   }
 
-  if (cell_type1 == cell_type2) {
-    stop("cell_type1 and cell_type2 must be different")
+  if (markvar1 == markvar2) {
+    stop("markvar1 and markvar2 must be different")
   }
 
 
@@ -72,7 +72,7 @@ sim_pp_data <- function(lambda_n,
 
     if(distribution == "hom"){
       # homogeneous background and immune
-      pp_obj = rmpoispp(c(lambda_immune, lambda_background), types = c(cell_type1, cell_type2),
+      pp_obj = rmpoispp(c(lambda_immune, lambda_background), types = c(markvar1, markvar2),
                         win = wm)
     }else if(distribution == "inhom"){
       # inhomogeneous background and inhomogeneous immune
@@ -80,7 +80,7 @@ sim_pp_data <- function(lambda_n,
                    function(x,y){lambda_background*5*x^2}
       )
 
-      pp_obj = rmpoispp(lams, types = c(cell_type1, cell_type2),
+      pp_obj = rmpoispp(lams, types = c(markvar1, markvar2),
                         win = wm)
     }
 
@@ -124,7 +124,7 @@ sim_pp_data <- function(lambda_n,
     }
 
     pp = pp %>%
-      mutate(immune = ifelse(immune == 0, cell_type2, cell_type1))
+      mutate(immune = ifelse(immune == 0, markvar2, markvar1))
 
     pp_obj = spatstat.geom::ppp(pp$x, pp$y, window = wm,  marks = factor(pp$immune))
 
@@ -140,9 +140,9 @@ sim_pp_data <- function(lambda_n,
 #'
 #' @param lambda_n Number of total cells in image
 #' @param abundance Percentage intensity for marker positive cells
-#' @param cell_type1 Marker positive cell type (default is "immune1")
-#' @param cell_type2 Marker positive cell type (default is "immune2")
-#' @param cell_type3 Marker negative cell type (default is "background")
+#' @param markvar1 Marker positive cell type (default is "immune1")
+#' @param markvar2 Marker positive cell type (default is "immune2")
+#' @param markvar3 Marker negative cell type (default is "background")
 #' @param distribution Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")
 #' @param clust Determines whether an image is simulated with or without clustering (TRUE/FALSE)
 #'
@@ -174,9 +174,9 @@ sim_pp_data <- function(lambda_n,
 #'
 sim_pp_data_biv <- function(lambda_n,
                             abundance,
-                            cell_type1 = "immune1",
-                            cell_type2 = "immune2",
-                            cell_type3 = "background",
+                            markvar1 = "immune1",
+                            markvar2 = "immune2",
+                            markvar3 = "background",
                             distribution = "hom",
                             clust = FALSE){
 
@@ -184,12 +184,12 @@ sim_pp_data_biv <- function(lambda_n,
     stop("distribution must be either 'inhom' or 'hom'")
   }
 
-  if (cell_type1 == cell_type2) {
-    stop("cell_type1 and cell_type2 must be different")
+  if (markvar1 == markvar2) {
+    stop("markvar1 and markvar2 must be different")
   }
 
-  if (cell_type1 == cell_type3 || cell_type2 == cell_type3) {
-    stop("cell_type1 and cell_type3, or cell_type2 and cell_type3 must be different")
+  if (markvar1 == markvar3 || markvar2 == markvar3) {
+    stop("markvar1 and markvar3, or markvar2 and markvar3 must be different")
   }
 
   if (abundance < 0 || abundance > 1) {

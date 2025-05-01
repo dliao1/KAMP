@@ -7,8 +7,8 @@
 sim_pp_data(
   lambda_n,
   abundance,
-  cell_type1 = "immune",
-  cell_type2 = "background",
+  markvar1 = "immune",
+  markvar2 = "background",
   distribution = "hom",
   clust = FALSE
 )
@@ -18,9 +18,9 @@ sim_pp_data(
 
 \item{abundance}{Percentage intensity for marker positive cells}
 
-\item{cell_type1}{Marker positive cell type (default is "immune")}
+\item{markvar1}{Marker positive cell type (default is "immune")}
 
-\item{cell_type2}{Marker negative cell type (default is "background")}
+\item{markvar2}{Marker negative cell type (default is "background")}
 
 \item{distribution}{Determines whether the image is homogeneous ("hom") or inhomogeneous ("inhom")}
 
