@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>my-vignette • kperm</title>
+<title>Introduction to kperm • kperm</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="my-vignette">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to kperm">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/my-vignette.html">my-vignette</a></li>
+<li><a class="dropdown-item" href="../articles/my-vignette.html">Introduction to kperm</a></li>
   </ul>
 </li>
       </ul>
@@ -54,7 +54,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>my-vignette</h1>
+      <h1>Introduction to kperm</h1>
             
       
 
@@ -63,6 +63,25 @@
 
     
     
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>Hello and welcome to the <code>kperm</code> package! This package is
+designed to calculate the expectation and variance of KAMP (K adjustment
+by Analytical Moments of the Permutation distribution) for point
+patterns with marks. The package is partially built on the
+<code>spatstat</code> package, which is a powerful tool for analyzing
+spatial data in R. The <code>kperm</code> package provides functions to
+simulate point patterns, calculate the KAMP CSR, and visualize the
+results. The package is designed to be user-friendly and easy to use,
+with a focus on providing clear and concise output. The package is still
+in development, and we welcome any feedback or suggestions for
+improvement. If you have any questions or issues, please feel free to
+reach out to us.</p>
+</div>
+<div class="section level2">
+<h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/kperm/">kperm</a></span><span class="op">)</span></span>
 <span><span class="co">#library(devtools)</span></span>
@@ -86,138 +105,64 @@
 <span><span class="co">#&gt; spatstat.random 3.3-3</span></span>
 <span><span class="co">#devtools::load_all()</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
-<h2 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
+<h2 id="simulating-data">Simulating Data<a class="anchor" aria-label="anchor" href="#simulating-data"></a>
 </h2>
+<p>The <code>sim_pp_data</code> function can be used to simulate
+univariate point patterns, while the <code>sim_pp_data_biv</code>
+function can be used to simulate bivariate point patterns.</p>
+<p>The <code>sim_pp_data</code> function takes the following
+arguments:</p>
+<ul>
+<li><p><code>lambda_n</code>: The number of points to simulate.</p></li>
+<li><p><code>abundance</code>: The abundance of the point
+pattern.</p></li>
+<li><p><code>cell_type1</code>: The name of the first cell type.
+Defaults to “immune”.</p></li>
+<li><p><code>cell_type2</code>: The name of the second cell type.
+Defaults to “background”.</p></li>
+<li><p><code>distribution</code>: The distribution of the point pattern.
+This can be either “hom” for homogeneous or “inhom” for
+inhomogeneous.</p></li>
+<li><p><code>clust</code>: A logical value indicating whether to cluster
+the points or not.</p></li>
+</ul>
+<p>The <code>sim_pp_data_biv</code> function takes the same arguments as
+<code>sim_pp_data</code>, but also includes an additional argument for
+the third cell type.</p>
+<ul>
+<li>
+<code>cell_type3</code>: The name of the third cell type. Defaults
+to “background”.</li>
+</ul>
+<p>The <code>sim_pp_data</code> and <code>sim_pp_data_biv</code>
+functions return a <code>ppp</code> object, which is a class in the
+<code>spatstat</code> package that represents a point pattern. The
+<code>ppp</code> object contains the x and y coordinates of the points,
+as well as the marks associated with each point.</p>
 <div class="section level3">
-<h3 id="simulating">Simulating<a class="anchor" aria-label="anchor" href="#simulating"></a>
+<h3 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">200</span>, </span>
+<code class="sourceCode R"><span><span class="va">univ_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">200</span>, </span>
 <span>                    abundance <span class="op">=</span> <span class="fl">0.3</span>,</span>
 <span>                    cell_type1 <span class="op">=</span> <span class="st">"immune"</span>,</span>
 <span>                    cell_type2 <span class="op">=</span> <span class="st">"background"</span>,</span>
 <span>                    distribution <span class="op">=</span> <span class="st">"hom"</span>,</span>
-<span>                    clust <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">marksvar</span> <span class="op">=</span> <span class="st">"immune"</span></span>
-<span><span class="va">rvalues</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">#w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])</span></span>
-<span></span>
-<span><span class="co"># define pp_obj</span></span>
-<span><span class="co"># pp_obj = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])</span></span>
-<span></span>
-<span><span class="va">pp_obj</span> <span class="op">&lt;-</span> <span class="va">sim_data</span></span>
-<span></span>
-<span><span class="va">df_back</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pp_obj</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">df_back</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 199 × 3</span></span></span>
-<span><span class="co">#&gt;         x      y marks     </span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0.435  0.779  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.324  0.230  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.861  0.902  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.084<span style="text-decoration: underline;">2</span> 0.752  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.930  0.410  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.200  0.725  immune    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.625  0.814  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.275  0.047<span style="text-decoration: underline;">7</span> background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.180  0.019<span style="text-decoration: underline;">1</span> background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.194  0.019<span style="text-decoration: underline;">2</span> immune    </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 189 more rows</span></span></span>
-<span></span>
-<span></span>
-<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">pp_obj</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>                    clust <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>We can plot this using <code>ggplot</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">univ_data</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>, color <span class="op">=</span> <span class="va">marks</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="my-vignette_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="my-vignette_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
 <div class="section level3">
-<h3 id="expectation">Expectation<a class="anchor" aria-label="anchor" href="#expectation"></a>
-</h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">kamp_expec</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_expectation.html">kamp_expectation</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                            rvec <span class="op">=</span> <span class="va">rvalues</span>,</span>
-<span>                            markvar <span class="op">=</span> <span class="va">marksvar</span>,</span>
-<span>                            thin_pct <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>og_fundiff <span class="op">=</span> <span class="va">k</span> <span class="op">-</span> <span class="va">theo_csr</span>,</span>
-<span>         method <span class="op">=</span> <span class="st">"kamp"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">kamp_expec</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 35 × 7</span></span></span>
-<span><span class="co">#&gt;         r       k theo_csr kamp_csr kamp_fundiff og_fundiff method</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0      0        0        0          0           0        kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.020<span style="text-decoration: underline;">4</span> 0.001<span style="text-decoration: underline;">52</span>  0.001<span style="text-decoration: underline;">31</span>  0.001<span style="text-decoration: underline;">71</span>   -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">191</span>    0.000<span style="text-decoration: underline;">207</span> kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.040<span style="text-decoration: underline;">8</span> 0.005<span style="text-decoration: underline;">63</span>  0.005<span style="text-decoration: underline;">23</span>  0.005<span style="text-decoration: underline;">24</span>    0.000<span style="text-decoration: underline;">391</span>    0.000<span style="text-decoration: underline;">400</span> kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.061<span style="text-decoration: underline;">2</span> 0.009<span style="text-decoration: underline;">89</span>  0.011<span style="text-decoration: underline;">8</span>   0.010<span style="text-decoration: underline;">7</span>    -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">843</span>   -<span style="color: #BB0000;">0.001</span><span style="color: #BB0000; text-decoration: underline;">89</span>  kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.081<span style="text-decoration: underline;">6</span> 0.019<span style="text-decoration: underline;">2</span>   0.020<span style="text-decoration: underline;">9</span>   0.019<span style="text-decoration: underline;">1</span>     0.000<span style="text-decoration: underline;">012</span>3  -<span style="color: #BB0000;">0.001</span><span style="color: #BB0000; text-decoration: underline;">79</span>  kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.102  0.032<span style="text-decoration: underline;">0</span>   0.032<span style="text-decoration: underline;">7</span>   0.031<span style="text-decoration: underline;">3</span>     0.000<span style="text-decoration: underline;">739</span>   -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">678</span> kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.122  0.046<span style="text-decoration: underline;">4</span>   0.047<span style="text-decoration: underline;">1</span>   0.046<span style="text-decoration: underline;">2</span>     0.000<span style="text-decoration: underline;">197</span>   -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">678</span> kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.143  0.063<span style="text-decoration: underline;">0</span>   0.064<span style="text-decoration: underline;">1</span>   0.062<span style="text-decoration: underline;">6</span>     0.000<span style="text-decoration: underline;">476</span>   -<span style="color: #BB0000;">0.001</span><span style="color: #BB0000; text-decoration: underline;">09</span>  kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.163  0.083<span style="text-decoration: underline;">2</span>   0.083<span style="text-decoration: underline;">7</span>   0.081<span style="text-decoration: underline;">1</span>     0.002<span style="text-decoration: underline;">16</span>    -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">510</span> kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.184  0.110    0.106    0.103      0.006<span style="text-decoration: underline;">25</span>     0.003<span style="text-decoration: underline;">62</span>  kamp  </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 25 more rows</span></span></span>
-<span></span>
-<span></span>
-<span><span class="va">kamp_expec_mat</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_expectation_mat.html">kamp_expectation_mat</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                                    rvec <span class="op">=</span> <span class="va">rvalues</span>,</span>
-<span>                                    markvar <span class="op">=</span> <span class="va">marksvar</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">kamp_expec_mat</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 5</span></span></span>
-<span><span class="co">#&gt;         r       k theo_csr kamp_csr kamp_fundiff</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0      0        0        0          0        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.020<span style="text-decoration: underline;">4</span> 0.001<span style="text-decoration: underline;">52</span>  0.001<span style="text-decoration: underline;">31</span>  0.001<span style="text-decoration: underline;">71</span>   -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">191</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.040<span style="text-decoration: underline;">8</span> 0.005<span style="text-decoration: underline;">63</span>  0.005<span style="text-decoration: underline;">23</span>  0.005<span style="text-decoration: underline;">24</span>    0.000<span style="text-decoration: underline;">391</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.061<span style="text-decoration: underline;">2</span> 0.009<span style="text-decoration: underline;">89</span>  0.011<span style="text-decoration: underline;">8</span>   0.010<span style="text-decoration: underline;">7</span>    -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">843</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.081<span style="text-decoration: underline;">6</span> 0.019<span style="text-decoration: underline;">2</span>   0.020<span style="text-decoration: underline;">9</span>   0.019<span style="text-decoration: underline;">1</span>     0.000<span style="text-decoration: underline;">012</span>3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.102  0.032<span style="text-decoration: underline;">0</span>   0.032<span style="text-decoration: underline;">7</span>   0.031<span style="text-decoration: underline;">3</span>     0.000<span style="text-decoration: underline;">739</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.122  0.046<span style="text-decoration: underline;">4</span>   0.047<span style="text-decoration: underline;">1</span>   0.046<span style="text-decoration: underline;">2</span>     0.000<span style="text-decoration: underline;">197</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.143  0.063<span style="text-decoration: underline;">0</span>   0.064<span style="text-decoration: underline;">1</span>   0.062<span style="text-decoration: underline;">6</span>     0.000<span style="text-decoration: underline;">476</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.163  0.083<span style="text-decoration: underline;">2</span>   0.083<span style="text-decoration: underline;">7</span>   0.081<span style="text-decoration: underline;">1</span>     0.002<span style="text-decoration: underline;">16</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.184  0.110    0.106    0.103      0.006<span style="text-decoration: underline;">25</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="variance">Variance<a class="anchor" aria-label="anchor" href="#variance"></a>
+<h3 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">kamp_var</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_variance.html">kamp_variance</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                         rvec <span class="op">=</span> <span class="va">rvalues</span>,</span>
-<span>                         markvar <span class="op">=</span> <span class="va">marksvar</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">kamp_var</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 49 × 7</span></span></span>
-<span><span class="co">#&gt;         r       k theo_csr kamp_csr         var        z pvalue</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0.020<span style="text-decoration: underline;">4</span> 0.001<span style="text-decoration: underline;">52</span>  0.001<span style="text-decoration: underline;">31</span>  0.001<span style="text-decoration: underline;">71</span> 0.000<span style="text-decoration: underline;">000</span>744 -<span style="color: #BB0000;">0.221</span>    0.588</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.040<span style="text-decoration: underline;">8</span> 0.005<span style="text-decoration: underline;">63</span>  0.005<span style="text-decoration: underline;">23</span>  0.005<span style="text-decoration: underline;">24</span> 0.000<span style="text-decoration: underline;">002</span>29   0.258    0.398</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.061<span style="text-decoration: underline;">2</span> 0.009<span style="text-decoration: underline;">89</span>  0.011<span style="text-decoration: underline;">8</span>   0.010<span style="text-decoration: underline;">7</span>  0.000<span style="text-decoration: underline;">004</span>35  -<span style="color: #BB0000;">0.404</span>    0.657</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.081<span style="text-decoration: underline;">6</span> 0.019<span style="text-decoration: underline;">2</span>   0.020<span style="text-decoration: underline;">9</span>   0.019<span style="text-decoration: underline;">1</span>  0.000<span style="text-decoration: underline;">008</span>04   0.004<span style="text-decoration: underline;">32</span>  0.498</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.102  0.032<span style="text-decoration: underline;">0</span>   0.032<span style="text-decoration: underline;">7</span>   0.031<span style="text-decoration: underline;">3</span>  0.000<span style="text-decoration: underline;">015</span>2    0.189    0.425</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.122  0.046<span style="text-decoration: underline;">4</span>   0.047<span style="text-decoration: underline;">1</span>   0.046<span style="text-decoration: underline;">2</span>  0.000<span style="text-decoration: underline;">023</span>0    0.041<span style="text-decoration: underline;">1</span>   0.484</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.143  0.063<span style="text-decoration: underline;">0</span>   0.064<span style="text-decoration: underline;">1</span>   0.062<span style="text-decoration: underline;">6</span>  0.000<span style="text-decoration: underline;">035</span>8    0.079<span style="text-decoration: underline;">5</span>   0.468</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.163  0.083<span style="text-decoration: underline;">2</span>   0.083<span style="text-decoration: underline;">7</span>   0.081<span style="text-decoration: underline;">1</span>  0.000<span style="text-decoration: underline;">051</span>3    0.302    0.381</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.184  0.110    0.106    0.103   0.000<span style="text-decoration: underline;">070</span>9    0.742    0.229</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.204  0.135    0.131    0.129   0.000<span style="text-decoration: underline;">101</span>     0.577    0.282</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 39 more rows</span></span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
-</h2>
-<div class="section level3">
-<h3 id="simulating-1">Simulating<a class="anchor" aria-label="anchor" href="#simulating-1"></a>
-</h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim_data_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">200</span>, </span>
+<code class="sourceCode R"><span><span class="va">biv_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">200</span>, </span>
 <span>                    abundance <span class="op">=</span> <span class="fl">0.3</span>,</span>
 <span>                    cell_type1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
 <span>                    cell_type2 <span class="op">=</span> <span class="st">"immune2"</span>,</span>
@@ -226,158 +171,211 @@
 <span>                    clust <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Computing probability for Cell 1</span></span>
 <span><span class="co">#&gt; Computing probability for Cell 2</span></span>
-<span><span class="co">#&gt; Computing hole probability</span></span>
-<span></span>
-<span></span>
-<span><span class="va">marksvar</span> <span class="op">=</span> <span class="st">"immune"</span></span>
-<span><span class="va">rvalues</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pp_obj</span> <span class="op">&lt;-</span> <span class="va">sim_data_biv</span></span>
-<span></span>
-<span><span class="va">df_back</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pp_obj</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">df_back</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 180 × 3</span></span></span>
-<span><span class="co">#&gt;        x     y marks     </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 4.07  0.690 background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 6.84  8.71  immune2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.565 8.65  immune2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 5.13  1.18  immune2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 1.13  9.50  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1.15  9.23  immune2   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 8.35  6.15  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 5.15  1.42  background</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 8.37  4.02  immune1   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 9.39  4.80  immune1   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 170 more rows</span></span></span>
-<span></span>
-<span></span>
-<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">pp_obj</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span><span class="co">#&gt; Computing hole probability</span></span></code></pre></div>
+<p>We can plot this using <code>ggplot</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">biv_data</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>, color <span class="op">=</span> <span class="va">marks</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="my-vignette_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="expectation-1">Expectation<a class="anchor" aria-label="anchor" href="#expectation-1"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="expectation">Expectation<a class="anchor" aria-label="anchor" href="#expectation"></a>
+</h2>
+<p>The <code>kamp_expectation</code> function calculates the expectation
+of KAMP for a given point pattern. The function takes the following
+arguments:</p>
+<ul>
+<li><p><code>ppp</code>: The point pattern object.</p></li>
+<li><p><code>rvec</code>: A vector of distances at which to calculate
+the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15,
+0.2)</p></li>
+<li><p><code>correction</code>: Edge correction method. This can either
+be “iso” or “trans” for isotropic or translation correction,
+respectively. The default is “trans”.</p></li>
+<li><p><code>markvar</code>: Identifies subset of marked points.
+Defaults to immune.</p></li>
+<li><p><code>thin_pct</code>: The percentage of points to thin from the
+point pattern. This is used to reduce the number of points in the
+pattern and speed up the calculation. The default is 0.</p></li>
+</ul>
+<p>The <code>kamp_expectation</code> function returns a data frame with
+the following columns:</p>
+<ul>
+<li><p><code>r</code>: The distance at which the KAMP expectation was
+calculated.</p></li>
+<li><p><code>K</code>: The KAMP expectation value.</p></li>
+<li><p><code>theo_csr</code>: The theoretical CSR value.</p></li>
+<li><p><code>kamp_csr</code>: The KAMP CSR value.</p></li>
+<li><p><code>kamp_fundiff</code>: The difference between K and the KAMP
+CSR.</p></li>
+</ul>
+<p>Running this code below calculates the KAMP expectation for the
+univariate point pattern.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">kamp_expec_biv</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_expectation_biv.html">kamp_expectation_biv</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                            rvec <span class="op">=</span> <span class="va">rvalues</span>,</span>
-<span>                            <span class="co">#markvar = marksvar,</span></span>
-<span>                            thin_pct <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">univ_kamp_expectation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_expectation.html">kamp_expectation</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">univ_data</span>,</span>
+<span>                                          rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                          correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                          markvar <span class="op">=</span> <span class="st">"immune"</span>,</span>
+<span>                                          thin_pct <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">kamp_expec_biv</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 5</span></span></span>
-<span><span class="co">#&gt;         r     k theo_csr kamp_csr kamp_fundiff</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0      0      0         0             0    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.020<span style="text-decoration: underline;">4</span> 0      0.001<span style="text-decoration: underline;">31</span>   0             0    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.040<span style="text-decoration: underline;">8</span> 0      0.005<span style="text-decoration: underline;">23</span>   0             0    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.061<span style="text-decoration: underline;">2</span> 0      0.011<span style="text-decoration: underline;">8</span>    0             0    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.081<span style="text-decoration: underline;">6</span> 0      0.020<span style="text-decoration: underline;">9</span>    0             0    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.102  0.554  0.032<span style="text-decoration: underline;">7</span>    0.025<span style="text-decoration: underline;">8</span>        0.529</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.122  0.554  0.047<span style="text-decoration: underline;">1</span>    0.025<span style="text-decoration: underline;">8</span>        0.529</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.143  0.554  0.064<span style="text-decoration: underline;">1</span>    0.025<span style="text-decoration: underline;">8</span>        0.529</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.163  0.554  0.083<span style="text-decoration: underline;">7</span>    0.025<span style="text-decoration: underline;">8</span>        0.529</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.184  0.554  0.106     0.078<span style="text-decoration: underline;">0</span>        0.477</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span>
-<span></span>
-<span><span class="va">kamp_expec_biv_mat</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_expectation_biv_mat.html">kamp_expectation_biv_mat</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                                    rvec <span class="op">=</span> <span class="va">rvalues</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">kamp_expec_biv_mat</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 50 × 5</span></span></span>
-<span><span class="co">#&gt;         r     k theo_csr kamp_csr kamp_fundiff</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0      0      0        0            0      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.020<span style="text-decoration: underline;">4</span> 0      0.001<span style="text-decoration: underline;">31</span>  0.006<span style="text-decoration: underline;">22</span>     -<span style="color: #BB0000;">0.006</span><span style="color: #BB0000; text-decoration: underline;">22</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.040<span style="text-decoration: underline;">8</span> 0      0.005<span style="text-decoration: underline;">23</span>  0.006<span style="text-decoration: underline;">22</span>     -<span style="color: #BB0000;">0.006</span><span style="color: #BB0000; text-decoration: underline;">22</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.061<span style="text-decoration: underline;">2</span> 0      0.011<span style="text-decoration: underline;">8</span>   0.006<span style="text-decoration: underline;">22</span>     -<span style="color: #BB0000;">0.006</span><span style="color: #BB0000; text-decoration: underline;">22</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.081<span style="text-decoration: underline;">6</span> 0      0.020<span style="text-decoration: underline;">9</span>   0.018<span style="text-decoration: underline;">8</span>      -<span style="color: #BB0000;">0.018</span><span style="color: #BB0000; text-decoration: underline;">8</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.102  0.125  0.032<span style="text-decoration: underline;">7</span>   0.025<span style="text-decoration: underline;">0</span>       0.099<span style="text-decoration: underline;">6</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.122  0.125  0.047<span style="text-decoration: underline;">1</span>   0.043<span style="text-decoration: underline;">9</span>       0.080<span style="text-decoration: underline;">7</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.143  0.375  0.064<span style="text-decoration: underline;">1</span>   0.075<span style="text-decoration: underline;">5</span>       0.300  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.163  0.627  0.083<span style="text-decoration: underline;">7</span>   0.113        0.513  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.184  0.753  0.106    0.164        0.589  </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 40 more rows</span></span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="variance-1">Variance<a class="anchor" aria-label="anchor" href="#variance-1"></a>
-</h3>
+<span><span class="va">univ_kamp_expectation</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">#&gt;       r       k theo_csr kamp_csr kamp_fundiff</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0        0        0           0       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0.008<span style="text-decoration: underline;">28</span>  0.007<span style="text-decoration: underline;">85</span>  0.007<span style="text-decoration: underline;">51</span>     0.000<span style="text-decoration: underline;">771</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.030<span style="text-decoration: underline;">9</span>   0.031<span style="text-decoration: underline;">4</span>   0.030<span style="text-decoration: underline;">0</span>      0.000<span style="text-decoration: underline;">870</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.067<span style="text-decoration: underline;">3</span>   0.070<span style="text-decoration: underline;">7</span>   0.068<span style="text-decoration: underline;">2</span>     -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">844</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.130    0.126    0.124       0.006<span style="text-decoration: underline;">00</span></span></span></code></pre></div>
+<p>Here is the matrix-based equivalent:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">kamp_biv_var</span> <span class="op">=</span> <span class="fu"><a href="../reference/kamp_variance_biv.html">kamp_variance_biv</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">pp_obj</span>,</span>
-<span>                         rvec <span class="op">=</span> <span class="va">rvalues</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html" class="external-link">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">univ_kamp_expectation_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_expectation_mat.html">kamp_expectation_mat</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">univ_data</span>,</span>
+<span>                                                  rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                                  correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                                  markvar <span class="op">=</span> <span class="st">"immune"</span>,</span>
+<span>                                                  thin_pct <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">kamp_biv_var</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 49 × 7</span></span></span>
-<span><span class="co">#&gt;         r     k theo_csr kamp_csr      var      z      pvalue</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0.020<span style="text-decoration: underline;">4</span> 0      0.001<span style="text-decoration: underline;">31</span>  0.006<span style="text-decoration: underline;">22</span> 0.000<span style="text-decoration: underline;">731</span> -<span style="color: #BB0000;">0.230</span> 0.591      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.040<span style="text-decoration: underline;">8</span> 0      0.005<span style="text-decoration: underline;">23</span>  0.006<span style="text-decoration: underline;">22</span> 0.000<span style="text-decoration: underline;">731</span> -<span style="color: #BB0000;">0.230</span> 0.591      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.061<span style="text-decoration: underline;">2</span> 0      0.011<span style="text-decoration: underline;">8</span>   0.006<span style="text-decoration: underline;">22</span> 0.000<span style="text-decoration: underline;">731</span> -<span style="color: #BB0000;">0.230</span> 0.591      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.081<span style="text-decoration: underline;">6</span> 0      0.020<span style="text-decoration: underline;">9</span>   0.018<span style="text-decoration: underline;">8</span>  0.002<span style="text-decoration: underline;">20</span>  -<span style="color: #BB0000;">0.400</span> 0.655      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.102  0.125  0.032<span style="text-decoration: underline;">7</span>   0.025<span style="text-decoration: underline;">0</span>  0.002<span style="text-decoration: underline;">93</span>   1.84  0.033<span style="text-decoration: underline;">0</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.122  0.125  0.047<span style="text-decoration: underline;">1</span>   0.043<span style="text-decoration: underline;">9</span>  0.005<span style="text-decoration: underline;">13</span>   1.13  0.130      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.143  0.375  0.064<span style="text-decoration: underline;">1</span>   0.075<span style="text-decoration: underline;">5</span>  0.008<span style="text-decoration: underline;">89</span>   3.18  0.000<span style="text-decoration: underline;">742</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.163  0.627  0.083<span style="text-decoration: underline;">7</span>   0.113   0.013<span style="text-decoration: underline;">6</span>    4.40  0.000<span style="text-decoration: underline;">005</span>38 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.184  0.753  0.106    0.164   0.019<span style="text-decoration: underline;">9</span>    4.18  0.000<span style="text-decoration: underline;">014</span>8  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.204  0.880  0.131    0.177   0.021<span style="text-decoration: underline;">7</span>    4.77  0.000<span style="text-decoration: underline;">000</span>916</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 39 more rows</span></span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="wtf">wtf<a class="anchor" aria-label="anchor" href="#wtf"></a>
-</h3>
+<span><span class="va">univ_kamp_expectation_mat</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">#&gt;       r       k theo_csr kamp_csr kamp_fundiff</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0        0        0           0       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0.008<span style="text-decoration: underline;">28</span>  0.007<span style="text-decoration: underline;">85</span>  0.007<span style="text-decoration: underline;">51</span>     0.000<span style="text-decoration: underline;">771</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.030<span style="text-decoration: underline;">9</span>   0.031<span style="text-decoration: underline;">4</span>   0.030<span style="text-decoration: underline;">0</span>      0.000<span style="text-decoration: underline;">870</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.067<span style="text-decoration: underline;">3</span>   0.070<span style="text-decoration: underline;">7</span>   0.068<span style="text-decoration: underline;">2</span>     -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">844</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.130    0.126    0.124       0.006<span style="text-decoration: underline;">00</span></span></span></code></pre></div>
+<p>We can plot the <code>kamp_fundiff</code> values for the univariate
+point pattern using <code>ggplot</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">win</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/owin.html" class="external-link">owin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.random/man/rpoispp.html" class="external-link">rpoispp</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="fl">100</span>, win <span class="op">=</span> <span class="va">win</span><span class="op">)</span></span>
-<span><span class="va">marks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"immune1"</span>, <span class="st">"immune2"</span>, <span class="st">"background"</span><span class="op">)</span>, <span class="va">pp</span><span class="op">$</span><span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">marked_pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">pp</span><span class="op">$</span><span class="va">x</span>, <span class="va">pp</span><span class="op">$</span><span class="va">y</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">marks</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_variance_biv.html">kamp_variance_biv</a></span><span class="op">(</span><span class="va">marked_pp</span>, markvar1 <span class="op">=</span> <span class="st">"immune1"</span>, markvar2 <span class="op">=</span> <span class="st">"immune2"</span><span class="op">)</span></span>
-<span><span class="va">result</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;       r       k theo_csr kamp_csr       var       z  pvalue</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0     0        0        0       0         <span style="color: #BB0000;">NaN</span>     <span style="color: #BB0000;">NaN</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0.05  0.007<span style="text-decoration: underline;">13</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">01</span> 0.000<span style="text-decoration: underline;">016</span>7  -<span style="color: #BB0000;">0.215</span>   0.585</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0.075 0.021<span style="text-decoration: underline;">8</span>   0.017<span style="text-decoration: underline;">7</span>   0.018<span style="text-decoration: underline;">0</span>  0.000<span style="text-decoration: underline;">040</span>4   0.604   0.273</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0.1   0.037<span style="text-decoration: underline;">1</span>   0.031<span style="text-decoration: underline;">4</span>   0.029<span style="text-decoration: underline;">2</span>  0.000<span style="text-decoration: underline;">066</span>0   0.976   0.165</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0.15  0.082<span style="text-decoration: underline;">9</span>   0.070<span style="text-decoration: underline;">7</span>   0.077<span style="text-decoration: underline;">7</span>  0.000<span style="text-decoration: underline;">186</span>    0.377   0.353</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0.2   0.147    0.126    0.132   0.000<span style="text-decoration: underline;">351</span>    0.759   0.224</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "r"        "k"        "theo_csr" "kamp_csr" "var"      "z"        "pvalue"</span></span></code></pre></div>
-<p>move helpers to utils file</p>
-<p>no need for timing stuff think abt user facing stuff 10000 cells use
-border correction thinning percentage = 0 whole separate function for
-bivariate unit tests with small spatstat generated datasets <a href="https://github.com/julia-wrobel/registr/blob/master/R/register_fpca.R" class="external-link uri">https://github.com/julia-wrobel/registr/blob/master/R/register_fpca.R</a>
-(documentation example)</p>
-<p>SIMULATION SETUP: can compare traditional K (trans border
-correction), with Kinhom, Kperm (with 100 permutations), and KAMP</p>
-<p>images should be: random, clustered, and inhomogenous (generate and
-show images)</p>
-<p>4 nulls total: 2 null: NO CLUSTERING and CLUSTERING within each, have
-homogenous and inhomogenous background</p>
-<p>Varied rate of total cells (n) and immune cell abundance (p) n ∈(100,
-500, 1000) # maybe tweak bc i decreased p ∈(0.1, 0.3, 0.5)</p>
-<p>3*3 = 9 images for each subset null hypothesis so 9x4 = 36 total,
-assuming im avging for the barplots and stuff?</p>
-<p>Compare: accuracy (bar plots of fundiff and should be centered at 0)
-and computation time</p>
-<p>can also compare power and type I error # yah idk how i can compare ?
-if fundiff &gt; 0 thats clustering? are we getting the variance for the
-perm and KAMP dist and comparing CIs?? need to look at the code</p>
-<p>for building site <a href="https://pkgdown.r-lib.org/" class="external-link uri">https://pkgdown.r-lib.org/</a> pkgdown::build_site()</p>
-<p>devtools::document() devtools::install()
-devtools::build_vignettes()</p>
-<p>TESTING</p>
-<p>usethis::use_test(“name of test”) devtools::test()</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">univ_kamp_expectation</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">kamp_fundiff</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Distance (r)"</span>, y <span class="op">=</span> <span class="st">"fundiff = K - KAMP CSR"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="my-vignette_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+<p>Likewise, this code calculates the KAMP expectation for the bivariate
+point pattern.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">biv_kamp_expectation</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_expectation_biv.html">kamp_expectation_biv</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">biv_data</span>,</span>
+<span>                                             rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                             correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                             markvar1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
+<span>                                             markvar2 <span class="op">=</span> <span class="st">"immune2"</span>,</span>
+<span>                                             thin_pct <span class="op">=</span> <span class="fl">0</span></span>
+<span>                                             <span class="op">)</span></span>
+<span><span class="va">biv_kamp_expectation</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">#&gt;       r     k theo_csr kamp_csr kamp_fundiff</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0      0        0            0      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0      0.007<span style="text-decoration: underline;">85</span>  0.006<span style="text-decoration: underline;">22</span>     -<span style="color: #BB0000;">0.006</span><span style="color: #BB0000; text-decoration: underline;">22</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.125  0.031<span style="text-decoration: underline;">4</span>   0.025<span style="text-decoration: underline;">0</span>       0.099<span style="text-decoration: underline;">6</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.501  0.070<span style="text-decoration: underline;">7</span>   0.101        0.400  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.880  0.126    0.177        0.703</span></span></code></pre></div>
+<p>And here is the matrix-based equivalent:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">biv_kamp_expectation_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_expectation_biv_mat.html">kamp_expectation_biv_mat</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">biv_data</span>,</span>
+<span>                                                     rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                                     correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                                     markvar1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
+<span>                                                     markvar2 <span class="op">=</span> <span class="st">"immune2"</span>,</span>
+<span>                                                     thin_pct <span class="op">=</span> <span class="fl">0</span></span>
+<span>                                                     <span class="op">)</span></span>
+<span><span class="va">biv_kamp_expectation_mat</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">#&gt;       r     k theo_csr kamp_csr kamp_fundiff</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0      0        0            0      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0      0.007<span style="text-decoration: underline;">85</span>  0.006<span style="text-decoration: underline;">22</span>     -<span style="color: #BB0000;">0.006</span><span style="color: #BB0000; text-decoration: underline;">22</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.125  0.031<span style="text-decoration: underline;">4</span>   0.025<span style="text-decoration: underline;">0</span>       0.099<span style="text-decoration: underline;">6</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.501  0.070<span style="text-decoration: underline;">7</span>   0.101        0.400  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.880  0.126    0.177        0.703</span></span></code></pre></div>
+<p>We can plot the <code>kamp_fundiff</code> values for the bivariate
+point pattern using <code>ggplot</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">biv_kamp_expectation</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">kamp_fundiff</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Distance (r)"</span>, y <span class="op">=</span> <span class="st">"fundiff = K - KAMP CSR"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="my-vignette_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
 </div>
+<div class="section level2">
+<h2 id="variance">Variance<a class="anchor" aria-label="anchor" href="#variance"></a>
+</h2>
+<p>The <code>kamp_variance</code> function calculates the variance of
+KAMP for a given point pattern. The function takes the following
+arguments:</p>
+<ul>
+<li><p><code>ppp</code>: The point pattern object.</p></li>
+<li><p><code>rvec</code>: A vector of distances at which to calculate
+the KAMP variance. Defaults to c(0, 0.05, 0.075, 0.1, 0.15,
+0.2)</p></li>
+<li><p><code>correction</code>: Edge correction method. This can either
+be “iso” or “trans” for isotropic or translation correction,
+respectively. The default is “trans”.</p></li>
+<li><p><code>markvar</code>: Identifies subset of marked points.
+Defaults to immune.</p></li>
+<li><p><code>thin_pct</code>: The percentage of points to thin from the
+point pattern. This is used to reduce the number of points in the
+pattern and speed up the calculation. The default is 0.</p></li>
+</ul>
+<p>The <code>kamp_variance</code> function returns a data frame with the
+following columns:</p>
+<ul>
+<li><p><code>r</code>: The distance at which the KAMP variance was
+calculated.</p></li>
+<li><p><code>K</code>: The KAMP variance value.</p></li>
+<li><p><code>theo_csr</code>: The theoretical CSR value.</p></li>
+<li><p><code>kamp_csr</code>: The KAMP CSR value.</p></li>
+<li><p><code>kamp_fundiff</code>: The difference between K and the KAMP
+CSR.</p></li>
+<li><p><code>var</code>: The variance of the KAMP expectation.</p></li>
+<li><p><code>z</code>: The z-score of the KAMP expectation.</p></li>
+<li><p><code>pval</code>: The p-value of the KAMP expectation.</p></li>
+</ul>
+<p>Note: there is no spatstat equivalent for the variance function.</p>
+<p>Running this code below calculates the KAMP variance for the
+univariate point pattern.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">univ_kamp_variance</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_variance.html">kamp_variance</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">univ_data</span>,</span>
+<span>                                          rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                          correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                          markvar <span class="op">=</span> <span class="st">"immune"</span>,</span>
+<span>                                          thin_pct <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">univ_kamp_variance</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 7</span></span></span>
+<span><span class="co">#&gt;       r       k theo_csr kamp_csr        var       z  pvalue</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0        0        0       0          <span style="color: #BB0000;">NaN</span>     <span style="color: #BB0000;">NaN</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0.008<span style="text-decoration: underline;">28</span>  0.007<span style="text-decoration: underline;">85</span>  0.007<span style="text-decoration: underline;">51</span> 0.000<span style="text-decoration: underline;">003</span>10   0.438   0.331</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.030<span style="text-decoration: underline;">9</span>   0.031<span style="text-decoration: underline;">4</span>   0.030<span style="text-decoration: underline;">0</span>  0.000<span style="text-decoration: underline;">014</span>4    0.229   0.409</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.067<span style="text-decoration: underline;">3</span>   0.070<span style="text-decoration: underline;">7</span>   0.068<span style="text-decoration: underline;">2</span>  0.000<span style="text-decoration: underline;">039</span>7   -<span style="color: #BB0000;">0.134</span>   0.553</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.130    0.126    0.124   0.000<span style="text-decoration: underline;">091</span>0    0.628   0.265</span></span></code></pre></div>
+<p>Here it is for the bivariate point pattern:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">biv_kamp_variance</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kamp_variance_biv.html">kamp_variance_biv</a></span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">biv_data</span>,</span>
+<span>                                       rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>                                       correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
+<span>                                       markvar1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
+<span>                                       markvar2 <span class="op">=</span> <span class="st">"immune2"</span>,</span>
+<span>                                       thin_pct <span class="op">=</span> <span class="fl">0</span></span>
+<span>                                       <span class="op">)</span></span>
+<span></span>
+<span><span class="va">biv_kamp_variance</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 7</span></span></span>
+<span><span class="co">#&gt;       r     k theo_csr kamp_csr      var       z        pvalue</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0    0      0        0       0        <span style="color: #BB0000;">NaN</span>     <span style="color: #BB0000;">NaN</span>          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.05 0      0.007<span style="text-decoration: underline;">85</span>  0.006<span style="text-decoration: underline;">22</span> 0.000<span style="text-decoration: underline;">731</span>  -<span style="color: #BB0000;">0.230</span>   0.591      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.1  0.125  0.031<span style="text-decoration: underline;">4</span>   0.025<span style="text-decoration: underline;">0</span>  0.002<span style="text-decoration: underline;">93</span>    1.84    0.033<span style="text-decoration: underline;">0</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.501  0.070<span style="text-decoration: underline;">7</span>   0.101   0.012<span style="text-decoration: underline;">0</span>     3.65    0.000<span style="text-decoration: underline;">132</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.880  0.126    0.177   0.021<span style="text-decoration: underline;">7</span>     4.77    0.000<span style="text-decoration: underline;">000</span>916</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
