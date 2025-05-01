@@ -72,7 +72,6 @@ We can plot this using `ggplot`:
 as_tibble(univ_data) %>%
     ggplot(aes(x,y, color = marks)) +
     geom_point()
-
 ```
 
 ## Bivariate
