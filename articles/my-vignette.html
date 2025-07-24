@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Introduction to kperm • kperm</title>
+<title>Introduction to kamp • kamp</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to kperm">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to kamp">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -18,7 +18,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">kperm</a>
+    <a class="navbar-brand me-2" href="../index.html">kamp</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/my-vignette.html">Introduction to kperm</a></li>
+<li><a class="dropdown-item" href="../articles/my-vignette.html">Introduction to kamp</a></li>
   </ul>
 </li>
       </ul>
@@ -54,7 +54,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Introduction to kperm</h1>
+      <h1>Introduction to kamp</h1>
             
       
 
@@ -66,12 +66,12 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Hello and welcome to the <code>kperm</code> package! This package is
+<p>Hello and welcome to the <code>kamp</code> package! This package is
 designed to calculate the expectation and variance of KAMP (K adjustment
 by Analytical Moments of the Permutation distribution) for point
 patterns with marks. The package is partially built on the
 <code>spatstat</code> package, which is a powerful tool for analyzing
-spatial data in R. The <code>kperm</code> package provides functions to
+spatial data in R. The <code>kamp</code> package provides functions to
 simulate point patterns, calculate the KAMP CSR, and visualize the
 results. The package is designed to be user-friendly and easy to use,
 with a focus on providing clear and concise output. The package is still
@@ -83,15 +83,15 @@ reach out to us.</p>
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/kperm/">kperm</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/kperm/">kamp</a></span><span class="op">)</span></span>
 <span><span class="co">#library(devtools)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── <span style="font-weight: bold;">Attaching core tidyverse packages</span> ──────────────────────── tidyverse 2.0.0 ──</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">dplyr    </span> 1.1.4     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">readr    </span> 2.1.5</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">forcats  </span> 1.0.0     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">stringr  </span> 1.5.1</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">ggplot2  </span> 3.5.2     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tibble   </span> 3.2.1</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">ggplot2  </span> 3.5.2     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tibble   </span> 3.3.0</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">lubridate</span> 1.9.4     <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">tidyr    </span> 1.3.1</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">purrr    </span> 1.0.4     </span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">purrr    </span> 1.1.0     </span></span>
 <span><span class="co">#&gt; ── <span style="font-weight: bold;">Conflicts</span> ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
 <span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">dplyr</span>::<span style="color: #00BB00;">filter()</span> masks <span style="color: #0000BB;">stats</span>::filter()</span></span>
 <span><span class="co">#&gt; <span style="color: #BB0000;">✖</span> <span style="color: #0000BB;">dplyr</span>::<span style="color: #00BB00;">lag()</span>    masks <span style="color: #0000BB;">stats</span>::lag()</span></span>
@@ -99,10 +99,10 @@ reach out to us.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://spatstat.org/" class="external-link">spatstat.random</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: spatstat.data</span></span>
 <span><span class="co">#&gt; Loading required package: spatstat.univar</span></span>
-<span><span class="co">#&gt; spatstat.univar 3.1-2</span></span>
+<span><span class="co">#&gt; spatstat.univar 3.1-4</span></span>
 <span><span class="co">#&gt; Loading required package: spatstat.geom</span></span>
-<span><span class="co">#&gt; spatstat.geom 3.3-6</span></span>
-<span><span class="co">#&gt; spatstat.random 3.3-3</span></span>
+<span><span class="co">#&gt; spatstat.geom 3.5-0</span></span>
+<span><span class="co">#&gt; spatstat.random 3.4-1</span></span>
 <span><span class="co">#devtools::load_all()</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -377,6 +377,77 @@ univariate point pattern.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.15 0.501  0.070<span style="text-decoration: underline;">7</span>   0.101   0.012<span style="text-decoration: underline;">0</span>     3.65    0.000<span style="text-decoration: underline;">132</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.2  0.880  0.126    0.177   0.021<span style="text-decoration: underline;">7</span>     4.77    0.000<span style="text-decoration: underline;">000</span>916</span></span></code></pre></div>
 </div>
+<div class="section level2">
+<h2 id="ovarian-dataset">Ovarian Dataset<a class="anchor" aria-label="anchor" href="#ovarian-dataset"></a>
+</h2>
+<p>The <code>ovarian_df</code> dataset is a point pattern dataset that
+contains the x and y coordinates of ovarian cancer cells, as well as the
+sample ID and the mark variable. The mark variable indicates whether the
+cell is an immune cell or a background cell.</p>
+<p>The <code>ovarian_df</code> dataset is a small dataframe that
+contains a snapshot of 5 images of ovarian cancer cells from the
+<code>HumanOvarianCancerVP()</code> dataset in the
+<code>VectraPolarisData</code> package.</p>
+<p>. Each image is represented by a unique sample ID, and the x and y
+coordinates of the cells are provided in the <code>x</code> and
+<code>y</code> columns, respectively. The <code>marks</code> column
+contains the mark variable, which indicates whether the cell is an
+immune cell or a background cell.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   cell_id                                           sample_id       x       y</span></span>
+<span><span class="co">#&gt; 1       1 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20592.9 34524.4</span></span>
+<span><span class="co">#&gt; 2       2 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20859.3 34524.4</span></span>
+<span><span class="co">#&gt; 3       3 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20591.4 34530.4</span></span>
+<span><span class="co">#&gt; 4       4 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20744.7 34528.9</span></span>
+<span><span class="co">#&gt; 5       5 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20419.8 34540.8</span></span>
+<span><span class="co">#&gt; 6       6 030120 P9HuP6 TMA 1-B_Core[1,1,H]_[20633,35348].im3 20741.7 34542.3</span></span>
+<span><span class="co">#&gt;       immune tissue_category              slide_id phenotype_cd68</span></span>
+<span><span class="co">#&gt; 1 background           Tumor 030120 P9HuP6 TMA 1-B               </span></span>
+<span><span class="co">#&gt; 2 background           Tumor 030120 P9HuP6 TMA 1-B               </span></span>
+<span><span class="co">#&gt; 3 background           Tumor 030120 P9HuP6 TMA 1-B          CD68-</span></span>
+<span><span class="co">#&gt; 4 background           Tumor 030120 P9HuP6 TMA 1-B          CD68-</span></span>
+<span><span class="co">#&gt; 5 background           Tumor 030120 P9HuP6 TMA 1-B          CD68-</span></span>
+<span><span class="co">#&gt; 6 background           Tumor 030120 P9HuP6 TMA 1-B          CD68-</span></span>
+<span><span class="co">#&gt;   phenotype_ki67 phenotype_ck phenotype_cd19 phenotype_p_stat3 phenotype_cd3</span></span>
+<span><span class="co">#&gt; 1                                                                           </span></span>
+<span><span class="co">#&gt; 2                                                                           </span></span>
+<span><span class="co">#&gt; 3          Ki67-          CK+          CD19-           pStat3-          CD3-</span></span>
+<span><span class="co">#&gt; 4          Ki67-          CK+          CD19-           pStat3-          CD3-</span></span>
+<span><span class="co">#&gt; 5          Ki67-          CK-          CD19-           pStat3-          CD3-</span></span>
+<span><span class="co">#&gt; 6          Ki67-          CK+          CD19-           pStat3-          CD3-</span></span>
+<span><span class="co">#&gt;   phenotype_cd8    ck  ki67   cd8  ier3 pstat3   cd3  cd68  cd19   dapi</span></span>
+<span><span class="co">#&gt; 1               0.767 0.310 0.780 0.147  0.103 0.429 0.509 0.000  4.557</span></span>
+<span><span class="co">#&gt; 2               0.130 0.252 0.919 0.105  0.010 0.811 0.195 0.000 13.844</span></span>
+<span><span class="co">#&gt; 3          CD8- 1.324 0.128 0.586 0.167  0.127 0.316 0.724 0.000  5.979</span></span>
+<span><span class="co">#&gt; 4          CD8- 0.815 0.122 0.538 0.142  0.063 0.399 0.519 0.000  4.868</span></span>
+<span><span class="co">#&gt; 5          CD8- 0.150 0.147 0.498 0.094  0.083 0.285 0.482 0.042  4.127</span></span>
+<span><span class="co">#&gt; 6          CD8- 1.126 0.245 0.462 0.169  0.050 0.366 0.382 0.000  6.514</span></span>
+<span><span class="co">#&gt;   phenotype</span></span>
+<span><span class="co">#&gt; 1     other</span></span>
+<span><span class="co">#&gt; 2     other</span></span>
+<span><span class="co">#&gt; 3     tumor</span></span>
+<span><span class="co">#&gt; 4     tumor</span></span>
+<span><span class="co">#&gt; 5     other</span></span>
+<span><span class="co">#&gt; 6     tumor</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ids</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">$</span><span class="va">sample_id</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ovarian_df</span> <span class="op">&lt;-</span> <span class="va">ovarian_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sample_id</span> <span class="op">==</span> <span class="va">ids</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="va">marksvar</span> <span class="op">=</span> <span class="st">"immune"</span></span>
+<span><span class="va">w</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/convexhull.xy.html" class="external-link">convexhull.xy</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">[[</span><span class="st">"x"</span><span class="op">]</span><span class="op">]</span>, <span class="va">ovarian_df</span><span class="op">[[</span><span class="st">"y"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">pp_obj_ovarian</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">[[</span><span class="st">"x"</span><span class="op">]</span><span class="op">]</span>, <span class="va">ovarian_df</span><span class="op">[[</span><span class="st">"y"</span><span class="op">]</span><span class="op">]</span>, window <span class="op">=</span> <span class="va">w</span>, marks <span class="op">=</span> <span class="va">ovarian_df</span><span class="op">[[</span><span class="va">marksvar</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">pp_obj_ovarian</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>, color <span class="op">=</span> <span class="va">marks</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Ovarian Cancer Cells"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="my-vignette_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
@@ -388,7 +459,7 @@ univariate point pattern.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
