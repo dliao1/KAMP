@@ -1,8 +1,8 @@
 ---
-title: "Introduction to kperm"
+title: "Introduction to kamp"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to kperm}
+  %\VignetteIndexEntry{Introduction to kamp}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,14 +15,14 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
-Hello and welcome to the `kperm` package! 
+Hello and welcome to the `kamp` package! 
 This package is designed to calculate the expectation and variance of KAMP (K adjustment by Analytical Moments of the Permutation distribution) for point patterns with marks. The package is partially built on the `spatstat` package, which is a powerful tool for analyzing spatial data in R.
-The `kperm` package provides functions to simulate point patterns, calculate the KAMP CSR, and visualize the results. The package is designed to be user-friendly and easy to use, with a focus on providing clear and concise output.
+The `kamp` package provides functions to simulate point patterns, calculate the KAMP CSR, and visualize the results. The package is designed to be user-friendly and easy to use, with a focus on providing clear and concise output.
 The package is still in development, and we welcome any feedback or suggestions for improvement. If you have any questions or issues, please feel free to reach out to us.
 
 # Setup
 ```{r}
-library(kperm)
+library(kamp)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
@@ -256,7 +256,7 @@ The `ovarian_df` dataset is a small dataframe that contains a snapshot of 5 imag
 
 ```{r}
 data(ovarian_df)
-hea
+head(ovarian_df)
 
 ```
 

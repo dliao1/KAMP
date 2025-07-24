@@ -29,7 +29,7 @@ patient_level_ovarian <- metadata(spe_ovarian)$clinical_data %>%
   # create binary stage variable
   dplyr::mutate(stage_bin = ifelse(stage %in% c("1", "2"), 0, 1))
 
-ovarian <- as.data.frame(cbind(colData_df,
+ovarian_df <- as.data.frame(cbind(colData_df,
                                spatialCoords_df,
                                t(intensities_df),
                                t(nucleus_intensities_df),
@@ -63,14 +63,14 @@ ovarian <- as.data.frame(cbind(colData_df,
 rm(spe_ovarian, assays_slot, intensities_df, nucleus_intensities_df, membrane_intensities_df, colData_df, spatialCoords_df)
 
 
-ovarian = ovarian %>% filter(tissue_category == "Tumor")
+ovarian_df = ovarian_df %>% filter(tissue_category == "Tumor")
 sample_index = c(15, 5, 11, 8, 9)
-ids = unique(ovarian$sample_id)
+ids = unique(ovarian_df$sample_id)
 
-ovarian = ovarian %>%
-  filter(sample_id %in% ids[sample_index])
+ovarian_df = ovarian_df %>%
+  filter(sample_id %in% ids[sample_index]) %>%
+  select(cell_id, sample_id, x, y, immune, phenotype)
 
-ovarian_df = ovarian
 #marksvar = "immune"
 
 #w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])

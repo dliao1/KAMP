@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(kperm)
+library(kamp)
 
-test_check("kperm")
+test_check("kamp")
