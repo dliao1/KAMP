@@ -12,4 +12,4 @@
 #'
 #' @source Subset of `HumanOvarianCancerVP()` from the VectraPolarisData package.
 #'
-"pp_obj_ovarian"
+"ovarian_df"

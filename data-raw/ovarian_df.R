@@ -9,10 +9,6 @@ suppressPackageStartupMessages(library(tictoc))
 suppressPackageStartupMessages(library(purrr))
 set.seed(3000)
 
-
-# Load the data
-sample_index = 1
-
 # load data from VectraPolarisData package and process here
 spe_ovarian <- HumanOvarianCancerVP()
 
@@ -54,25 +50,34 @@ ovarian <- as.data.frame(cbind(colData_df,
   dplyr::filter(sample_id %in% patient_level_ovarian$sample_id) %>%
   mutate(immune = ifelse(phenotype_cd19 == "CD19+" | phenotype_cd8 == "CD8+" |
                            phenotype_cd3 == "CD3+" | phenotype_cd68 == "CD68+", "immune", "background"),
-         immune = factor(immune, levels = c("immune", "background"))) %>%
+         immune = factor(immune, levels = c("immune", "background")),
+         phenotype = case_when(phenotype_cd19 == "CD19+" ~ "b cell",
+                               phenotype_cd8 == "CD8+" ~ "cytotoxic t cell",
+                               phenotype_cd3 == "CD3+" ~ "helper t cell",
+                               phenotype_cd68 == "CD68+" ~ "macrophage",
+                               phenotype_ck == "CK+" ~ "tumor",
+                               TRUE ~ "other"),
+         phenotype = factor(phenotype)) %>%
   select(cell_id, sample_id, x, y, immune, tissue_category, everything())
 
 rm(spe_ovarian, assays_slot, intensities_df, nucleus_intensities_df, membrane_intensities_df, colData_df, spatialCoords_df)
 
 
 ovarian = ovarian %>% filter(tissue_category == "Tumor")
-sample_index = 1
+sample_index = c(15, 5, 11, 8, 9)
 ids = unique(ovarian$sample_id)
 
 ovarian = ovarian %>%
-  filter(sample_id == ids[sample_index])
+  filter(sample_id %in% ids[sample_index])
 
-marksvar = "immune"
+ovarian_df = ovarian
+#marksvar = "immune"
 
-w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])
-pp_obj_ovarian = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])
+#w = convexhull.xy(ovarian[["x"]], ovarian[["y"]])
+#pp_obj_ovarian = ppp(ovarian[["x"]], ovarian[["y"]], window = w, marks = ovarian[[marksvar]])
 
 # Save the data
 
 
-usethis::use_data(pp_obj_ovarian, overwrite = TRUE)
+usethis::use_data(ovarian_df, overwrite = TRUE)
+

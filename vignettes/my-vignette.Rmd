@@ -246,5 +246,35 @@ biv_kamp_variance <- kamp_variance_biv(ppp_obj = biv_data,
 biv_kamp_variance
 ```
 
+# Ovarian Dataset
+The `ovarian_df` dataset is a point pattern dataset that contains the x and y coordinates of ovarian cancer cells, as well as the sample ID and the mark variable. The mark variable indicates whether the cell is an immune cell or a background cell.
+
+The `ovarian_df` dataset is a small dataframe that contains a snapshot of 5 images of ovarian cancer cells from the `HumanOvarianCancerVP()` dataset in the `VectraPolarisData` package. 
+
+. Each image is represented by a unique sample ID, and the x and y coordinates of the cells are provided in the `x` and `y` columns, respectively. The `marks` column contains the mark variable, which indicates whether the cell is an immune cell or a background cell.
+
+
+```{r}
+data(ovarian_df)
+hea
+
+```
+
+```{r}
+ids = unique(ovarian_df$sample_id)
+
+ovarian_df <- ovarian_df %>% filter(sample_id == ids[[1]])
+
+
+marksvar = "immune"
+w = convexhull.xy(ovarian_df[["x"]], ovarian_df[["y"]])
+pp_obj_ovarian = ppp(ovarian_df[["x"]], ovarian_df[["y"]], window = w, marks = ovarian_df[[marksvar]])
+
+as_tibble(pp_obj_ovarian) %>%
+    ggplot(aes(x,y, color = marks)) +
+    geom_point() +
+    labs(title = "Ovarian Cancer Cells") +
+    theme_minimal()
+```
 
 
