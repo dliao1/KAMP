@@ -8,8 +8,8 @@ kamp_variance_biv_helper(
   ppp_obj,
   rvalue,
   correction = "trans",
-  markvar1 = "immune1",
-  markvar2 = "immune2"
+  marksvar1 = "immune1",
+  marksvar2 = "immune2"
 )
 }
 \arguments{
@@ -19,9 +19,9 @@ kamp_variance_biv_helper(
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
+\item{marksvar1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
 
-\item{markvar2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
+\item{marksvar2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
 }
 \value{
 A single-row dataframe with the following columns:
@@ -31,7 +31,6 @@ A single-row dataframe with the following columns:
 \item{theo_csr}{The theoretical K under CSR}
 \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
 \item{var}{Variance of K under the permutation null distribution}
-\item{z}{Z statistic, calculated by normalizing K using the formula: (K - KAMP)/sqrt(var)}
 \item{pval}{P-value, calculated using the formula: pnorm(-z)}
 }
 }

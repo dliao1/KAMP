@@ -2,7 +2,6 @@
 % Please edit documentation in R/kperm-package.R
 \docType{package}
 \name{kamp-package}
-\alias{kamp}
 \alias{kamp-package}
 \title{kamp: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns}
 \description{
@@ -11,12 +10,18 @@ Provides functions to calculate KAMP, a more robust and scalable K-statistic for
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://dliao1.github.io/kperm/}
+  \item \url{https://dliao1.github.io/kamp/}
 }
 
 }
 \author{
 \strong{Maintainer}: Daisy Liao \email{daisy.liao@emory.edu} (\href{https://orcid.org/0009-0006-3449-475X}{ORCID})
+
+Authors:
+\itemize{
+  \item Alex Soupir \email{alex.soupir@moffitt.org} (\href{https://orcid.org/0000-0003-1251-9179}{ORCID})
+  \item Julia Wrobel \email{julia.wrobel@emory.edu} (\href{https://orcid.org/0000-0001-6783-1421}{ORCID})
+}
 
 }
 \keyword{internal}

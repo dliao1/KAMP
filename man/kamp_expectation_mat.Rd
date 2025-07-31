@@ -6,22 +6,22 @@
 \usage{
 kamp_expectation_mat(
   ppp_obj,
-  rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
+  rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar = "immune",
-  thin_pct = 0
+  marksvar1 = "immune",
+  p_thin = 0
 )
 }
 \arguments{
 \item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
 
-\item{rvec}{A vector of radii at which to calculate the KAMP expectation.}
+\item{rvals}{A vector of radii at which to calculate the KAMP expectation.}
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
+\item{marksvar1}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
 
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.}
+\item{p_thin}{Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.}
 }
 \value{
 A dataframe with the following columns:
@@ -60,7 +60,7 @@ pp <- spatstat.random::rpoispp(lambda = 100, win = win)
 marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
 marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 # compute KAMP expectation using matrix method
-kamp_result_mat <- kamp_expectation_mat(marked_pp, markvar = "immune")
+kamp_result_mat <- kamp_expectation_mat(marked_pp, marksvar1 = "immune")
 print(kamp_result_mat)
 }
 }

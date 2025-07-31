@@ -6,22 +6,19 @@
 \usage{
 kamp_expectation(
   ppp_obj,
-  rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
+  rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar = "immune",
-  thin_pct = 0
+  marksvar1 = "immune"
 )
 }
 \arguments{
 \item{ppp_obj}{A point pattern object from the \code{spatstat.geom} package.}
 
-\item{rvec}{Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
+\item{rvals}{Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
 
 \item{correction}{Type of edge correction method to be used and passed to \code{Kcross} and \code{Kest}. Defaults to translational edge correction.}
 
-\item{markvar}{Identifies subset of marked points. Defaults to immune.}
-
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.}
+\item{marksvar1}{Identifies subset of marked points. Defaults to immune.}
 }
 \value{
 A dataframe with the following columns:
@@ -30,7 +27,7 @@ A dataframe with the following columns:
 \item{k}{The observed K value from \code{Kcross}}
 \item{theo_csr}{The theoretical K under CSR from \code{Kcross}}
 \item{kamp_csr}{The adjusted CSR representing the permuted expectation.}
-\item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+\item{kamp}{The difference between observed K and KAMP CSR}
 }
 }
 \description{
@@ -66,7 +63,7 @@ if (requireNamespace("spatstat.geom", quietly = TRUE)) {
   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 
   # computes KAMP expectation
-  kamp_result <- kamp_expectation(marked_pp, markvar = "immune")
+  kamp_result <- kamp_expectation(marked_pp, marksvar1 = "immune")
   print(kamp_result)
 }
 }

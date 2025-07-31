@@ -72,16 +72,6 @@ kamp_expectation_biv <- function(ppp_obj,
                              markvar2 = "immune2",
                              thin_pct = 0) {
 
-  check_valid_inputs_biv(ppp_obj = ppp_obj,
-                         rvec = rvec,
-                         correction = correction,
-                         markvar1 = markvar1,
-                         markvar2 = markvar2,
-                         thin_pct = thin_pct)
-
-  if (thin_pct != 0) {
-    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
-  }
 
   k_orig = Kcross(ppp_obj, i = markvar1, j = markvar2,
              r = rvec,
@@ -177,17 +167,6 @@ kamp_expectation_biv_mat <- function(ppp_obj,
                                      markvar1 = "immune1",
                                      markvar2 = "immune2",
                                      thin_pct = 0) {
-
-  check_valid_inputs_biv(ppp_obj = ppp_obj,
-                         rvec = rvec,
-                         correction = correction,
-                         markvar1 = markvar1,
-                         markvar2 = markvar2,
-                         thin_pct = thin_pct)
-
-  if (thin_pct != 0) {
-    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
-  }
 
   map_dfr(rvec,
           ~kamp_expectation_biv_mat_helper(ppp_obj = ppp_obj,

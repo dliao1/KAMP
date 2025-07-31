@@ -6,22 +6,19 @@
 \usage{
 kamp_variance(
   ppp_obj,
-  rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
+  rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar = "immune",
-  thin_pct = 0
+  marksvar1 = "immune"
 )
 }
 \arguments{
 \item{ppp_obj}{A point pattern object of class "ppp" from the spatstat package.}
 
-\item{rvec}{A vector of radii at which to calculate the KAMP variance.}
+\item{rvals}{A vector of radii at which to calculate the KAMP variance.}
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object. Default is "immune".}
-
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object.}
+\item{marksvar1}{The variable used to mark the points in the point pattern object. Default is "immune".}
 }
 \value{
 A dataframe with the following columns:
@@ -30,9 +27,8 @@ A dataframe with the following columns:
 \item{k}{The observed K value}
 \item{theo_csr}{The theoretical K under CSR}
 \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-\item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+\item{kamp}{The difference between observed K and KAMP CSR}
 \item{var}{Variance of K under the permutation null distribution}
-\item{z}{Z statistic, calculated by normalizing K using the formula: (K - KAMP)/sqrt(var)}
 \item{pval}{P-value, calculated using the formula: pnorm(-z)}
 }
 }
@@ -58,7 +54,7 @@ if (requireNamespace("spatstat.geom", quietly = TRUE)) {
   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 
   # computes KAMP variance
-  kamp_result <- kamp_variance(marked_pp, markvar = "immune")
+  kamp_result <- kamp_variance(marked_pp, marksvar1 = "immune")
   print(kamp_result)
 }
 }

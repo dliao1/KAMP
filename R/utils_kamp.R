@@ -229,3 +229,97 @@ check_valid_inputs_univ <- function(ppp_obj,
 
 }
 
+
+#' Title
+#'
+#' @param ppp_obj
+#' @param rvals
+#' @param univariate
+#' @param marksvar1
+#' @param marksvar2
+#' @param variance
+#' @param thin
+#' @param p_thin
+#' @param background
+#' @param ...
+#'
+#' @returns
+#' @keywords internal
+#'
+check_inputs <- function(ppp_obj,
+                         rvals,
+                         univariate,
+                         correction,
+                         marksvar1,
+                         marksvar2,
+                         variance,
+                         thin,
+                         p_thin,
+                         background,...) {
+
+  # Makes sure ppp_obj is not NULL
+  if (is.null(ppp_obj)) {
+    stop("The point pattern object cannot be NULL.")
+  }
+
+  # Check if rvec is numeric
+  if (!is.numeric(rvals) || any(rvals < 0)) {
+    stop("rvec must be numeric and 0 or more")
+  }
+
+  # Check if correction is translational or isotropic - default to trans maybe?
+  if (correction %in% c("trans", "iso") == FALSE) {
+    stop("Currently only isotropic and translational edge correction are supported.")
+  }
+
+  # Ensure there are marks
+  if (is.null(ppp_obj$marks)) {
+    stop("The point pattern object must have marks.")
+  }
+
+  if (!is.logical(thin)) {
+    stop("Argument 'thin' must be TRUE or FALSE.")
+  }
+
+  if (thin == TRUE) {
+    # Check if p_thin is numeric
+    if (!is.numeric(p_thin)) {
+      stop("p_thin must be numeric.")
+    }
+
+    # Check if p_thin is between 0 and 1
+    if (p_thin < 0 || p_thin > 1) {
+      stop("p_thin must be between 0 and 1.")
+    }
+
+    # Lets user know that variance = TRUE with KAMP lite is not supported
+    if (variance == TRUE) {
+      message("Variance calculation is not supported with KAMP lite")
+    }
+  }
+
+
+  if (univariate == TRUE) {
+    all_marks <- unique(marks(ppp_obj))
+
+    if (!is.null(marksvar1) && !(marksvar1 %in% all_marks)) {
+      stop(paste0("marksvar1 ('", marksvar1, "') not found in point pattern marks."))
+    }
+  } else { #must be bivariate
+    all_marks <- unique(marks(ppp_obj))
+
+    if (!is.null(marksvar1) && !(marksvar1 %in% all_marks)) {
+      stop(paste0("marksvar1 ('", marksvar1, "') not found in point pattern marks."))
+    }
+
+    if (!is.null(marksvar2) && !(marksvar2 %in% all_marks)) {
+      stop(paste0("marksvar2 ('", marksvar2, "') not found in point pattern marks."))
+    }
+
+    if (is.null(marksvar1) || is.null(marksvar2)) {
+      stop("Both marksvar1 and marksvar2 must be specified for bivariate KAMP.")
+    }
+  }
+
+  return(TRUE)
+}

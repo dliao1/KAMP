@@ -6,7 +6,17 @@ Authors@R:
            family = "Liao",
            email = "daisy.liao@emory.edu",
            role = c("aut", "cre"),
-           comment = c(ORCID = "0009-0006-3449-475X")))
+           comment = c(ORCID = "0009-0006-3449-475X")),
+      person(given = "Alex",
+           family = "Soupir",
+           email = "alex.soupir@moffitt.org",
+           role = c("aut"),
+           comment = c(ORCID = "0000-0003-1251-9179")),
+      person(given = "Julia",
+           family = "Wrobel",
+           email = "julia.wrobel@emory.edu",
+           role = c("aut"),
+           comment = c(ORCID = "0000-0001-6783-1421")))
 Description: Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -37,4 +47,4 @@ VignetteBuilder:
     rmarkdown
 Config/testthat/edition: 3
 Remotes: FridleyLab/scSpatialSIM
-URL: https://dliao1.github.io/kperm/
+URL: https://dliao1.github.io/kamp/

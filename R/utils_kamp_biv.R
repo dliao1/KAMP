@@ -8,8 +8,8 @@
 #' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
 #' @param rvalue A single radius
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
+#' @param marksvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
+#' @param marksvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
 #'
 #' @returns
 #' A single-row dataframe with the following columns:
@@ -18,7 +18,7 @@
 #'  \item{k}{The observed K value}
 #'  \item{theo_csr}{The theoretical K under CSR}
 #'  \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-#'  \item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+#'  \item{kamp}{The difference between observed K and KAMP CSR}
 #' }
 #'
 #' @importFrom spatstat.explore Kcross Kest edge.Trans edge.Ripley
@@ -36,8 +36,8 @@
 kamp_expectation_biv_mat_helper <- function(ppp_obj,
                                             rvalue,
                                             correction = "trans",
-                                            markvar1 = "immune1",
-                                            markvar2 = "immune2") {
+                                            marksvar1 = "immune1",
+                                            marksvar2 = "immune2") {
 
   npts = npoints(ppp_obj)
   W = Window(ppp_obj)
@@ -64,10 +64,10 @@ kamp_expectation_biv_mat_helper <- function(ppp_obj,
   R0 = sum(Wr)
 
   # Compute expectation
-  m1 = sum(ppp_obj$marks == markvar1)
-  m2 = sum(ppp_obj$marks == markvar2)
+  m1 = sum(ppp_obj$marks == marksvar1)
+  m2 = sum(ppp_obj$marks == marksvar2)
 
-  Kmat = Wr[which(ppp_obj$marks == markvar1),which(ppp_obj$marks == markvar2)]
+  Kmat = Wr[which(ppp_obj$marks == marksvar1),which(ppp_obj$marks == marksvar2)]
   K = areaW * sum(Kmat) / m1 / m2 # Ripley's K based on translation correction
   mu_K = areaW * R0/npts / (npts-1) # expectation
 
@@ -76,7 +76,7 @@ kamp_expectation_biv_mat_helper <- function(ppp_obj,
     k = K,
     theo_csr = pi * rvalue^2, # theoretical CSR using area of circle
     kamp_csr = mu_K,
-    kamp_fundiff = k - kamp_csr # difference between K and CSR
+    kamp = k - kamp_csr # difference between K and CSR
   )
 
   return(df)
@@ -92,8 +92,8 @@ kamp_expectation_biv_mat_helper <- function(ppp_obj,
 #' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
 #' @param rvalue A single radius
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
+#' @param marksvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
+#' @param marksvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
 #'
 #' @returns
 #' A single-row dataframe with the following columns:
@@ -103,7 +103,6 @@ kamp_expectation_biv_mat_helper <- function(ppp_obj,
 #'  \item{theo_csr}{The theoretical K under CSR}
 #'  \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
 #'  \item{var}{Variance of K under the permutation null distribution}
-#'  \item{z}{Z statistic, calculated by normalizing K using the formula: (K - KAMP)/sqrt(var)}
 #'  \item{pval}{P-value, calculated using the formula: pnorm(-z)}
 #'  }
 #'
@@ -122,8 +121,8 @@ kamp_expectation_biv_mat_helper <- function(ppp_obj,
 kamp_variance_biv_helper <- function(ppp_obj,
                                      rvalue,
                                      correction = "trans",
-                                     markvar1 = "immune1",
-                                     markvar2 = "immune2") {
+                                     marksvar1 = "immune1",
+                                     marksvar2 = "immune2") {
 
   npts = npoints(ppp_obj)
   W = Window(ppp_obj)
@@ -151,14 +150,14 @@ kamp_variance_biv_helper <- function(ppp_obj,
   R2 = sum(rowSums(Wr)^2) - R1
   R3 = R0^2 - 2*R1 - 4*R2
 
-  m1 = sum(ppp_obj$marks == markvar1)
-  m2 = sum(ppp_obj$marks == markvar2)
+  m1 = sum(ppp_obj$marks == marksvar1)
+  m2 = sum(ppp_obj$marks == marksvar2)
   f1 = m1*m2/npts/(npts-1)
   f2 = f1*(m1+m2-2)/(npts-2)
   f3 = f1*(m1-1)*(m2-1)/(npts-2)/(npts-3)
 
 
-  Kmat = Wr[which(ppp_obj$marks == markvar1),which(ppp_obj$marks == markvar2)]
+  Kmat = Wr[which(ppp_obj$marks == marksvar1),which(ppp_obj$marks == marksvar2)]
   K = areaW * sum(Kmat) / m1 / m2 # Ripley's K based on translation correction
   mu_K = areaW * R0/npts / (npts-1) # expectation
   var_K = areaW^2*(R1*f1 + R2*f2 + R3*f3)/m1/m1/m2/m2 - mu_K^2
@@ -172,7 +171,6 @@ kamp_variance_biv_helper <- function(ppp_obj,
     theo_csr = pi * rvalue^2, # theoretical CSR using area of circle
     kamp_csr = mu_K, # K expectation under permutation distributions
     var = var_K,
-    z = Z_k, # test statistic
     pvalue = min(1, pval_appx)
   )
 
@@ -186,8 +184,8 @@ kamp_variance_biv_helper <- function(ppp_obj,
 #' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
 #' @param rvec Vector of radii
 #' @param correction Type of edge correction.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type
+#' @param marksvar1 Variable used to mark the points in the point pattern object for the first type
+#' @param marksvar2 Variable used to mark the points in the point pattern object for the second type
 #' @param thin_pct Thinning percentage
 #'
 #' @returns TRUE only if all the parameter checks pass
@@ -196,8 +194,8 @@ kamp_variance_biv_helper <- function(ppp_obj,
 check_valid_inputs_biv <- function(ppp_obj,
                                    rvec,
                                    correction,
-                                   markvar1,
-                                   markvar2,
+                                   marksvar1,
+                                   marksvar2,
                                    thin_pct) {
   # Makes sure ppp_obj is not NULL
   if (is.null(ppp_obj)) {
@@ -220,17 +218,17 @@ check_valid_inputs_biv <- function(ppp_obj,
   }
 
   # Check if the specified marks are present
-  if (markvar1 %in% levels(ppp_obj$marks) == FALSE) {
-    stop("markvar1 is not a mark in the point pattern object.")
+  if (marksvar1 %in% levels(ppp_obj$marks) == FALSE) {
+    stop("marksvar1 is not a mark in the point pattern object.")
   }
 
-  if (markvar2 %in% levels(ppp_obj$marks) == FALSE) {
-    stop("markvar2 is not a mark in the point pattern object.")
+  if (marksvar2 %in% levels(ppp_obj$marks) == FALSE) {
+    stop("marksvar2 is not a mark in the point pattern object.")
   }
 
   # Check if the specified marks are different
-  if (markvar1 == markvar2) {
-    stop("markvar1 and markvar2 must be different.")
+  if (marksvar1 == marksvar2) {
+    stop("marksvar1 and marksvar2 must be different.")
   }
 
   # Check if thin_pct is numeric

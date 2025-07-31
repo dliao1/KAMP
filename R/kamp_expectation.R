@@ -27,10 +27,9 @@
 #'
 #
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
-#' @param rvec Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
+#' @param rvals Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 #' @param correction Type of edge correction method to be used and passed to `Kcross` and `Kest`. Defaults to translational edge correction.
-#' @param markvar Identifies subset of marked points. Defaults to immune.
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
+#' @param marksvar1 Identifies subset of marked points. Defaults to immune.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -39,7 +38,7 @@
 #'   \item{k}{The observed K value from `Kcross`}
 #'   \item{theo_csr}{The theoretical K under CSR from `Kcross`}
 #'   \item{kamp_csr}{The adjusted CSR representing the permuted expectation.}
-#'   \item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+#'   \item{kamp}{The difference between observed K and KAMP CSR}
 #' }
 #'
 #' @importFrom spatstat.explore Kcross Kest
@@ -60,52 +59,45 @@
 #'   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 #'
 #'   # computes KAMP expectation
-#'   kamp_result <- kamp_expectation(marked_pp, markvar = "immune")
+#'   kamp_result <- kamp_expectation(marked_pp, marksvar1 = "immune")
 #'   print(kamp_result)
 #' }
 kamp_expectation <- function(ppp_obj,
-                             rvec = c(0, .05, .075, .1, .15, .2),
+                             rvals = c(0, .05, .075, .1, .15, .2),
                              correction = "trans",
-                             markvar = "immune",
-                             thin_pct = 0) {
+                             marksvar1 = "immune") {
 
-
-  check_valid_inputs_univ(ppp_obj = ppp_obj,
-                          rvec = rvec,
-                          correction = correction,
-                          markvar = markvar,
-                          thin_pct = thin_pct)
 
 
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
-  k_orig = Kcross(ppp_obj, i = markvar, j = markvar,
-             r = rvec,
+  k_orig = Kcross(ppp_obj, i = marksvar1, j = marksvar1,
+             r = rvals,
              correction = correction)
 
-
-  kamp = Kest(ppp_obj,
-              r = rvec,
+  # Gets KAMP CSR using Kest
+  kamp_df = Kest(ppp_obj,
+              r = rvals,
               correction = correction) %>%
     as_tibble()
 
   if (correction == "trans") {
-    kamp = kamp %>%
+    kamp_df = kamp_df %>%
       mutate(kamp_csr = trans,
              k = k_orig$trans, # takes calculated K from Kcross
              theo_csr = k_orig$theo,
-             kamp_fundiff = k - kamp_csr) %>%
-      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+             kamp = k - kamp_csr) %>% # difference between K and KAMP CSR
+      select(r, k, theo_csr, kamp_csr, kamp)
   } else {
-    kamp = kamp %>%
+    kamp_df = kamp_df %>%
       mutate(kamp_csr = iso,
              k = k_orig$iso, # takes calculated K from Kcross
              theo_csr = k_orig$theo,
-             kamp_fundiff = k - kamp_csr) %>%
-      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
   }
 
-  return(kamp)
+  return(kamp_df)
 }
 
 
@@ -129,10 +121,10 @@ kamp_expectation <- function(ppp_obj,
 #' functions in `spatstat`
 #'
 #' @param ppp_obj  A point pattern object of class "ppp" from the spatstat package.
-#' @param rvec A vector of radii at which to calculate the KAMP expectation.
+#' @param rvals A vector of radii at which to calculate the KAMP expectation.
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param markvar The variable used to mark the points in the point pattern object. Defaults to "immune".
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
+#' @param marksvar1 The variable used to mark the points in the point pattern object. Defaults to "immune".
+#' @param p_thin Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -154,30 +146,21 @@ kamp_expectation <- function(ppp_obj,
 #' marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
 #' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 #' # compute KAMP expectation using matrix method
-#' kamp_result_mat <- kamp_expectation_mat(marked_pp, markvar = "immune")
+#' kamp_result_mat <- kamp_expectation_mat(marked_pp, marksvar1 = "immune")
 #' print(kamp_result_mat)
 #' }
 kamp_expectation_mat = function(ppp_obj,
-                                rvec = c(0, .05, .075, .1, .15, .2),
+                                rvals = c(0, .05, .075, .1, .15, .2),
                                 correction = "trans",
-                                markvar = "immune",
-                                thin_pct = 0) {
+                                marksvar1 = "immune",
+                                p_thin = 0) {
 
-  check_valid_inputs_univ(ppp_obj = ppp_obj,
-                          rvec = rvec,
-                          correction = correction,
-                          markvar = markvar,
-                          thin_pct = thin_pct)
 
-  if (thin_pct != 0) {
-    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
-  }
-
-  map_dfr(rvec,
+  map_dfr(rvals,
           ~kamp_expectation_mat_helper(ppp_obj = ppp_obj,
                                        rvalue = .x,
                                        correction = correction,
-                                       markvar = markvar),
+                                       marksvar1 = marksvar1),
           .progress = TRUE)
 }
 

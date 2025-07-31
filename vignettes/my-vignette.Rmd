@@ -94,187 +94,57 @@ as_tibble(biv_data) %>%
     geom_point()
 ```
 
-# Expectation
-
-The `kamp_expectation` function calculates the expectation of KAMP for a given point pattern. The function takes the following arguments:
-
-- `ppp`: The point pattern object. 
-
-- `rvec`: A vector of distances at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2)
-
-- `correction`: Edge correction method. This can either be "iso" or "trans" for isotropic or translation correction, respectively. The default is "trans".
-
-- `markvar`: Identifies subset of marked points. Defaults to immune.
-
-- `thin_pct`: The percentage of points to thin from the point pattern. This is used to reduce the number of points in the pattern and speed up the calculation. The default is 0.
-
-The `kamp_expectation` function returns a data frame with the following columns:
-
-- `r`: The distance at which the KAMP expectation was calculated.
-
-- `K`: The KAMP expectation value.
-
-- `theo_csr`: The theoretical CSR value.
-
-- `kamp_csr`: The KAMP CSR value.
-
-- `kamp_fundiff`: The difference between K and the KAMP CSR.
-
-Running this code below calculates the KAMP expectation for the univariate point pattern.
-```{r}
-univ_kamp_expectation <- kamp_expectation(ppp_obj = univ_data,
-                                          rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                          correction = "trans",
-                                          markvar = "immune",
-                                          thin_pct = 0)
-
-univ_kamp_expectation
-```
-
-Here is the matrix-based equivalent:
-```{r}
-univ_kamp_expectation_mat <- kamp_expectation_mat(ppp_obj = univ_data,
-                                                  rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                                  correction = "trans",
-                                                  markvar = "immune",
-                                                  thin_pct = 0)
-
-univ_kamp_expectation_mat
-```
-
-We can plot the `kamp_fundiff` values for the univariate point pattern using `ggplot`:
-```{r}
-as_tibble(univ_kamp_expectation) %>%
-    ggplot(aes(r, kamp_fundiff)) +
-    geom_point() +
-    geom_line() +
-    labs(x = "Distance (r)", y = "fundiff = K - KAMP CSR") +
-    theme_minimal()
-```
-
-Likewise, this code calculates the KAMP expectation for the bivariate point pattern.
-```{r}
-biv_kamp_expectation <- kamp_expectation_biv(ppp_obj = biv_data,
-                                             rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                             correction = "trans",
-                                             markvar1 = "immune1",
-                                             markvar2 = "immune2",
-                                             thin_pct = 0
-                                             )
-biv_kamp_expectation
-```
-
-And here is the matrix-based equivalent:
-```{r}
-biv_kamp_expectation_mat <- kamp_expectation_biv_mat(ppp_obj = biv_data,
-                                                     rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                                     correction = "trans",
-                                                     markvar1 = "immune1",
-                                                     markvar2 = "immune2",
-                                                     thin_pct = 0
-                                                     )
-biv_kamp_expectation_mat
-```
-
-We can plot the `kamp_fundiff` values for the bivariate point pattern using `ggplot`:
-```{r}
-as_tibble(biv_kamp_expectation) %>%
-    ggplot(aes(r, kamp_fundiff)) +
-    geom_point() +
-    geom_line() +
-    labs(x = "Distance (r)", y = "fundiff = K - KAMP CSR") +
-    theme_minimal()
-```
-
-
-# Variance
-
-The `kamp_variance` function calculates the variance of KAMP for a given point pattern. The function takes the following arguments:
-
-- `ppp`: The point pattern object.
-
-- `rvec`: A vector of distances at which to calculate the KAMP variance. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2)
-
-- `correction`: Edge correction method. This can either be "iso" or "trans" for isotropic or translation correction, respectively. The default is "trans".
-
-- `markvar`: Identifies subset of marked points. Defaults to immune.
-
-- `thin_pct`: The percentage of points to thin from the point pattern. This is used to reduce the number of points in the pattern and speed up the calculation. The default is 0.
-
-
-The `kamp_variance` function returns a data frame with the following columns:
-
-- `r`: The distance at which the KAMP variance was calculated.
-
-- `K`: The KAMP variance value.
-
-- `theo_csr`: The theoretical CSR value.
-
-- `kamp_csr`: The KAMP CSR value.
-
-- `kamp_fundiff`: The difference between K and the KAMP CSR.
-
-- `var`: The variance of the KAMP expectation.
-
-- `z`: The z-score of the KAMP expectation.
-
-- `pval`: The p-value of the KAMP expectation.
-
-Note: there is no spatstat equivalent for the variance function.
-
-Running this code below calculates the KAMP variance for the univariate point pattern.
-```{r}
-univ_kamp_variance <- kamp_variance(ppp_obj = univ_data,
-                                          rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                          correction = "trans",
-                                          markvar = "immune",
-                                          thin_pct = 0)
-
-univ_kamp_variance
-```
-
-Here it is for the bivariate point pattern:
-```{r}
-biv_kamp_variance <- kamp_variance_biv(ppp_obj = biv_data,
-                                       rvec = c(0, 0.05, 0.1, 0.15, 0.2),
-                                       correction = "trans",
-                                       markvar1 = "immune1",
-                                       markvar2 = "immune2",
-                                       thin_pct = 0
-                                       )
-
-biv_kamp_variance
-```
 
 # Ovarian Dataset
-The `ovarian_df` dataset is a point pattern dataset that contains the x and y coordinates of ovarian cancer cells, as well as the sample ID and the mark variable. The mark variable indicates whether the cell is an immune cell or a background cell.
 
-The `ovarian_df` dataset is a small dataframe that contains a snapshot of 5 images of ovarian cancer cells from the `HumanOvarianCancerVP()` dataset in the `VectraPolarisData` package. 
-
-. Each image is represented by a unique sample ID, and the x and y coordinates of the cells are provided in the `x` and `y` columns, respectively. The `marks` column contains the mark variable, which indicates whether the cell is an immune cell or a background cell.
-
+The `ovarian_df` dataset is a small dataframe that contains a snapshot of 5 images of ovarian cancer cells from the `HumanOvarianCancerVP()` dataset in the `VectraPolarisData` package. Each image is represented by a unique sample ID, and within each image, there are multiple cells with their respective x and y coordinates. The dataset includes an `immune` column that indicates whether the cell is an immune cell or a background cell. There is also a `phenotype` column that indicates the type of immune cell, such as "helper t cells", "cytotoxic t cells", "b cells", or "macrophages". The `x` and `y` columns represent the coordinates of the cells in the image.
 
 ```{r}
 data(ovarian_df)
 head(ovarian_df)
-
 ```
 
+Since we have a datafame of multiple images, let's go through, subset our dataframe
+by image, and plot it.
 ```{r}
-ids = unique(ovarian_df$sample_id)
+ids <- unique(ovarian_df$sample_id)
+marksvar <- "immune"
 
-ovarian_df <- ovarian_df %>% filter(sample_id == ids[[1]])
-
-
-marksvar = "immune"
-w = convexhull.xy(ovarian_df[["x"]], ovarian_df[["y"]])
-pp_obj_ovarian = ppp(ovarian_df[["x"]], ovarian_df[["y"]], window = w, marks = ovarian_df[[marksvar]])
-
-as_tibble(pp_obj_ovarian) %>%
-    ggplot(aes(x,y, color = marks)) +
-    geom_point() +
-    labs(title = "Ovarian Cancer Cells") +
+for (id in ids) {
+  df_sub <- ovarian_df %>% filter(sample_id == id)
+  w <- convexhull.xy(df_sub$x, df_sub$y)
+  pp_obj <- ppp(df_sub$x, df_sub$y, window = w, marks = df_sub[[marksvar]])
+  
+  p <- ggplot(as_tibble(pp_obj), aes(x, y, color = marks)) +
+    geom_point(size = 0.6) +
+    labs(title = paste("Sample:", id)) +
     theme_minimal()
+  
+  print(p)
+}
 ```
 
+# Univariate
+```{r}
 
+# We can use the kamp function to calculate the KAMP CSR for the univariate data
+# Lets first subset to one id
+
+ids <- unique(ovarian_df$sample_id)
+marksvar <- "immune"
+univ_data <- ovarian_df %>% filter(sample_id == ids[1])
+w <- convexhull.xy(univ_data$x, univ_data$y)
+pp_univ_data <- ppp(univ_data$x, univ_data$y, window = w, marks = univ_data[[marksvar]])
+
+
+
+univ_kamp <- kamp(pp_univ_data, 
+                  rvals = c(0, 0.1, 0.2),
+                  univariate = TRUE,
+                  marksvar1 = "immune",
+                  marksvar2 = "background")
+
+univ_kamp
+```
+
+# Bivariate

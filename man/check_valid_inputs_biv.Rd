@@ -4,7 +4,14 @@
 \alias{check_valid_inputs_biv}
 \title{Checks the validity of inputs for bivariate KAMP functions}
 \usage{
-check_valid_inputs_biv(ppp_obj, rvec, correction, markvar1, markvar2, thin_pct)
+check_valid_inputs_biv(
+  ppp_obj,
+  rvec,
+  correction,
+  marksvar1,
+  marksvar2,
+  thin_pct
+)
 }
 \arguments{
 \item{ppp_obj}{A point pattern object "ppp" from the \code{spatstat} package.}
@@ -13,9 +20,9 @@ check_valid_inputs_biv(ppp_obj, rvec, correction, markvar1, markvar2, thin_pct)
 
 \item{correction}{Type of edge correction.}
 
-\item{markvar1}{Variable used to mark the points in the point pattern object for the first type}
+\item{marksvar1}{Variable used to mark the points in the point pattern object for the first type}
 
-\item{markvar2}{Variable used to mark the points in the point pattern object for the second type}
+\item{marksvar2}{Variable used to mark the points in the point pattern object for the second type}
 
 \item{thin_pct}{Thinning percentage}
 }
