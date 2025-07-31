@@ -164,15 +164,7 @@ over a vector of radii.</p>
 <span class="r-in"><span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">kamp_variance_biv</span><span class="op">(</span><span class="va">marked_pp</span>, markvar1 <span class="op">=</span> <span class="st">"immune1"</span>, markvar2 <span class="op">=</span> <span class="st">"immune2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r      k theo_csr kamp_csr        var       z   pvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 0     0       0        0       0          <span style="color: #BB0000;">NaN</span>     <span style="color: #BB0000;">NaN</span>     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 0.05  0.011<span style="text-decoration: underline;">0</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">33</span> 0.000<span style="text-decoration: underline;">002</span>11   1.85    0.032<span style="text-decoration: underline;">0</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0.075 0.020<span style="text-decoration: underline;">3</span>  0.017<span style="text-decoration: underline;">7</span>   0.018<span style="text-decoration: underline;">2</span>  0.000<span style="text-decoration: underline;">004</span>99   0.910   0.181 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 0.1   0.036<span style="text-decoration: underline;">4</span>  0.031<span style="text-decoration: underline;">4</span>   0.032<span style="text-decoration: underline;">1</span>  0.000<span style="text-decoration: underline;">009</span>22   1.40    0.081<span style="text-decoration: underline;">0</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 0.15  0.079<span style="text-decoration: underline;">5</span>  0.070<span style="text-decoration: underline;">7</span>   0.072<span style="text-decoration: underline;">6</span>  0.000<span style="text-decoration: underline;">023</span>1    1.44    0.074<span style="text-decoration: underline;">8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 0.2   0.133   0.126    0.129   0.000<span style="text-decoration: underline;">048</span>3    0.555   0.289 </span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in check_valid_inputs_biv(ppp_obj = ppp_obj, rvec = rvec, correction = correction,     markvar1 = markvar1, markvar2 = markvar2, thin_pct = thin_pct):</span> unused arguments (markvar1 = markvar1, markvar2 = markvar2)</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -180,7 +172,7 @@ over a vector of radii.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Daisy Liao.</p>
+  <p>Developed by Daisy Liao, Alex Soupir, Julia Wrobel.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -82,10 +82,9 @@ points in the point pattern is more than 3000.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kamp_expectation</span><span class="op">(</span></span>
 <span>  <span class="va">ppp_obj</span>,</span>
-<span>  rvec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.075</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>  rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.05</span>, <span class="fl">0.075</span>, <span class="fl">0.1</span>, <span class="fl">0.15</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
 <span>  correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
-<span>  markvar <span class="op">=</span> <span class="st">"immune"</span>,</span>
-<span>  thin_pct <span class="op">=</span> <span class="fl">0</span></span>
+<span>  marksvar1 <span class="op">=</span> <span class="st">"immune"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,7 +96,7 @@ points in the point pattern is more than 3000.</p>
 <dd><p>A point pattern object from the <code>spatstat.geom</code> package.</p></dd>
 
 
-<dt id="arg-rvec">rvec<a class="anchor" aria-label="anchor" href="#arg-rvec"></a></dt>
+<dt id="arg-rvals">rvals<a class="anchor" aria-label="anchor" href="#arg-rvals"></a></dt>
 <dd><p>Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).</p></dd>
 
 
@@ -105,12 +104,8 @@ points in the point pattern is more than 3000.</p>
 <dd><p>Type of edge correction method to be used and passed to <code>Kcross</code> and <code>Kest</code>. Defaults to translational edge correction.</p></dd>
 
 
-<dt id="arg-markvar">markvar<a class="anchor" aria-label="anchor" href="#arg-markvar"></a></dt>
+<dt id="arg-marksvar-">marksvar1<a class="anchor" aria-label="anchor" href="#arg-marksvar-"></a></dt>
 <dd><p>Identifies subset of marked points. Defaults to immune.</p></dd>
-
-
-<dt id="arg-thin-pct">thin_pct<a class="anchor" aria-label="anchor" href="#arg-thin-pct"></a></dt>
-<dd><p>Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -127,7 +122,7 @@ points in the point pattern is more than 3000.</p>
 <dt>kamp_csr</dt>
 <dd><p>The adjusted CSR representing the permuted expectation.</p></dd>
 
-<dt>kamp_fundiff</dt>
+<dt>kamp</dt>
 <dd><p>The difference between observed K and KAMP CSR</p></dd>
 
 
@@ -147,18 +142,18 @@ points in the point pattern is more than 3000.</p>
 <span class="r-in"><span>  <span class="va">marked_pp</span> <span class="op">&lt;-</span> <span class="fu">spatstat.geom</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">pp</span><span class="op">$</span><span class="va">x</span>, <span class="va">pp</span><span class="op">$</span><span class="va">y</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">marks</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># computes KAMP expectation</span></span></span>
-<span class="r-in"><span>  <span class="va">kamp_result</span> <span class="op">&lt;-</span> <span class="fu">kamp_expectation</span><span class="op">(</span><span class="va">marked_pp</span>, markvar <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">kamp_result</span> <span class="op">&lt;-</span> <span class="fu">kamp_expectation</span><span class="op">(</span><span class="va">marked_pp</span>, marksvar1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_result</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       r      k theo_csr kamp_csr kamp_fundiff</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 0     0       0        0            0      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 0.05  0.011<span style="text-decoration: underline;">1</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">54</span>      0.002<span style="text-decoration: underline;">56</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0.075 0.020<span style="text-decoration: underline;">8</span>  0.017<span style="text-decoration: underline;">7</span>   0.018<span style="text-decoration: underline;">2</span>       0.002<span style="text-decoration: underline;">56</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 0.1   0.038<span style="text-decoration: underline;">1</span>  0.031<span style="text-decoration: underline;">4</span>   0.030<span style="text-decoration: underline;">6</span>       0.007<span style="text-decoration: underline;">49</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 0.15  0.076<span style="text-decoration: underline;">8</span>  0.070<span style="text-decoration: underline;">7</span>   0.073<span style="text-decoration: underline;">7</span>       0.003<span style="text-decoration: underline;">16</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 0.2   0.133   0.126    0.129        0.003<span style="text-decoration: underline;">82</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r      k theo_csr kamp_csr    kamp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 0     0       0        0       0      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 0.05  0.011<span style="text-decoration: underline;">1</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">54</span> 0.002<span style="text-decoration: underline;">56</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0.075 0.020<span style="text-decoration: underline;">8</span>  0.017<span style="text-decoration: underline;">7</span>   0.018<span style="text-decoration: underline;">2</span>  0.002<span style="text-decoration: underline;">56</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 0.1   0.038<span style="text-decoration: underline;">1</span>  0.031<span style="text-decoration: underline;">4</span>   0.030<span style="text-decoration: underline;">6</span>  0.007<span style="text-decoration: underline;">49</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 0.15  0.076<span style="text-decoration: underline;">8</span>  0.070<span style="text-decoration: underline;">7</span>   0.073<span style="text-decoration: underline;">7</span>  0.003<span style="text-decoration: underline;">16</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 0.2   0.133   0.126    0.129   0.003<span style="text-decoration: underline;">82</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -166,7 +161,7 @@ points in the point pattern is more than 3000.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Daisy Liao.</p>
+  <p>Developed by Daisy Liao, Alex Soupir, Julia Wrobel.</p>
 </div>
 
 <div class="pkgdown-footer-right">

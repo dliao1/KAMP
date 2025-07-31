@@ -45,8 +45,8 @@
 <span>  <span class="va">ppp_obj</span>,</span>
 <span>  <span class="va">rvalue</span>,</span>
 <span>  correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
-<span>  markvar1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
-<span>  markvar2 <span class="op">=</span> <span class="st">"immune2"</span></span>
+<span>  marksvar1 <span class="op">=</span> <span class="st">"immune1"</span>,</span>
+<span>  marksvar2 <span class="op">=</span> <span class="st">"immune2"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -66,11 +66,11 @@
 <dd><p>Type of edge correction. Defaults to translational.</p></dd>
 
 
-<dt id="arg-markvar-">markvar1<a class="anchor" aria-label="anchor" href="#arg-markvar-"></a></dt>
+<dt id="arg-marksvar-">marksvar1<a class="anchor" aria-label="anchor" href="#arg-marksvar-"></a></dt>
 <dd><p>Variable used to mark the points in the point pattern object for the first type. Default is "immune1".</p></dd>
 
 
-<dt id="arg-markvar-">markvar2<a class="anchor" aria-label="anchor" href="#arg-markvar-"></a></dt>
+<dt id="arg-marksvar-">marksvar2<a class="anchor" aria-label="anchor" href="#arg-marksvar-"></a></dt>
 <dd><p>Variable used to mark the points in the point pattern object for the second type. Default is "immune2".</p></dd>
 
 </dl></div>
@@ -91,9 +91,6 @@
 <dt>var</dt>
 <dd><p>Variance of K under the permutation null distribution</p></dd>
 
-<dt>z</dt>
-<dd><p>Z statistic, calculated by normalizing K using the formula: (K - KAMP)/sqrt(var)</p></dd>
-
 <dt>pval</dt>
 <dd><p>P-value, calculated using the formula: pnorm(-z)</p></dd>
 
@@ -109,7 +106,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Daisy Liao.</p>
+  <p>Developed by Daisy Liao, Alex Soupir, Julia Wrobel.</p>
 </div>
 
 <div class="pkgdown-footer-right">
