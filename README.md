@@ -46,8 +46,8 @@ print(kamp_var_biv)
 ```
 
 # Documentation
-Link to documentation and vignettes: https://dliao1.github.io/kperm/
+Link to documentation and vignettes: https://dliao1.github.io/KAMP/
 
   <!-- badges: start -->
-  [![Codecov test coverage](https://codecov.io/gh/dliao1/kperm/graph/badge.svg)](https://app.codecov.io/gh/dliao1/kperm)
+  [![Codecov test coverage](https://codecov.io/gh/dliao1/kperm/graph/badge.svg)](https://app.codecov.io/gh/dliao1/KAMP)
   <!-- badges: end -->
