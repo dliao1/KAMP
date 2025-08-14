@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
+
 Hello and welcome to the `KAMP` package! 
 This package is designed to calculate the expectation and variance of KAMP (K adjustment by Analytical Moments of the Permutation distribution) for point patterns with marks. The package is partially built on the `spatstat` package, which is a powerful tool for analyzing spatial data in R.
 The `KAMP` package provides functions to simulate point patterns, calculate the KAMP CSR, and visualize the results. The package is designed to be user-friendly and easy to use, with a focus on providing clear and concise output.
@@ -29,71 +30,6 @@ library(spatstat.random)
 #devtools::load_all()
 set.seed(50)
 ```
-
-# Simulating Data
-The `sim_pp_data` function can be used to simulate univariate point patterns, while the `sim_pp_data_biv` function can be used to simulate bivariate point patterns.
-
-The `sim_pp_data` function takes the following arguments:
-
-- `lambda_n`: The number of points to simulate.
-
-- `abundance`: The abundance of the point pattern.
-
-- `markvar1`: The name of the first cell type. Defaults to "immune".
-
-- `markvar2`: The name of the second cell type. Defaults to "background".
-
-- `distribution`: The distribution of the point pattern. This can be either "hom" for homogeneous or "inhom" for inhomogeneous.
-
-- `clust`: A logical value indicating whether to cluster the points or not.
-
-
-The `sim_pp_data_biv` function takes the same arguments as `sim_pp_data`, but also includes an additional argument for the third cell type.
-
-- `markvar3`: The name of the third cell type. Defaults to "background".
-
-The `sim_pp_data` and `sim_pp_data_biv` functions return a `ppp` object, which is a class in the `spatstat` package that represents a point pattern. The `ppp` object contains the x and y coordinates of the points, as well as the marks associated with each point.
-
-## Univariate
-
-```{r}
-univ_data <- sim_pp_data(lambda_n = 200, 
-                    abundance = 0.3,
-                    markvar1 = "immune",
-                    markvar2 = "background",
-                    distribution = "hom",
-                    clust = FALSE)
-
-```
-
-We can plot this using `ggplot`:
-
-```{r}
-as_tibble(univ_data) %>%
-    ggplot(aes(x,y, color = marks)) +
-    geom_point()
-```
-
-## Bivariate
-```{r}
-biv_data <- sim_pp_data_biv(lambda_n = 200, 
-                    abundance = 0.3,
-                    markvar1 = "immune1",
-                    markvar2 = "immune2",
-                    markvar3 = "background",
-                    distribution = "inhom",
-                    clust = TRUE)
-
-```
-
-We can plot this using `ggplot`:
-
-```{r}
-as_tibble(biv_data) %>%
-    ggplot(aes(x,y, color = marks)) +
-    geom_point()
-```
-
 
 # Ovarian Dataset
 
@@ -122,28 +58,74 @@ for (id in ids) {
   print(p)
 }
 ```
+
 # KAMP
+
 Now that we have our data, we can use the `kamp()` function to calculate the KAMP expectation and variance for both univariate and bivariate data.
 
 ## Univariate
 
-We can use the `kamp()` function to calculate the KAMP expectation for univariate data. In this case, we set `univariate = TRUE` and `variance = FALSE` (the default).
+We can use the `kamp()` function to calculate the KAMP expectation for univariate data. 
+
+The `kamp()` function has several parameters that allow us to customize the calculation:
+
+- `ppp_obj`: The point pattern object created using the `ppp()` function from the `spatstat` package.
+
+- `rvals`: A sequence of distances at which to calculate the K function.
+
+- `univariate`: A logical value indicating whether to calculate the univariate K function (default is `TRUE`).
+
+- `marksvar1`: The name of the marks variable for the first mark (required for univariate).
+
+- `marksvar2`: The name of the marks variable for the second mark (optional for univariate).
+
+- `variance`: A logical value indicating whether to calculate the variance (default is `FALSE`).
+
+- `thin`: A logical value indicating whether to use thinning (default is `FALSE`).
+
+- `p_thin`: Percentage to thin by (default is `0.5`).
+
+For univariate data, we only need to specify one marks variable.
+In this case, we set `univariate = TRUE` and `variance = FALSE` (the default).
 
 - `univariate = TRUE` calculates the K function for one mark versus background.
+
 - `variance = FALSE` means we only compute the expectation.
+
 - `correction` uses translational correction by default.
 
-### Expectation
+### Subsetting Data
+
+To perform univariate analysis, we can subset our `ovarian_df` dataframe to include only the first image ID and the `immune` marks variable.
 
 ```{r}
-# Subsets to first image ID
 ids <- unique(ovarian_df$sample_id)
-marksvar <- "immune"
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
+marksvar <- "immune"
 head(univ_data)
 w <- convexhull.xy(univ_data$x, univ_data$y)
 pp_univ_data <- ppp(univ_data$x, univ_data$y, window = w, marks = univ_data[[marksvar]])
+```
 
+### Expectation
+
+We can now calculate the KAMP expectation for the univariate data using the `kamp()` function.
+What we are doing here is calculating the KAMP expectation for the `immune` marks variable against the background cells, using a sequence of distances from 0 to 100 with a step of 10. Furthermore, we use the option `univariate = TRUE` and specify the marks variable for the first mark as `marksvar1 = "immune"` - we are not setting `marksvar2` since we are only interested in the univariate case.
+
+What's returned is a data frame with the following columns:
+
+- `r`: The distance at which the K function is calculated.
+
+- `k`: The K function value.
+
+- `theo_csr`: The theoretical CSR (Complete Spatial Randomness) value.
+
+- `kamp_csr`: The KAMP CSR value.
+
+- `kamp`: The difference between K and the KAMP CSR.
+
+
+```{r}
 univ_kamp <- kamp(pp_univ_data, 
                   rvals = seq(0, 100, by = 10),
                   univariate = TRUE,
@@ -152,24 +134,28 @@ univ_kamp <- kamp(pp_univ_data,
 univ_kamp
 ```
 
+
+We can visualize KAMP using `ggplot2`. Plotted here is the original K from translational edge correctionm, the theoretical CSR, and the KAMP CSR. The KAMP CSR is the expected value of K under the null hypothesis of CSR, which is calculated using the analytical moments of the permutation distribution.
+
+
 ```{r}
 univ_kamp %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
-  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), size = 1) +
+  geom_line(aes(y = kamp_csr, color = "kamp_csr", linetype = "kamp_csr"), size = 1) +
   geom_line(aes(y = k, color = "k", linetype = "k"), size = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
       "theo_csr" = "black",
-      "kamp" = "blue",
+      "kamp_csr" = "blue",
       "k" = "red"
     )
   ) +
   scale_linetype_manual(
     values = c(
       "theo_csr" = "solid",
-      "kamp" = "dotted",
+      "kamp_csr" = "solid",
       "k" = "dotted"
     )
   ) +
@@ -184,11 +170,48 @@ univ_kamp %>%
 
 ```
 
+
+Looking at the plot, we can see that the KAMP CSR (blue line) is slightly higher than the theoretical CSR (black line) at larger distances. This result aligns with our expectations, as, if we view the plots of the first sample image, the first image is more inhomogenous - i.e. there are large holes/"patches" of empty
+space that could make the immune cells appear more clustered than expected under CSR.
+
+Let's plot the differences between k and the theo_csr and kamp_csr to get a better idea:
+
+```{r}
+univ_kamp %>%
+  ggplot(aes(x = r)) +
+  geom_line(aes(y = k - kamp_csr, color = "k - kamp_csr", linetype = "k - kamp_csr"), size = 1) +
+  geom_line(aes(y = k - theo_csr, color = "k - theo_csr", linetype = "k - theo_csr"), size = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  scale_color_manual(
+    values = c(
+      "k - theo_csr" = "red",
+      "k - kamp_csr" = "blue"
+    )
+  ) +
+  scale_linetype_manual(
+    values = c(
+      "k - theo_csr" = "solid",
+      "k - kamp_csr" = "solid"
+    )
+  ) +
+  labs(
+    title = "Univariate KAMP Expectation - differences",
+    x = "r",
+    y = "Value",
+    color = "Series",
+    linetype = "Series"
+  ) +
+  theme_minimal()
+```
+
+As expected, the difference between k and the theoretical CSR values tended to be higher than the difference between k and the KAMP CSR values, indicating that the KAMP CSR seems to do a better job accounting for the inhomogenous tissue quality.
+
 ###  Variance
 
-To estimate the variance and compute p-values, set `variance = TRUE`.
+To calculate the variance of the KAMP expectation, we still use the kamp() function, but we set `variance = TRUE`. This will compute the variance of the KAMP expectation at each distance `r`. The new output will include all the same columns as before, but with additional column `var` that contains the variance of the KAMP expectation at each distance, and a `p-val` column that contains the p-value for the variance test.
 
-**Note:** `variance = TRUE` is not compatible with `thin = TRUE`. If both are set to TRUE, a warning will be thrown and variance will be skipped.
+
+**Note:** `variance = TRUE` is not compatible with `thin = TRUE`. If both are set to TRUE, a warning will be thrown and variance will still be calculated, but the results may be unreliable.
 
 ```{r}
 univ_kamp_var <- kamp(pp_univ_data,
@@ -198,6 +221,8 @@ univ_kamp_var <- kamp(pp_univ_data,
                        variance = TRUE)
 univ_kamp_var
 ```
+
+We can visualize the variance of the KAMP expectation using `ggplot2`:
 
 ```{r}
 univ_kamp_var %>%
@@ -212,6 +237,7 @@ univ_kamp_var %>%
 
 ### Subsetting Data
 For bivariate analysis, we can subset our `ovarian_df` dataframe to include two types of immune cells and background cells. In this example, we will use "helper t cells" and "cytotoxic t cells".
+
 ```{r}
 ids <- unique(ovarian_df$sample_id)
 biv_data <- ovarian_df %>% 
@@ -224,8 +250,6 @@ marksvar <- "phenotype"
 head(biv_data)
 w <- convexhull.xy(biv_data$x, biv_data$y)
 pp_biv_data <- ppp(biv_data$x, biv_data$y, window = w, marks = biv_data[[marksvar]])
-
-biv_data[[marksvar]]
 
 ```
 
