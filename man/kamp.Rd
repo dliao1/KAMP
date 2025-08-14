@@ -2,7 +2,7 @@
 % Please edit documentation in R/kamp.R
 \name{kamp}
 \alias{kamp}
-\title{Title}
+\title{KAMP}
 \usage{
 kamp(
   ppp_obj,
@@ -10,8 +10,8 @@ kamp(
   univariate = TRUE,
   marksvar1,
   marksvar2 = NULL,
-  correction = "trans",
   variance = FALSE,
+  correction = "trans",
   thin = FALSE,
   p_thin = 0.5,
   background = NULL,
@@ -19,8 +19,106 @@ kamp(
 )
 }
 \arguments{
-\item{...}{}
+\item{ppp_obj}{A point pattern object of class \code{ppp} from the \code{spatstat} package.}
+
+\item{rvals}{A vector of distances at which to compute the KAMP expectation and variance.}
+
+\item{univariate}{A logical value indicating whether to compute univariate KAMP (default is TRUE).}
+
+\item{marksvar1}{Variable used to mark the points in the point pattern object for the first type.}
+
+\item{marksvar2}{Variable used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
+
+\item{variance}{A logical value indicating whether to compute the variance of KAMP (default is FALSE).}
+
+\item{correction}{Type of edge correction. Defaults to translational.}
+
+\item{thin}{A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.}
+
+\item{p_thin}{Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.}
+
+\item{background}{Variable used to define the background for the point pattern object.}
+
+\item{...}{Additional arguments passed to the underlying functions.}
+}
+\value{
+A dataframe with the following columns:
+\describe{
+\item{r}{The radius at which K was calculated.}
+\item{k}{The observed K value}
+\item{theo_csr}{The theoretical K under CSR}
+\item{kamp_csr}{The adjusted CSR representing the KAMP expectation.}
+\item{kamp}{The difference between observed K and KAMP CSR}
+\item{var}{If variance = TRUE, variance of K under the KAMP null distribution}
+\item{pval}{If variance = TRUE, p-value that estimates the probability of observing a deviation
+from the expected KAMP-adjusted value as large or larger than the one
+observed, under the null hypothesis of CSR). Calculated using a normal approximation.}
+}
 }
 \description{
-Title
+This function computes the KAMP expectation and variance for a given point pattern.
+Calculates Ripley's K using both the traditional Ripley's K method
+(based on \code{Kcross}) and the KAMP-adjusted CSR baseline (based on \code{Kest}).
+
+The KAMP-adjusted CSR represents a more robust baseline for K that accounts for spatial clustering or inhomogeneity
+in a point pattern compared to the traditional CSR assumption, while
+avoiding the computational burden of permuting the point pattern.
+
+For expectation, this function uses the \code{spatstat} package under the hood, which
+automatically uses border correction when the number of
+points in the point pattern is more than 3000.
+
+For variance, this function utlizes a matrix-based implementation.
+
+See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
+
+See \code{kamp_expectation_mat} for the matrix-based implementation (Note: currently
+not recommended due to slow speed)
+}
+\details{
+Computes KAMP expectation and variance
+}
+\examples{
+# Loads required packages
+library(spatstat.geom)
+library(spatstat.explore)
+
+# Simulates a simple marked point pattern
+set.seed(100)
+x_coords <- runif(100)
+y_coords <- runif(100)
+marks_vec <- sample(c("immune", "background"), 100, replace = TRUE)
+win <- owin(c(0,1), c(0,1))
+ppp_obj <- ppp(x_coords, y_coords, window = win, marks = marks_vec)
+
+# Defines radius values for K-function estimation
+r_vals <- seq(0.01, 0.1, by = 0.01)
+
+# Computes univariate KAMP expectation
+kamp_result <- kamp(ppp_obj = ppp_obj,
+                    rvals = r_vals,
+                    univariate = TRUE,
+                    marksvar1 = "immune")
+head(kamp_result)
+
+# Compute univariate KAMP expectation with thinning
+kamp_thin <- kamp(ppp_obj = ppp_obj,
+                  rvals = r_vals,
+                  univariate = TRUE,
+                  marksvar1 = "immune",
+                  thin = TRUE,
+                  p_thin = 0.3)
+head(kamp_thin)
+
+# Use real data from VectraPolarisData in package
+data(ovarian_df)
+sample_id <- unique(ovarian_df$sample_id)[1]
+ov_df <- subset(ovarian_df, sample_id == sample_id)
+win <- convexhull.xy(ov_df$x, ov_df$y)
+ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
+kamp_real <- kamp(ppp_obj = ppp_real,
+                  rvals = seq(0.01, 0.1, 0.01),
+                  univariate = TRUE,
+                  marksvar1 = "immune")
+head(kamp_real)
 }

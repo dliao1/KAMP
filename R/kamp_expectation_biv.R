@@ -23,7 +23,6 @@
 #' @param correction Type of edge correction. Defaults to translational.
 #' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
 #' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -32,7 +31,7 @@
 #'  \item{k}{The observed K value}
 #'  \item{theo_csr}{The theoretical K under CSR}
 #'  \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-#'  \item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+#'  \item{kamp}{The difference between observed K and KAMP CSR}
 #' }
 #'
 #' @importFrom spatstat.explore Kcross Kest
@@ -66,40 +65,39 @@
 #'   print(result)
 #' }
 kamp_expectation_biv <- function(ppp_obj,
-                             rvec = c(0, .05, .075, .1, .15, .2),
+                             rvals = c(0, .05, .075, .1, .15, .2),
                              correction = "trans",
-                             markvar1 = "immune1",
-                             markvar2 = "immune2",
-                             thin_pct = 0) {
+                             marksvar1 = "immune1",
+                             marksvar2 = "immune2") {
 
 
-  k_orig = Kcross(ppp_obj, i = markvar1, j = markvar2,
-             r = rvec,
+  k_orig = Kcross(ppp_obj, i = marksvar1, j = marksvar2,
+             r = rvals,
              correction = correction)
 
-  kamp = Kest(ppp_obj,
-              r = rvec,
+  kamp_df = Kest(ppp_obj,
+              r = rvals,
               correction = correction) %>%
     as_tibble()
 
 
   if (correction == "trans") {
-    kamp = kamp %>%
+    kamp_df = kamp_df %>%
       mutate(kamp_csr = trans,
              k = k_orig$trans,
              theo_csr = k_orig$theo,
-             kamp_fundiff = k - kamp_csr) %>%
-      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
   } else if (correction == "iso") {
-    kamp = kamp %>%
+    kamp_df = kamp_df %>%
       mutate(kamp_csr = iso,
              k = k_orig$iso,
              theo_csr = k_orig$theo,
-             kamp_fundiff = k - kamp_csr) %>%
-      select(r, k, theo_csr, kamp_csr, kamp_fundiff)
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
   }
 
-  return(kamp)
+  return(kamp_df)
 }
 
 #' Bivariate KAMP Expectation (Matrix Implementation)
@@ -118,7 +116,6 @@ kamp_expectation_biv <- function(ppp_obj,
 #' @param correction Type of edge correction method. Defaults to translational.
 #' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
 #' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -127,7 +124,7 @@ kamp_expectation_biv <- function(ppp_obj,
 #'  \item{k}{The observed K value}
 #'  \item{theo_csr}{The theoretical K under CSR}
 #'  \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-#'  \item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+#'  \item{kamp}{The difference between observed K and KAMP CSR}
 #' }
 #'
 #'
@@ -158,21 +155,20 @@ kamp_expectation_biv <- function(ppp_obj,
 #'   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 #'
 #'   # Computes KAMP expectation
-#'   result <- kamp_expectation_biv_mat(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
+#'   result <- kamp_expectation_biv_mat(marked_pp, marksvar1 = "immune1", marksvar2 = "immune2")
 #'   print(result)
 #' }
 kamp_expectation_biv_mat <- function(ppp_obj,
-                                     rvec = c(0, .05, .075, .1, .15, .2),
+                                     rvals = c(0, .05, .075, .1, .15, .2),
                                      correction = "trans",
-                                     markvar1 = "immune1",
-                                     markvar2 = "immune2",
-                                     thin_pct = 0) {
+                                     marksvar1 = "immune1",
+                                     marksvar2 = "immune2") {
 
-  map_dfr(rvec,
+  map_dfr(rvals,
           ~kamp_expectation_biv_mat_helper(ppp_obj = ppp_obj,
-                                           rvalue = .x,
+                                           rval = .x,
                                            correction = correction,
-                                           markvar1 = markvar1,
-                                           markvar2 = markvar2),
+                                           marksvar1 = marksvar1,
+                                           marksvar2 = marksvar2),
           .progress = TRUE)
 }

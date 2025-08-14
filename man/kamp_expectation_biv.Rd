@@ -6,25 +6,22 @@
 \usage{
 kamp_expectation_biv(
   ppp_obj,
-  rvec = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
+  rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  markvar1 = "immune1",
-  markvar2 = "immune2",
-  thin_pct = 0
+  marksvar1 = "immune1",
+  marksvar2 = "immune2"
 )
 }
 \arguments{
 \item{ppp_obj}{A point pattern object from the \code{spatstat.geom} package.}
 
-\item{rvec}{Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
-
 \item{correction}{Type of edge correction. Defaults to translational.}
+
+\item{rvec}{Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).}
 
 \item{markvar1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
 
 \item{markvar2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
-
-\item{thin_pct}{Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.}
 }
 \value{
 A dataframe with the following columns:
@@ -33,7 +30,7 @@ A dataframe with the following columns:
 \item{k}{The observed K value}
 \item{theo_csr}{The theoretical K under CSR}
 \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-\item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+\item{kamp}{The difference between observed K and KAMP CSR}
 }
 }
 \description{

@@ -6,7 +6,7 @@
 \usage{
 kamp_variance_biv_helper(
   ppp_obj,
-  rvalue,
+  rval,
   correction = "trans",
   marksvar1 = "immune1",
   marksvar2 = "immune2"
@@ -15,13 +15,13 @@ kamp_variance_biv_helper(
 \arguments{
 \item{ppp_obj}{A point pattern object "ppp" from the \code{spatstat} package.}
 
-\item{rvalue}{A single radius}
-
 \item{correction}{Type of edge correction. Defaults to translational.}
 
 \item{marksvar1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
 
 \item{marksvar2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
+
+\item{rvalue}{A single radius}
 }
 \value{
 A single-row dataframe with the following columns:

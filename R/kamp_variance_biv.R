@@ -22,7 +22,6 @@
 #' @param correction Type of edge correction. Defaults to translational.
 #' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
 #' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
-#' @param thin_pct Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
 #'
 #' @importFrom spatstat.explore Kcross Kest edge.Trans edge.Ripley
 #' @importFrom spatstat.geom area.owin ppp as.owin npoints Window
@@ -70,29 +69,17 @@
 #'   print(result)
 #' }
 kamp_variance_biv <- function(ppp_obj,
-                                 rvec = c(0, .05, .075, .1, .15, .2),
+                                 rvals = c(0, .05, .075, .1, .15, .2),
                                  correction = "trans",
-                                 markvar1 = "immune1",
-                                 markvar2 = "immune2",
-                                 thin_pct = 0) {
-
-  check_valid_inputs_biv(ppp_obj = ppp_obj,
-                        rvec = rvec,
-                        correction = correction,
-                        markvar1 = markvar1,
-                        markvar2 = markvar2,
-                        thin_pct = thin_pct)
+                                 marksvar1 = "immune1",
+                                 marksvar2 = "immune2") {
 
 
-  if (thin_pct != 0) {
-    ppp_obj = rthin(ppp_obj, 1 - thin_pct)
-  }
-
-  map_dfr(rvec,
+  map_dfr(rvals,
           ~kamp_variance_biv_helper(ppp_obj = ppp_obj,
-                                    rvalue = .x,
+                                    rval = .x,
                                     correction = correction,
-                                    markvar1 = markvar1,
-                                    markvar2 = markvar2),
+                                    marksvar1 = marksvar1,
+                                    marksvar2 = marksvar2),
           .progress = TRUE)
 }

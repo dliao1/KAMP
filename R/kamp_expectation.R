@@ -68,7 +68,6 @@ kamp_expectation <- function(ppp_obj,
                              marksvar1 = "immune") {
 
 
-
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
   k_orig = Kcross(ppp_obj, i = marksvar1, j = marksvar1,
@@ -98,69 +97,5 @@ kamp_expectation <- function(ppp_obj,
   }
 
   return(kamp_df)
-}
-
-
-#' Computes KAMP Expectation using matrices
-#' @title KAMP univariate Expectation (Matrix Implementation)
-#'
-#' @description
-#' Computes the KAMP (K-function Adjusted for Marked Permutations) expectation
-#' for a given spatial point pattern. This function calculates Ripley's K
-#' using both the traditional Ripley's K method (based on `Kcross`)
-#' and the KAMP-adjusted CSR baseline (based on `Kest`).
-#'
-#' The KAMP-adjusted CSR represents a more realistic baseline for K (compared
-#' to traditional CSR) that accounts for spatial clustering or inhomogeneity
-#' in a point pattern compared to the traditional CSR assumption, while
-#' avoiding the computational burden of permuting the point pattern.
-#'
-#' Note: this is a slower, matrix-based implementation of the KAMP expectation
-#'
-#' See `get_kamp_expectation` for the faster implementation that utilizes
-#' functions in `spatstat`
-#'
-#' @param ppp_obj  A point pattern object of class "ppp" from the spatstat package.
-#' @param rvals A vector of radii at which to calculate the KAMP expectation.
-#' @param correction Type of edge correction. Defaults to translational.
-#' @param marksvar1 The variable used to mark the points in the point pattern object. Defaults to "immune".
-#' @param p_thin Percentage that determines how much to thin the amount of points in the point pattern object. Defaults to 0.
-#'
-#' @returns
-#' A dataframe with the following columns:
-#' \describe{
-#'   \item{r}{The radius at which K was calculated.}
-#'   \item{k}{The observed K value calculated using matrices}
-#'   \item{theo_csr}{The theoretical K under CSR}
-#'   \item{kamp_csr}{The adjusted CSR representing the permuted expectation.}
-#'   \item{kamp_fundiff}{The difference between observed K and KAMP CSR}
-#' }
-#'
-#' @export
-#'
-#' @examples
-#' if (requireNamespace("spatstat.geom", quietly = TRUE)) {
-#' # simulate a simple spatial point pattern with two types
-#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-#' pp <- spatstat.random::rpoispp(lambda = 100, win = win)
-#' marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
-#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
-#' # compute KAMP expectation using matrix method
-#' kamp_result_mat <- kamp_expectation_mat(marked_pp, marksvar1 = "immune")
-#' print(kamp_result_mat)
-#' }
-kamp_expectation_mat = function(ppp_obj,
-                                rvals = c(0, .05, .075, .1, .15, .2),
-                                correction = "trans",
-                                marksvar1 = "immune",
-                                p_thin = 0) {
-
-
-  map_dfr(rvals,
-          ~kamp_expectation_mat_helper(ppp_obj = ppp_obj,
-                                       rvalue = .x,
-                                       correction = correction,
-                                       marksvar1 = marksvar1),
-          .progress = TRUE)
 }
 

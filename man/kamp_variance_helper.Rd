@@ -4,16 +4,21 @@
 \alias{kamp_variance_helper}
 \title{kamp_variance_helper}
 \usage{
-kamp_variance_helper(ppp_obj, rvalue, correction = "trans", markvar = "immune")
+kamp_variance_helper(
+  ppp_obj,
+  rvalue,
+  correction = "trans",
+  marksvar1 = "immune"
+)
 }
 \arguments{
-\item{ppp_obj}{A point pattern object "ppp" from the spatstat package.}
+\item{ppp_obj}{A point pattern object "ppp" from the \code{spatstat} package.}
 
 \item{rvalue}{A single radius}
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{markvar}{The variable used to mark the points in the point pattern object. Defaults to "immune".}
+\item{marksvar1}{Value used to mark the points in the point pattern object. Default is "immune".}
 }
 \value{
 A single-row dataframe with the following columns:
@@ -22,10 +27,9 @@ A single-row dataframe with the following columns:
 \item{k}{The observed K value}
 \item{theo_csr}{The theoretical K under CSR}
 \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-\item{kamp_fundiff}{The difference between observed K and KAMP CSR}
+\item{kamp}{The difference between observed K and KAMP CSR}
 \item{var}{Variance of K under the permutation null distribution}
-\item{z}{Z statistic, calculated by normalizing K using the formula: (K - KAMP)/sqrt(var)}
-\item{pval}{P-value, calculated using the formula: pnorm(-z)}
+\item{pval}{P-value}
 }
 }
 \description{

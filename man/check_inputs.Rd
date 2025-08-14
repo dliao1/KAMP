@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_kamp.R
 \name{check_inputs}
 \alias{check_inputs}
-\title{Title}
+\title{Checks inputs for KAMP functions}
 \usage{
 check_inputs(
   ppp_obj,
@@ -19,9 +19,27 @@ check_inputs(
 )
 }
 \arguments{
+\item{ppp_obj}{A point pattern object of class "ppp" from the \code{spatstat} package.}
+
+\item{rvals}{Vector of radius values at which to compute the KAMP expectation.}
+
+\item{univariate}{Logical indicating whether to compute univariate KAMP expectation. Defaults to TRUE.}
+
+\item{marksvar1}{Value used to mark the points in the point pattern object.}
+
+\item{marksvar2}{Value used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
+
+\item{variance}{Logical indicating whether to compute the variance of KAMP (default is FALSE).}
+
+\item{thin}{Logical indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.}
+
+\item{p_thin}{Percentage that determines how much to thin}
+
+\item{background}{Value used to define the background for the point pattern object.}
+
 \item{...}{}
 }
 \description{
-Title
+Checks inputs for KAMP functions
 }
 \keyword{internal}
