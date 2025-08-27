@@ -29,7 +29,7 @@
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
 #' @param rvals Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 #' @param correction Type of edge correction method to be used and passed to `Kcross` and `Kest`. Defaults to translational edge correction.
-#' @param marksvar1 Identifies subset of marked points. Defaults to immune.
+#' @param mark1 Identifies subset of marked points. Defaults to immune.
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -50,27 +50,15 @@
 #'
 #' @export
 #'
-#' @examples
-#' if (requireNamespace("spatstat.geom", quietly = TRUE)) {
-#'   # simulates a simple spatial point pattern with two types
-#'   win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-#'   pp <- spatstat.random::rpoispp(lambda = 100, win = win)
-#'   marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
-#'   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
-#'
-#'   # computes KAMP expectation
-#'   kamp_result <- kamp_expectation(marked_pp, marksvar1 = "immune")
-#'   print(kamp_result)
-#' }
 kamp_expectation <- function(ppp_obj,
                              rvals = c(0, .05, .075, .1, .15, .2),
                              correction = "trans",
-                             marksvar1 = "immune") {
+                             mark1 = "immune") {
 
 
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
-  k_orig = Kcross(ppp_obj, i = marksvar1, j = marksvar1,
+  k_orig = Kcross(ppp_obj, i = mark1, j = mark1,
              r = rvals,
              correction = correction)
 

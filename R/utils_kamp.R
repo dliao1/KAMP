@@ -6,7 +6,7 @@
 #' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
 #' @param rvalue A single radius
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param marksvar1 Value used to mark the points in the point pattern object. Default is "immune".
+#' @param mark1 Value used to mark the points in the point pattern object. Default is "immune".
 #'
 #' @returns
 #' A single-row dataframe with the following columns:
@@ -33,7 +33,7 @@
 kamp_variance_helper = function(ppp_obj,
                                 rvalue,
                                 correction = "trans",
-                                marksvar1 = "immune") {
+                                mark1 = "immune") {
   npts = npoints(ppp_obj)
   W = Window(ppp_obj)
   areaW = spatstat.geom::area(W)
@@ -61,7 +61,7 @@ kamp_variance_helper = function(ppp_obj,
   R0 = sum(Wr)
 
   # Compute expectation
-  m = sum(ppp_obj$marks == marksvar1)
+  m = sum(ppp_obj$marks == mark1)
   R1 = sum(Wr^2)
   R2 = sum(rowSums(Wr)^2) - R1
   R3 = R0^2 - 2*R1 - 4*R2
@@ -71,7 +71,7 @@ kamp_variance_helper = function(ppp_obj,
   f2 = f1*(m-2)/(npts-2)
   f3 = f2*(m-3)/(npts-3)
 
-  Kmat = Wr[which(ppp_obj$marks == marksvar1),which(ppp_obj$marks == marksvar1)]
+  Kmat = Wr[which(ppp_obj$marks == mark1),which(ppp_obj$marks == mark1)]
   K = areaW * sum(Kmat)/ m / (m - 1) # Ripley's K
   mu_K = areaW * R0 / npts / (npts - 1) # expectation
   var_K = areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) / m / m / (m - 1) / (m - 1) - mu_K^2   # variance
@@ -97,11 +97,12 @@ kamp_variance_helper = function(ppp_obj,
 
 #' Checks inputs for KAMP functions
 #'
-#' @param ppp_obj A point pattern object of class "ppp" from the `spatstat` package.
+#' @param df A dataframe containing the point pattern data. Will be converted into a `ppp` object.
 #' @param rvals Vector of radius values at which to compute the KAMP expectation.
 #' @param univariate Logical indicating whether to compute univariate KAMP expectation. Defaults to TRUE.
-#' @param marksvar1 Value used to mark the points in the point pattern object.
-#' @param marksvar2 Value used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
+#' @param mark_var Column name in `df` that contains the marks for the point pattern object.
+#' @param mark1 Value used to mark the points in the point pattern object.
+#' @param mark2 Value used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
 #' @param variance Logical indicating whether to compute the variance of KAMP (default is FALSE).
 #' @param thin Logical indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
 #' @param p_thin Percentage that determines how much to thin
@@ -111,18 +112,49 @@ kamp_variance_helper = function(ppp_obj,
 #' @returns TRUE if all inputs are valid, otherwise throws an error with a descriptive message.
 #' @keywords internal
 #'
-check_inputs <- function(ppp_obj,
+check_inputs <- function(df,
                          rvals,
                          univariate,
                          correction,
-                         marksvar1,
-                         marksvar2,
+                         mark_var,
+                         mark1,
+                         mark2,
                          variance,
                          thin,
                          p_thin,
                          background,...) {
+  # Initialize ppp_obj
+  ppp_obj <- NULL
 
+  # Check if df is a dataframe
+  if (!is.data.frame(df)) {
+    stop("Input df must be a dataframe.")
+  }
+
+  # Check if df has x and y columns
+  if (!all(c("x", "y") %in% colnames(df))) {
+    stop("Input dataframe must contain 'x' and 'y' columns.")
+  }
+
+  # Factorize mark_var
+  if (!mark_var %in% colnames(df)) {
+    stop(paste0("mark_var '", mark_var, "' not found in dataframe columns."))
+  }
+
+  df$mark_var <- as.factor(df[[mark_var]])
+
+
+  # Check if mark_var has at least two unique values
+  if (nlevels(df$mark_var) < 2) {
+    stop("The mark_var column must have at least two unique values.")
+  }
+
+  # Convert df to ppp object
+  win <- convexhull.xy(df$x, df$y)
+  ppp_obj <- ppp(df$x, df$y, window = win, marks = df$mark_var)
   all_marks <- unique(marks(ppp_obj))
+
+  message("We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.")
 
   # Makes sure ppp_obj is not NULL
   if (is.null(ppp_obj)) {
@@ -145,12 +177,12 @@ check_inputs <- function(ppp_obj,
     stop("The point pattern object does not have marks.")
   }
 
-  if (marksvar1 %in% all_marks == FALSE) {
-    stop("marksvar1 is not a mark in the point pattern object.")
+  if (mark1 %in% all_marks == FALSE) {
+    stop("mark1 is not a mark in the point pattern object.")
   }
 
-  if (is.null(marksvar2) == FALSE && marksvar2 %in% all_marks == FALSE) {
-    stop("marksvar2 is not a mark in the point pattern object.")
+  if (is.null(mark2) == FALSE && mark2 %in% all_marks == FALSE) {
+    stop("mark2 is not a mark in the point pattern object.")
   }
 
   if (!is.logical(thin)) {
@@ -177,30 +209,30 @@ check_inputs <- function(ppp_obj,
 
   if (univariate == TRUE) {
 
-    if (!is.null(marksvar1) && !(marksvar1 %in% all_marks)) {
-      stop(paste0("marksvar1 ('", marksvar1, "') not found in point pattern marks."))
+    if (!is.null(mark1) && !(mark1 %in% all_marks)) {
+      stop(paste0("mark1 ('", mark1, "') not found in point pattern marks."))
     }
 
-    if(is.null(marksvar2) == FALSE) {
-      message("marksvar2 is not used in univariate KAMP. It will be ignored.")
+    if(is.null(mark2) == FALSE) {
+      message("mark2 is not used in univariate KAMP. It will be ignored.")
     }
 
   } else { #must be bivariate
 
-    if (!is.null(marksvar1) && !(marksvar1 %in% all_marks)) {
-      stop(paste0("marksvar1 ('", marksvar1, "') not found in point pattern marks."))
+    if (!is.null(mark1) && !(mark1 %in% all_marks)) {
+      stop(paste0("mark1 ('", mark1, "') not found in point pattern marks."))
     }
 
-    if (!is.null(marksvar2) && !(marksvar2 %in% all_marks)) {
-      stop(paste0("marksvar2 ('", marksvar2, "') not found in point pattern marks."))
+    if (!is.null(mark2) && !(mark2 %in% all_marks)) {
+      stop(paste0("mark2 ('", mark2, "') not found in point pattern marks."))
     }
 
-    if (is.null(marksvar1) || is.null(marksvar2)) {
-      stop("Both marksvar1 and marksvar2 must be specified for bivariate KAMP.")
+    if (is.null(mark1) || is.null(mark2)) {
+      stop("Both mark1 and mark2 must be specified for bivariate KAMP.")
     }
 
-    if (marksvar1 == marksvar2) {
-      stop("marksvar1 and marksvar2 cannot be the same for bivariate KAMP.")
+    if (mark1 == mark2) {
+      stop("mark1 and mark2 cannot be the same for bivariate KAMP.")
     }
   }
 
@@ -210,8 +242,8 @@ check_inputs <- function(ppp_obj,
 
   # End of most input sanitization checks
 
-  if (sum(marks(ppp_obj) == marksvar1) < 5) {
-    message(paste0("Less than 5 target cells marked as '", marksvar1, "'. This may lead to unreliable results."))
+  if (sum(marks(ppp_obj) == mark1) < 5) {
+    message(paste0("Less than 5 target cells marked as '", mark1, "'. This may lead to unreliable results."))
   }
 
   if (npoints(ppp_obj) <= 10000) {
@@ -220,5 +252,5 @@ check_inputs <- function(ppp_obj,
 
 
 
-  return(TRUE)
+  return(ppp_obj)
 }

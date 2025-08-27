@@ -7,8 +7,8 @@
 #' @param ppp_obj A point pattern object "ppp" from the `spatstat` package.
 #' @param rvalue A single radius
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param marksvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param marksvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
+#' @param mark1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
+#' @param mark2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
 #'
 #' @returns
 #' A single-row dataframe with the following columns:
@@ -36,8 +36,8 @@
 kamp_variance_biv_helper <- function(ppp_obj,
                                      rval,
                                      correction = "trans",
-                                     marksvar1 = "immune1",
-                                     marksvar2 = "immune2") {
+                                     mark1 = "immune1",
+                                     mark2 = "immune2") {
 
   npts = npoints(ppp_obj)
   W = Window(ppp_obj)
@@ -65,14 +65,14 @@ kamp_variance_biv_helper <- function(ppp_obj,
   R2 = sum(rowSums(Wr)^2) - R1
   R3 = R0^2 - 2*R1 - 4*R2
 
-  m1 = sum(ppp_obj$marks == marksvar1)
-  m2 = sum(ppp_obj$marks == marksvar2)
+  m1 = sum(ppp_obj$marks == mark1)
+  m2 = sum(ppp_obj$marks == mark2)
   f1 = m1*m2/npts/(npts-1)
   f2 = f1*(m1+m2-2)/(npts-2)
   f3 = f1*(m1-1)*(m2-1)/(npts-2)/(npts-3)
 
 
-  Kmat = Wr[which(ppp_obj$marks == marksvar1),which(ppp_obj$marks == marksvar2)]
+  Kmat = Wr[which(ppp_obj$marks == mark1),which(ppp_obj$marks == mark2)]
   K = areaW * sum(Kmat) / m1 / m2 # Ripley's K based on translation correction
   mu_K = areaW * R0/npts / (npts-1) # expectation
   var_K = areaW^2*(R1*f1 + R2*f2 + R3*f3)/m1/m1/m2/m2 - mu_K^2

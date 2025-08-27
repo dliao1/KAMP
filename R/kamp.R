@@ -25,8 +25,8 @@
 #' @param ppp_obj A point pattern object of class `ppp` from the `spatstat` package.
 #' @param rvals A vector of distances at which to compute the KAMP expectation and variance.
 #' @param univariate A logical value indicating whether to compute univariate KAMP (default is TRUE).
-#' @param marksvar1 Variable used to mark the points in the point pattern object for the first type.
-#' @param marksvar2 Variable used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
+#' @param mark1 Variable used to mark the points in the point pattern object for the first type.
+#' @param mark2 Variable used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
 #' @param correction Type of edge correction. Defaults to translational.
 #' @param variance A logical value indicating whether to compute the variance of KAMP (default is FALSE).
 #' @param thin A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
@@ -76,14 +76,14 @@
 #' kamp_result <- kamp(ppp_obj = ppp_obj,
 #'                     rvals = r_vals,
 #'                     univariate = TRUE,
-#'                     marksvar1 = "immune")
+#'                     mark1 = "immune")
 #' head(kamp_result)
 #'
 #' # Compute univariate KAMP expectation with thinning
 #' kamp_thin <- kamp(ppp_obj = ppp_obj,
 #'                   rvals = r_vals,
 #'                   univariate = TRUE,
-#'                   marksvar1 = "immune",
+#'                   mark1 = "immune",
 #'                   thin = TRUE,
 #'                   p_thin = 0.3)
 #' head(kamp_thin)
@@ -97,13 +97,15 @@
 #' kamp_real <- kamp(ppp_obj = ppp_real,
 #'                   rvals = seq(0.01, 0.1, 0.01),
 #'                   univariate = TRUE,
-#'                   marksvar1 = "immune")
+#'                   mark1 = "immune")
 #' head(kamp_real)
-kamp = function(ppp_obj,
+kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, mark2
+                         # expect this to just be one point process
                 rvals,
                 univariate = TRUE,
-                marksvar1,
-                marksvar2 = NULL,
+                mark_var,
+                mark1,
+                mark2 = NULL,
                 variance = FALSE,
                 correction = "trans",
                 thin = FALSE,
@@ -111,16 +113,22 @@ kamp = function(ppp_obj,
                 background = NULL,
                 ...){
 
-  input_checks <- check_inputs(ppp_obj,
+  ppp_obj  <- check_inputs(df,
                      rvals,
                      univariate,
                      correction,
-                     marksvar1,
-                     marksvar2,
+                     mark_var,
+                     mark1,
+                     mark2,
                      variance,
                      thin,
                      p_thin,
                      background)
+
+  if (is.null(ppp_obj)) {
+    stop("Input checks failed and point process object could not be created.")
+  }
+
 
   if (thin == TRUE) {
     ppp_obj = rthin(ppp_obj, 1 - p_thin)
@@ -131,24 +139,24 @@ kamp = function(ppp_obj,
     results <- kamp_expectation(ppp_obj = ppp_obj,
                                 rvals = rvals,
                                 correction = correction,
-                                marksvar1 = marksvar1)
+                                mark1 = mark1)
   } else if (univariate == TRUE && variance == TRUE) {
     results <- kamp_variance(ppp_obj = ppp_obj,
                              rvals = rvals,
                              correction = correction,
-                             marksvar1 = marksvar1)
+                             mark1 = mark1)
   }
   else if (univariate == FALSE && variance == FALSE) {
     results <- kamp_expectation_biv(ppp_obj = ppp_obj,
                                     rvals = rvals,
-                                    marksvar1 = marksvar1,
-                                    marksvar2 = marksvar2,
+                                    mark1 = mark1,
+                                    mark2 = mark2,
                                     correction = correction)
   } else if (univariate == FALSE && variance == TRUE) {
     results <- kamp_variance_biv(ppp_obj = ppp_obj,
                                  rvals = rvals,
-                                 marksvar1 = marksvar1,
-                                 marksvar2 = marksvar2,
+                                 mark1 = mark1,
+                                 mark2 = mark2,
                                  correction = correction)
   }
   return(results)

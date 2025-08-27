@@ -75,9 +75,11 @@ The `kamp()` function has several parameters that allow us to customize the calc
 
 - `univariate`: A logical value indicating whether to calculate the univariate K function (default is `TRUE`).
 
-- `marksvar1`: The name of the marks variable for the first mark (required for univariate).
+- `marks_var`: The name of the marks variable in the point pattern object (default is `"marks"`).
 
-- `marksvar2`: The name of the marks variable for the second mark (optional for univariate).
+- `mark1`: The value of the marks variable for the first mark (required for univariate).
+
+- `mark2`: The value of the marks variable for the second mark (optional for univariate).
 
 - `variance`: A logical value indicating whether to calculate the variance (default is `FALSE`).
 
@@ -103,14 +105,12 @@ ids <- unique(ovarian_df$sample_id)
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
 marksvar <- "immune"
 head(univ_data)
-w <- convexhull.xy(univ_data$x, univ_data$y)
-pp_univ_data <- ppp(univ_data$x, univ_data$y, window = w, marks = univ_data[[marksvar]])
 ```
 
 ### Expectation
 
 We can now calculate the KAMP expectation for the univariate data using the `kamp()` function.
-What we are doing here is calculating the KAMP expectation for the `immune` marks variable against the background cells, using a sequence of distances from 0 to 100 with a step of 10. Furthermore, we use the option `univariate = TRUE` and specify the marks variable for the first mark as `marksvar1 = "immune"` - we are not setting `marksvar2` since we are only interested in the univariate case.
+What we are doing here is calculating the KAMP expectation for the `immune` marks variable against the background cells, using a sequence of distances from 0 to 100 with a step of 10. Furthermore, we use the option `univariate = TRUE` and specify the marks variable for the first mark as `mark1 = "immune"` - we are not setting `mark2` since we are only interested in the univariate case.
 
 What's returned is a data frame with the following columns:
 
@@ -126,10 +126,11 @@ What's returned is a data frame with the following columns:
 
 
 ```{r}
-univ_kamp <- kamp(pp_univ_data, 
+univ_kamp <- kamp(univ_data, 
                   rvals = seq(0, 100, by = 10),
                   univariate = TRUE,
-                  marksvar1 = "immune")
+                  mark_var = "immune",
+                  mark1 = "immune")
 
 univ_kamp
 ```
@@ -217,7 +218,7 @@ To calculate the variance of the KAMP expectation, we still use the kamp() funct
 univ_kamp_var <- kamp(pp_univ_data,
                        rvals = seq(0, 100, by = 10),
                        univariate = TRUE,
-                       marksvar1 = "immune",
+                       mark1 = "immune",
                        variance = TRUE)
 univ_kamp_var
 ```
@@ -266,8 +267,8 @@ marks(pp_biv_data)
 biv_kamp <- kamp(ppp_obj = pp_biv_data,
                  rvals = seq(0, 100, by = 10),
                  univariate = FALSE,
-                 marksvar1 = "helper t cell",
-                 marksvar2 = "cytotoxic t cell")
+                 mark1 = "helper t cell",
+                 mark2 = "cytotoxic t cell")
 head(biv_kamp)
 ```
 
@@ -308,8 +309,8 @@ biv_kamp %>%
 biv_kamp_var <- kamp(ppp_obj = pp_biv_data,
                      rvals = seq(0, 100, by = 10),
                      univariate = FALSE,
-                     marksvar1 = "helper t cell",
-                     marksvar2 = "cytotoxic t cell",
+                     mark1 = "helper t cell",
+                     mark2 = "cytotoxic t cell",
                      variance = TRUE)
 head(biv_kamp_var)
 ```
@@ -342,7 +343,7 @@ pp_univ_data <- ppp(univ_data$x, univ_data$y, window = w, marks = univ_data[[mar
 univ_kamp_lite <- kamp(ppp_obj = pp_univ_data,
                        rvals = seq(0, 100, by = 10),
                        univariate = TRUE,
-                       marksvar1 = "immune",
+                       mark1 = "immune",
                        thin = TRUE,
                        p_thin = 0.3)
 univ_kamp_lite
@@ -384,7 +385,7 @@ univ_kamp_lite %>%
 univ_kamp_lite_var <- kamp(ppp_obj = pp_univ_data,
                             rvals = seq(0, 100, by = 10),
                             univariate = TRUE,
-                            marksvar1 = "immune",
+                            mark1 = "immune",
                             thin = TRUE,
                             p_thin = 0.3,
                             variance = TRUE) # should display a warning message
@@ -411,8 +412,8 @@ pp_biv_data <- ppp(biv_data$x, biv_data$y, window = w, marks = biv_data[[marksva
 biv_kamp_lite <- kamp(ppp_obj = pp_biv_data,
                  rvals = seq(0, 100, by = 10),
                  univariate = FALSE,
-                 marksvar1 = "helper t cell",
-                 marksvar2 = "cytotoxic t cell",
+                 mark1 = "helper t cell",
+                 mark2 = "cytotoxic t cell",
                  thin = TRUE,
                  p_thin = 0.3)
 head(biv_kamp_lite)
@@ -454,8 +455,8 @@ biv_kamp_lite %>%
 biv_kamp_lite_var <- kamp(ppp_obj = pp_biv_data,
                           rvals = seq(0, 100, by = 10),
                           univariate = FALSE,
-                          marksvar1 = "helper t cell",
-                          marksvar2 = "cytotoxic t cell",
+                          mark1 = "helper t cell",
+                          mark2 = "cytotoxic t cell",
                           variance = TRUE,
                           thin = TRUE,
                           p_thin = 0.3) # should display a warning message

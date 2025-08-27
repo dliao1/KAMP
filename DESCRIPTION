@@ -1,4 +1,5 @@
 Package: KAMP
+
 Title: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns
 Version: 0.0.0.9000
 Authors@R: 
@@ -22,7 +23,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+LinkingTo: Rcpp, RcppArmadillo
 Imports:
+    Rcpp,
     dplyr,
     spatstat.explore,
     spatstat.geom,
