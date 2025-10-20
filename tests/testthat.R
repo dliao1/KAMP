@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(kamp)
+library(KAMP)
 
-test_check("kamp")
+test_check("KAMP")

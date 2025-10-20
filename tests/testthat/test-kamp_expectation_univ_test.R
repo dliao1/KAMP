@@ -4,8 +4,11 @@ test_that("kamp_expectation_default", {
   pp <- spatstat.random::rpoispp(lambda = 100, win = win)
   marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+  df <- as.dataframe(marked_pp)
 
-  result <- kamp_expectation(marked_pp, markvar = "immune")
+
+  result <- kamp(df,
+                 mark_var = "immune")
 
   expect_true(all(c("r", "k", "theo_csr", "kamp_csr", "kamp_fundiff") %in% names(result)))
   expect_equal(nrow(result), length(c(0, .05, .075, .1, .15, .2)))
