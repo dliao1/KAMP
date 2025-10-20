@@ -2,15 +2,15 @@
 title: "Introduction to KAMP"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to KAMP}
+%\VignetteIndexEntry{Introduction to KAMP}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
+  ---
+  
+  ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+collapse = TRUE,
+comment = "#>"
 )
 ```
 
@@ -43,18 +43,18 @@ head(ovarian_df)
 Since we have a dataframe of multiple images, let's go through, subset our dataframe by id, and plot it.
 ```{r}
 ids <- unique(ovarian_df$sample_id)
-marksvar <- "immune"
+mark_var <- "immune"
 
 for (id in ids) {
   df_sub <- ovarian_df %>% filter(sample_id == id)
   w <- convexhull.xy(df_sub$x, df_sub$y)
-  pp_obj <- ppp(df_sub$x, df_sub$y, window = w, marks = df_sub[[marksvar]])
-
+  pp_obj <- ppp(df_sub$x, df_sub$y, window = w, marks = df_sub[[mark_var]])
+  
   p <- ggplot(as_tibble(pp_obj), aes(x, y, color = marks)) +
     geom_point(size = 0.6) +
     labs(title = paste("Sample:", id)) +
     theme_minimal()
-
+  
   print(p)
 }
 ```
@@ -103,7 +103,7 @@ To perform univariate analysis, we can subset our `ovarian_df` dataframe to incl
 ```{r}
 ids <- unique(ovarian_df$sample_id)
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
-marksvar <- "immune"
+mark_var <- "immune"
 head(univ_data)
 ```
 
@@ -129,7 +129,7 @@ What's returned is a data frame with the following columns:
 univ_kamp <- kamp(univ_data, 
                   rvals = seq(0, 100, by = 10),
                   univariate = TRUE,
-                  mark_var = "immune",
+                  mark_var = mark_var,
                   mark1 = "immune")
 
 univ_kamp
@@ -215,11 +215,12 @@ To calculate the variance of the KAMP expectation, we still use the kamp() funct
 **Note:** `variance = TRUE` is not compatible with `thin = TRUE`. If both are set to TRUE, a warning will be thrown and variance will still be calculated, but the results may be unreliable.
 
 ```{r}
-univ_kamp_var <- kamp(pp_univ_data,
-                       rvals = seq(0, 100, by = 10),
-                       univariate = TRUE,
-                       mark1 = "immune",
-                       variance = TRUE)
+univ_kamp_var <- kamp(univ_data,
+                      rvals = seq(0, 100, by = 10),
+                      univariate = TRUE,
+                      mark_var = mark_var,
+                      mark1 = "immune",
+                      variance = TRUE)
 univ_kamp_var
 ```
 
@@ -243,15 +244,12 @@ For bivariate analysis, we can subset our `ovarian_df` dataframe to include two 
 ids <- unique(ovarian_df$sample_id)
 biv_data <- ovarian_df %>% 
   filter(sample_id == ids[1]) #%>%
-  #filter(phenotype %in% c("helper t cells", "cytotoxic t cells", "other")) %>%
-  #droplevels()
+#filter(phenotype %in% c("helper t cells", "cytotoxic t cells", "other")) %>%
+#droplevels()
 
-marksvar <- "phenotype"
+mark_var <- "phenotype"
 
 head(biv_data)
-w <- convexhull.xy(biv_data$x, biv_data$y)
-pp_biv_data <- ppp(biv_data$x, biv_data$y, window = w, marks = biv_data[[marksvar]])
-
 ```
 
 
@@ -263,10 +261,10 @@ To calculate the KAMP expectation for bivariate data, we set `univariate = FALSE
 
 ```{r}
 
-marks(pp_biv_data)
-biv_kamp <- kamp(ppp_obj = pp_biv_data,
+biv_kamp <- kamp(df = biv_data,
                  rvals = seq(0, 100, by = 10),
                  univariate = FALSE,
+                 mark_var = mark_var,
                  mark1 = "helper t cell",
                  mark2 = "cytotoxic t cell")
 head(biv_kamp)
@@ -306,9 +304,10 @@ biv_kamp %>%
 ### Variance
 
 ```{r}
-biv_kamp_var <- kamp(ppp_obj = pp_biv_data,
+biv_kamp_var <- kamp(df = biv_data,
                      rvals = seq(0, 100, by = 10),
                      univariate = FALSE,
+                     mark_var = mark_var,
                      mark1 = "helper t cell",
                      mark2 = "cytotoxic t cell",
                      variance = TRUE)
@@ -333,16 +332,13 @@ KAMP-lite refers to running KAMP with a thinned point pattern using `thin = TRUE
 ### Expectation
 ```{r}
 ids <- unique(ovarian_df$sample_id)
-marksvar <- "immune"
+mark_var <- "immune"
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
 
-w <- convexhull.xy(univ_data$x, univ_data$y)
-pp_univ_data <- ppp(univ_data$x, univ_data$y, window = w, marks = univ_data[[marksvar]])
-
-
-univ_kamp_lite <- kamp(ppp_obj = pp_univ_data,
+univ_kamp_lite <- kamp(df = univ_data,
                        rvals = seq(0, 100, by = 10),
                        univariate = TRUE,
+                       mark_var = mark_var,
                        mark1 = "immune",
                        thin = TRUE,
                        p_thin = 0.3)
@@ -382,13 +378,14 @@ univ_kamp_lite %>%
 
 ### Variance
 ```{r}
-univ_kamp_lite_var <- kamp(ppp_obj = pp_univ_data,
-                            rvals = seq(0, 100, by = 10),
-                            univariate = TRUE,
-                            mark1 = "immune",
-                            thin = TRUE,
-                            p_thin = 0.3,
-                            variance = TRUE) # should display a warning message
+univ_kamp_lite_var <- kamp(df = univ_data,
+                           rvals = seq(0, 100, by = 10),
+                           univariate = TRUE,
+                           mark_var = mark_var,
+                           mark1 = "immune",
+                           thin = TRUE,
+                           p_thin = 0.3,
+                           variance = TRUE) # should display a warning message
 univ_kamp_lite_var
 ```
 
@@ -397,25 +394,24 @@ univ_kamp_lite_var
 ids <- unique(ovarian_df$sample_id)
 biv_data <- ovarian_df %>% 
   filter(sample_id == ids[1]) #%>%
-  #filter(phenotype %in% c("helper t cell", "cytotoxic t cell", "other")) %>%
-  #droplevels()
+#filter(phenotype %in% c("helper t cell", "cytotoxic t cell", "other")) %>%
+#droplevels()
 
-marksvar <- "phenotype"
+mark_var <- "phenotype"
 
 head(biv_data)
-w <- convexhull.xy(biv_data$x, biv_data$y)
-pp_biv_data <- ppp(biv_data$x, biv_data$y, window = w, marks = biv_data[[marksvar]])
 ```
 
 ### Expectation
 ```{r}
-biv_kamp_lite <- kamp(ppp_obj = pp_biv_data,
-                 rvals = seq(0, 100, by = 10),
-                 univariate = FALSE,
-                 mark1 = "helper t cell",
-                 mark2 = "cytotoxic t cell",
-                 thin = TRUE,
-                 p_thin = 0.3)
+biv_kamp_lite <- kamp(df = biv_data,
+                      rvals = seq(0, 100, by = 10),
+                      univariate = FALSE,
+                      mark_var = mark_var,
+                      mark1 = "helper t cell",
+                      mark2 = "cytotoxic t cell",
+                      thin = TRUE,
+                      p_thin = 0.3)
 head(biv_kamp_lite)
 ```
 
@@ -452,9 +448,10 @@ biv_kamp_lite %>%
 
 ### Variance
 ```{r}
-biv_kamp_lite_var <- kamp(ppp_obj = pp_biv_data,
+biv_kamp_lite_var <- kamp(df = biv_data,
                           rvals = seq(0, 100, by = 10),
                           univariate = FALSE,
+                          mark_var = mark_var,
                           mark1 = "helper t cell",
                           mark2 = "cytotoxic t cell",
                           variance = TRUE,

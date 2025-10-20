@@ -8,7 +8,7 @@ kamp_expectation(
   ppp_obj,
   rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  marksvar1 = "immune"
+  mark1 = "immune"
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ kamp_expectation(
 
 \item{correction}{Type of edge correction method to be used and passed to \code{Kcross} and \code{Kest}. Defaults to translational edge correction.}
 
-\item{marksvar1}{Identifies subset of marked points. Defaults to immune.}
+\item{mark1}{Identifies subset of marked points. Defaults to immune.}
 }
 \value{
 A dataframe with the following columns:
@@ -53,17 +53,4 @@ See \code{kamp_expectation_mat} for the matrix-based implementation.
 }
 \details{
 Compute KAMP Expectation
-}
-\examples{
-if (requireNamespace("spatstat.geom", quietly = TRUE)) {
-  # simulates a simple spatial point pattern with two types
-  win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-  pp <- spatstat.random::rpoispp(lambda = 100, win = win)
-  marks <- sample(c("immune", "background"), pp$n, replace = TRUE)
-  marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
-
-  # computes KAMP expectation
-  kamp_result <- kamp_expectation(marked_pp, marksvar1 = "immune")
-  print(kamp_result)
-}
 }

@@ -44,12 +44,8 @@ kamp_variance_helper = function(ppp_obj,
 
 
   # TODO: implement border correction
-  if (correction == "iso") {
-    e = edge.Ripley(ppp_obj)
-    W = ifelse(W <= rvalue, 1, 0)
-    diag(W) = 0
-    Wr = W * e
-  } else if (correction == "trans") {
+
+ if (correction == "trans") {
     e = edge.Trans(ppp_obj)
     W = ifelse(W <= rvalue, 1, 0)
     diag(W) = 0
@@ -131,6 +127,11 @@ check_inputs <- function(df,
     stop("Input df must be a dataframe.")
   }
 
+  # Checks if mark_var is supplied
+  if (is.null(mark_var) || mark_var == "") {
+    stop("mark_var must be supplied and cannot be NULL or empty.")
+  }
+
   # Check if df has x and y columns
   if (!all(c("x", "y") %in% colnames(df))) {
     stop("Input dataframe must contain 'x' and 'y' columns.")
@@ -158,7 +159,7 @@ check_inputs <- function(df,
 
   # Makes sure ppp_obj is not NULL
   if (is.null(ppp_obj)) {
-    stop("The point pattern object cannot be NULL.")
+    stop("The point pattern object cannot be NULL. Conversion of dataframe to ppp object failed.")
   }
 
   # Check if rvec is numeric

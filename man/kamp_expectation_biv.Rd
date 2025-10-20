@@ -8,8 +8,8 @@ kamp_expectation_biv(
   ppp_obj,
   rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
   correction = "trans",
-  marksvar1 = "immune1",
-  marksvar2 = "immune2"
+  mark1 = "immune1",
+  mark2 = "immune2"
 )
 }
 \arguments{

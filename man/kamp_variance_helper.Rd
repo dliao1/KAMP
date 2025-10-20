@@ -4,12 +4,7 @@
 \alias{kamp_variance_helper}
 \title{kamp_variance_helper}
 \usage{
-kamp_variance_helper(
-  ppp_obj,
-  rvalue,
-  correction = "trans",
-  marksvar1 = "immune"
-)
+kamp_variance_helper(ppp_obj, rvalue, correction = "trans", mark1 = "immune")
 }
 \arguments{
 \item{ppp_obj}{A point pattern object "ppp" from the \code{spatstat} package.}
@@ -18,7 +13,7 @@ kamp_variance_helper(
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{marksvar1}{Value used to mark the points in the point pattern object. Default is "immune".}
+\item{mark1}{Value used to mark the points in the point pattern object. Default is "immune".}
 }
 \value{
 A single-row dataframe with the following columns:

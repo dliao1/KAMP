@@ -5,11 +5,12 @@
 \title{KAMP}
 \usage{
 kamp(
-  ppp_obj,
+  df,
   rvals,
   univariate = TRUE,
-  marksvar1,
-  marksvar2 = NULL,
+  mark_var,
+  mark1,
+  mark2 = NULL,
   variance = FALSE,
   correction = "trans",
   thin = FALSE,
@@ -19,15 +20,13 @@ kamp(
 )
 }
 \arguments{
-\item{ppp_obj}{A point pattern object of class \code{ppp} from the \code{spatstat} package.}
-
 \item{rvals}{A vector of distances at which to compute the KAMP expectation and variance.}
 
 \item{univariate}{A logical value indicating whether to compute univariate KAMP (default is TRUE).}
 
-\item{marksvar1}{Variable used to mark the points in the point pattern object for the first type.}
+\item{mark1}{Variable used to mark the points in the point pattern object for the first type.}
 
-\item{marksvar2}{Variable used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
+\item{mark2}{Variable used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
 
 \item{variance}{A logical value indicating whether to compute the variance of KAMP (default is FALSE).}
 
@@ -40,6 +39,8 @@ kamp(
 \item{background}{Variable used to define the background for the point pattern object.}
 
 \item{...}{Additional arguments passed to the underlying functions.}
+
+\item{ppp_obj}{A point pattern object of class \code{ppp} from the \code{spatstat} package.}
 }
 \value{
 A dataframe with the following columns:
@@ -98,14 +99,14 @@ r_vals <- seq(0.01, 0.1, by = 0.01)
 kamp_result <- kamp(ppp_obj = ppp_obj,
                     rvals = r_vals,
                     univariate = TRUE,
-                    marksvar1 = "immune")
+                    mark1 = "immune")
 head(kamp_result)
 
 # Compute univariate KAMP expectation with thinning
 kamp_thin <- kamp(ppp_obj = ppp_obj,
                   rvals = r_vals,
                   univariate = TRUE,
-                  marksvar1 = "immune",
+                  mark1 = "immune",
                   thin = TRUE,
                   p_thin = 0.3)
 head(kamp_thin)
@@ -119,6 +120,6 @@ ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
 kamp_real <- kamp(ppp_obj = ppp_real,
                   rvals = seq(0.01, 0.1, 0.01),
                   univariate = TRUE,
-                  marksvar1 = "immune")
+                  mark1 = "immune")
 head(kamp_real)
 }

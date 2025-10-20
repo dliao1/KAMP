@@ -5,12 +5,13 @@
 \title{Checks inputs for KAMP functions}
 \usage{
 check_inputs(
-  ppp_obj,
+  df,
   rvals,
   univariate,
   correction,
-  marksvar1,
-  marksvar2,
+  mark_var,
+  mark1,
+  mark2,
   variance,
   thin,
   p_thin,
@@ -19,15 +20,17 @@ check_inputs(
 )
 }
 \arguments{
-\item{ppp_obj}{A point pattern object of class "ppp" from the \code{spatstat} package.}
+\item{df}{A dataframe containing the point pattern data. Will be converted into a \code{ppp} object.}
 
 \item{rvals}{Vector of radius values at which to compute the KAMP expectation.}
 
 \item{univariate}{Logical indicating whether to compute univariate KAMP expectation. Defaults to TRUE.}
 
-\item{marksvar1}{Value used to mark the points in the point pattern object.}
+\item{mark_var}{Column name in \code{df} that contains the marks for the point pattern object.}
 
-\item{marksvar2}{Value used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
+\item{mark1}{Value used to mark the points in the point pattern object.}
+
+\item{mark2}{Value used to mark the points in the point pattern object for the second type (optional, only used if \code{univariate} is FALSE).}
 
 \item{variance}{Logical indicating whether to compute the variance of KAMP (default is FALSE).}
 
@@ -38,6 +41,9 @@ check_inputs(
 \item{background}{Value used to define the background for the point pattern object.}
 
 \item{...}{}
+}
+\value{
+TRUE if all inputs are valid, otherwise throws an error with a descriptive message.
 }
 \description{
 Checks inputs for KAMP functions

@@ -8,8 +8,8 @@ kamp_variance_biv_helper(
   ppp_obj,
   rval,
   correction = "trans",
-  marksvar1 = "immune1",
-  marksvar2 = "immune2"
+  mark1 = "immune1",
+  mark2 = "immune2"
 )
 }
 \arguments{
@@ -17,9 +17,9 @@ kamp_variance_biv_helper(
 
 \item{correction}{Type of edge correction. Defaults to translational.}
 
-\item{marksvar1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
+\item{mark1}{Variable used to mark the points in the point pattern object for the first type. Default is "immune1".}
 
-\item{marksvar2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
+\item{mark2}{Variable used to mark the points in the point pattern object for the second type. Default is "immune2".}
 
 \item{rvalue}{A single radius}
 }
