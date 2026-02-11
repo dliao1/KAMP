@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --array=1-24%4
+#SBATCH --job-name=kamp_expec_job
+#SBATCH --partition=encore
+#SBATCH --output=kamp_expec_job.out
+#SBATCH --error=kamp_expec_job.err
+
+module purge
+module load R
+
+# Rscript to run an r script
+# This stores which job is running (1, 2, 3, etc)
+JOBID=$SLURM_ARRAY_TASK_ID
+Rscript sim_expectation.R $JOBID
