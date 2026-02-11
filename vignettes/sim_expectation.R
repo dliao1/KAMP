@@ -8,7 +8,6 @@ suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(Rcpp))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(parallel))
-set.seed(50)
 
 n_values <- c(500, 1000, 5000)
 abundance_values <- c(0.1, 0.3)
@@ -16,7 +15,7 @@ distribution_values <- "inhom"
 clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
-seed_start = 1000
+seed_start = 500
 n_rep <- 1 # just in case...
 
 
@@ -181,7 +180,7 @@ if (doLocal == TRUE) {
   SEED.START <- params$seed_start
 
   # for loop looping through all the reps
-  results = vector("list", length = n_rep)
+  results_list = vector("list", length = n_rep)
   for (rep in 1:n_rep) {
 
     seed.iter = (SEED.START - 1)*n_rep + rep

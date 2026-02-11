@@ -11,5 +11,4 @@ module load R/4.3.2
 export R_LIBS_USER=$HOME/R/4.3.2
 
 JOBID=$SLURM_ARRAY_TASK_ID
-Rscript -e 'cat("R:", R.version.string, "\n"); cat("libPaths:", paste(.libPaths(), collapse=" | "), "\n")'
 Rscript sim_expectation.R $JOBID
