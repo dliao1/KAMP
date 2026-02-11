@@ -8,8 +8,6 @@ suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(Rcpp))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(parallel))
-devtools::load_all()
-
 set.seed(50)
 
 n_values <- c(500, 1000, 5000)
