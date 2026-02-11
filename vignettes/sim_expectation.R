@@ -20,7 +20,7 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 1 # just in case...
+n_rep <- 2 # just in case...
 
 
 

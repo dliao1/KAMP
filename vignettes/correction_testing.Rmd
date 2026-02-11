@@ -704,6 +704,14 @@ save(results_list, file = filename)
 ```
 
 
+```{r}
+library(here)
+load(here("vignettes", "output", "1.RDA"))
+
+results_list[[1]]
+```
+
+
 Design for large simulation study:
 - n = (500, 1000, 5000)
 - Abundance = (0.1, 0.3)
