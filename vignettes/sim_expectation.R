@@ -184,6 +184,7 @@ if (doLocal == TRUE) {
   for (rep in 1:n_rep) {
 
     seed.iter = (SEED.START - 1)*n_rep + rep
+    print(seed.iter)
     set.seed(seed.iter)
 
     sim_data <- sim_pp_data_biv(
