@@ -2,13 +2,15 @@
 #SBATCH --array=1-24%4
 #SBATCH --job-name=kamp_expec_job
 #SBATCH --partition=encore
-#SBATCH --output=kamp_expec_job.out
-#SBATCH --error=kamp_expec_job.err
+#SBATCH --output=logs/%x_%A_%a.out
+#SBATCH --error=logs/%x_%A_%a.err
 
 module purge
-module load R
+module load R/4.3.2
+module load gcc
 
-# Rscript to run an r script
-# This stores which job is running (1, 2, 3, etc)
+export R_LIBS_USER=$HOME/R/4.3.2
+
 JOBID=$SLURM_ARRAY_TASK_ID
+Rscript -e 'cat("R:", R.version.string, "\n"); cat("libPaths:", paste(.libPaths(), collapse=" | "), "\n")'
 Rscript sim_expectation.R $JOBID
