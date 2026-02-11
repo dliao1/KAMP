@@ -141,7 +141,7 @@ if (doLocal == TRUE) {
         mark2 = "immune2",
         correction = params$correction,
         univariate = params$univariate,
-        nperm = 50
+        nperm = 100
       )
     })
 
