@@ -7,7 +7,6 @@
 
 module purge
 module load R/4.3.2
-module load gcc
 
 export R_LIBS_USER=$HOME/R/4.3.2
 
