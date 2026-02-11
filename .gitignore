@@ -14,3 +14,6 @@ docs
 for_daisy.R
 *.rds
 *.rda
+src/*.o 
+src/*.so 
+src/*.dll
