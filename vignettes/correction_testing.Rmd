@@ -1,0 +1,720 @@
+---
+title: "correction_testing"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+date: "2025-09-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r}
+devtools::load_all()
+
+library(KAMP)
+#library(devtools)
+library(tidyverse)
+library(spatstat.random)
+library(microbenchmark)
+library(spatstat.geom)
+library(spatstat.explore)
+library(ggplot2)
+library(Rcpp)
+library(kableExtra)
+library(parallel)
+
+set.seed(50)
+```
+
+
+Importing data
+```{r}
+ids <- unique(ovarian_df$sample_id)
+marksvar <- "immune"
+
+for (id in ids) {
+  df_sub <- ovarian_df %>% filter(sample_id == id)
+  w <- convexhull.xy(df_sub$x, df_sub$y)
+  pp_obj <- ppp(df_sub$x, df_sub$y, window = w, marks = df_sub[[marksvar]])
+  
+  p <- ggplot(as_tibble(pp_obj), aes(x, y, color = marks)) +
+    geom_point(size = 0.6) +
+    labs(title = paste("Sample:", id)) +
+    theme_minimal()
+  
+  print(p)
+}
+```
+
+```{r}
+ids <- unique(ovarian_df$sample_id)
+df <- ovarian_df %>% filter(sample_id == ids[4]) # 4 has 8k points, 2 has > 10000
+mark_var <- "immune"
+head(df)
+
+nrow(df)
+```
+
+# Setup
+
+kamp_expectation <- function(ppp_obj,
+                             rvals = c(0, .05, .075, .1, .15, .2),
+                             correction = "trans",
+                             mark1 = "immune")
+                             
+## Simulating data for testing
+```{r}
+# univ data
+ids <- unique(ovarian_df$sample_id)
+df <- ovarian_df %>% filter(sample_id == ids[4]) # 4 has 8k points, 2 has > 10000
+mark_var <- "immune"
+w <- convexhull.xy(df$x, df$y)
+vectra_data_univ <- ppp(df$x, df$y, window = w, marks = df[[marksvar]])
+
+
+# biv data
+sim_data_biv <- sim_pp_data_biv(lambda_n = 1000,
+                                abundance = 0.1,
+                                markvar1 = "immune1",
+                                markvar2 = "immune2",
+                                markvar3 = "background",
+                                distribution = "inhom",
+                                clust = TRUE)
+```
+
+## Expectation
+
+### K 
+```{r}
+k_expectation <- function(ppp_obj,
+                          rvals,
+                          mark1,
+                          mark2 = NULL,
+                          correction = "trans",
+                          univariate = TRUE) {
+  k <- NULL
+  if (univariate == TRUE) {
+    k = Kcross(ppp_obj, i = mark1, j = mark1,
+             r = rvals,
+             correction = correction) %>%
+      as_tibble() %>% 
+      rename(k = correction) %>%
+      mutate(method = "k", 
+             fundiff = k - theo,
+             correction = correction) %>% 
+      select(r, theo_csr = theo, k, fundiff, method, correction)
+    
+  } else {
+    k = Kcross(ppp_obj, 
+               i = mark1, 
+               j = mark2,
+               r = rvals,
+               correction = correction) %>%
+      as_tibble() %>% 
+      rename(k = correction) %>%
+      mutate(method = "k", 
+             fundiff = k - theo,
+             correction = correction) %>% 
+      select(r, theo_csr = theo, k, fundiff, method, correction)
+  }
+  
+  return(k)
+  
+}
+
+```
+
+
+### Kinhom Expectation 
+```{r}
+# Kinhom helper since that's not in the package - since sim_data comes as a ppp don't need to convert, but basically copy paste expectation code here
+
+kinhom_expectation <- function(ppp_obj, 
+                             rvals, 
+                             mark1, 
+                             mark2 = NULL,
+                             correction = "trans",
+                             univariate = TRUE) {
+  kinhom <- NULL
+  if (univariate == TRUE) {
+    kinhom = Kinhom(subset(ppp_obj, marks == mark1),
+                    r = rvals,
+                    correction = correction) %>%
+      as_tibble() %>% 
+      rename(kinhom = correction) %>%
+      mutate(method = "kinhom", 
+             fundiff = kinhom - theo,
+             correction = correction) %>% 
+      select(r, theo_csr = theo, kinhom, fundiff, method, correction)
+    
+  } else {
+    kinhom = Kcross.inhom(ppp_obj, 
+                          i = mark1, 
+                          j = mark2,
+                          r = rvals,
+                          correction = correction) %>%
+      as_tibble() %>% 
+      rename(kinhom = correction) %>%
+      mutate(method = "kinhom", 
+             fundiff = kinhom - theo,
+             correction = correction) %>% 
+      select(r, theo_csr = theo, kinhom, fundiff, method, correction)
+  }
+  
+  return(kinhom)
+}
+```
+
+### Permutation 
+
+Permutation approach to to randomly permute the cell labels and average the K
+values for a new CSR
+
+```{r}
+perm_expectation <- function(ppp_obj, 
+                             rvals, 
+                             mark1, 
+                             mark2 = NULL,
+                             correction = "trans",
+                             univariate = TRUE,
+                             nperm = 10) {
+  kperm <- NULL
+  if (univariate == TRUE) {
+    
+    k = Kcross(ppp_obj, i = mark1, j = mark1,
+             r = rvec,
+             correction = correction)
+
+    k = k %>%
+      as_tibble() %>%
+      rename(correction_k = correction) %>%
+      mutate(method = "k",
+             fundiff = correction_k - theo,
+             initial_correction = correction) %>%
+      select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
+    
+    kf = function(obj){
+      kdf = Kcross(i = mark1, 
+                   j = mark1,
+                 r = rvals,
+                 correction = correction)
+      
+      as_tibble(kdf) %>% 
+        filter(r %in% rvals) %>% 
+        rename(correction_k = correction) %>%
+        select(r, correction_k)
+    }
+    
+    perms = rlabel(ppp_obj, nsim = nperm)
+    kperm = map_dfr(perms, kf)
+    kperm = kperm %>% 
+      group_by(r) %>% 
+      summarise(csr = mean(correction_k)) %>% # empirical CSR
+      ungroup() %>%
+      mutate(correction_k = k$correction_k,
+             fundiff = correction_k - csr,
+             method = "perm",
+             initial_correction = k$initial_correction,
+             theo_csr = k$theo_csr) %>%
+      select(r, theo_csr, kperm_csr = csr, correction_k, fundiff, method, initial_correction)
+    
+  } else {
+    
+    k = Kcross(ppp_obj, 
+               i = mark1, 
+               j = mark2,
+               r = rvals,
+               correction = correction)
+
+    k = k %>%
+      as_tibble() %>%
+      rename(correction_k = correction) %>%
+      mutate(method = "k",
+             fundiff = correction_k - theo,
+             initial_correction = correction) %>%
+      select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
+    
+    kf = function(obj){
+      kdf = Kcross(obj, 
+                   i = mark1, 
+                   j = mark2,
+                   r = rvals,
+                   correction = correction)
+      
+      as_tibble(kdf) %>% 
+        filter(r %in% rvals) %>% 
+        rename(correction_k = correction) %>%
+        select(r, correction_k)
+    }
+    
+    perms = rlabel(ppp_obj, nsim = nperm)
+    kperm = map_dfr(perms, kf)
+    kperm = kperm %>% 
+      group_by(r) %>% 
+      summarise(csr = mean(correction_k)) %>% # empirical CSR
+      ungroup() %>%
+      mutate(correction_k = k$correction_k,
+             fundiff = correction_k - csr,
+             method = "perm",
+             initial_correction = k$initial_correction,
+             theo_csr = k$theo_csr) %>%
+      select(r, theo_csr, kperm_csr = csr, k = correction_k, fundiff, method, initial_correction)
+    
+  }
+  
+  return(kperm)
+}
+
+```
+
+## Variance
+
+### Permutation
+
+```{r}
+perm_variance <- function(ppp_obj, 
+                             rvals, 
+                             mark1, 
+                             mark2 = NULL,
+                             correction = "trans",
+                             univariate = TRUE,
+                             nperm = 10) {
+  kperm_var <- NULL
+  if (univariate == TRUE) {
+    k = Kcross(ppp_obj, i = mark1, j = mark1,
+             r = rvals,
+             correction = correction)
+
+    k = k %>%
+      as_tibble() %>%
+      rename(correction_k = correction) %>%
+      mutate(method = "k",
+             fundiff = correction_k - theo,
+             initial_correction = correction) %>%
+      select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
+    
+    
+    kf = function(obj){
+      kdf = Kcross(obj,
+                   i = mark1, 
+                   j = mark1,
+                   r = rvals,
+                   correction = correction)
+      
+      as_tibble(kdf) %>% 
+        filter(r %in% rvals) %>% 
+        rename(correction_k = correction) %>%
+        select(r, correction_k) %>%
+        mutate(khat = k$correction_k)
+    }
+    
+    perms = rlabel(ppp_obj, nsim = nperm)
+    kperm_var = map_dfr(perms, kf)
+    kperm_var = kperm_var %>% 
+      group_by(r) %>% 
+      summarise(var = var(correction_k),
+                pvalue = sum(correction_k >= khat)/nperm,
+                expectation = mean(correction_k)) %>% ungroup() %>%
+      mutate(method = "kperm")
+    
+    
+    res = kperm_var %>%
+      mutate(khat = rep(k$correction_k, times = 1))
+    
+    
+    res2 = res %>%
+      mutate(Z = (khat - expectation) / sqrt(var),
+             pvalue = pnorm(-Z),
+             method = "kperm approx")
+    
+    res = bind_rows(res, res2) %>%
+      select(r, khat, expectation, var, Z, pvalue, method) %>%
+      mutate(initial_correction = correction)
+    
+    return(res) # kperm pvalue is exact and has no Z value, kperm approx has Z value and pvalue based on normal approximation
+    
+  } else {
+    k = Kcross(ppp_obj, 
+               i = mark1, 
+               j = mark2,
+               r = rvals,
+               correction = correction)
+
+    k = k %>%
+      as_tibble() %>%
+      rename(correction_k = correction) %>%
+      mutate(method = "k",
+             fundiff = correction_k - theo,
+             initial_correction = correction) %>%
+      select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
+    
+    
+    kf = function(obj){
+      kdf = Kcross(obj, 
+                   i = mark1, 
+                   j = mark2,
+                   r = rvals,
+                   correction = correction)
+      
+      as_tibble(kdf) %>% 
+        filter(r %in% rvals) %>% 
+        rename(correction_k = correction) %>%
+        select(r, correction_k) %>%
+        mutate(khat = k$correction_k)
+    }
+    
+    perms = rlabel(ppp_obj, nsim = nperm)
+    kperm_var = map_dfr(perms, kf)
+    kperm_var = kperm_var %>% 
+      group_by(r) %>% 
+      summarise(var = var(correction_k),
+                pvalue = sum(correction_k >= khat)/nperm,
+                expectation = mean(correction_k)) %>% # here expectation is the empirical CSR from the permutations
+      ungroup() %>%
+      mutate(method = "kperm")
+    
+    
+    res = kperm_var %>%
+      mutate(khat = rep(k$correction_k, times = 1))
+    
+    
+    res2 = res %>%
+      mutate(Z = (khat - expectation) / sqrt(var),
+             pvalue = pnorm(-Z),
+             method = "kperm approx")
+    
+    res = bind_rows(res, res2) %>%
+      select(r, khat, expectation, var, Z, pvalue, method) %>%
+      mutate(initial_correction = correction)
+    
+    return(res)
+    
+  }
+}
+```
+
+
+# Simulations for Expectation
+
+```{r}
+
+suppressPackageStartupMessages(library(KAMP))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(spatstat.random))
+suppressPackageStartupMessages(library(microbenchmark))
+suppressPackageStartupMessages(library(spatstat.geom))
+suppressPackageStartupMessages(library(spatstat.explore))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(Rcpp))
+suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(parallel))
+devtools::load_all()
+
+set.seed(50)
+
+n_values <- c(500, 1000, 5000)
+abundance_values <- c(0.1, 0.3)
+distribution_values <- "inhom"
+clust_values <- c(TRUE, FALSE)
+correction <- c("trans", "iso")
+univariate <- FALSE
+seed_start = 1000
+n_rep <- 1 # just in case...
+
+
+
+param_grid <- expand.grid(n = n_values,
+                          abundance = abundance_values,
+                          distribution = distribution_values,
+                          clust = clust_values,
+                          correction = correction,
+                          univariate = univariate,
+                          rep = seq_len(n_rep),
+                          seed_start = seed_start,
+                          stringsAsFactors = FALSE)
+head(param_grid)
+
+wd = getwd()
+
+if(substring(wd, 4, 8) == "Users"){
+  doLocal = TRUE
+}else{
+  doLocal = FALSE
+}
+
+if (doLocal == TRUE) {
+  num_cores <- 8
+  cl <- makeCluster(num_cores)
+  
+  clusterEvalQ(cl, {
+    library(dplyr)
+    library(tibble)
+    library(purrr)
+    library(spatstat)
+  })
+  
+  clusterExport(
+    cl,
+    varlist = c(
+      "param_grid",
+      "sim_pp_data_biv",
+      "k_expectation",
+      "kinhom_expectation",
+      "kamp",
+      "perm_expectation"
+    ),
+    envir = environment()
+  )
+  
+  
+  results_list <- parLapply(cl, 1:nrow(param_grid), function(i) {
+      params <- param_grid[i, ]
+      
+      sim_data <- sim_pp_data_biv(
+        lambda_n = params$n,
+        abundance = params$abundance,
+        markvar1 = "immune1",
+        markvar2 = "immune2",
+        markvar3 = "background",
+        distribution = params$distribution,
+        clust = params$clust
+      )
+      
+      t_k <- system.time({
+        k_result <- k_expectation(
+          sim_data,
+          rvals = seq(0, 0.5, by = 0.05),
+          mark1 = "immune1",
+          mark2 = "immune2",
+          correction = params$correction,
+          univariate = params$univariate
+        )
+      })
+      
+      t_kinhom <- system.time({
+        kinhom_result <- kinhom_expectation(
+          sim_data,
+          rvals = seq(0, 0.5, by = 0.05),
+          mark1 = "immune1",
+          mark2 = "immune2",
+          correction = params$correction,
+          univariate = params$univariate
+        )
+      })
+      
+      t_kamp <- system.time({
+        kamp_result <- kamp(
+          as.data.frame(sim_data),
+          rvals = seq(0, 0.5, by = 0.05),
+          mark_var = "marks",
+          mark1 = "immune1",
+          mark2 = "immune2",
+          correction = params$correction,
+          univariate = params$univariate,
+          thin = FALSE,
+          background = "background",
+          Rcpp = FALSE
+        )
+      })
+      
+      t_kamp_lite <- system.time({
+        kamp_lite_result <- kamp(
+          as.data.frame(sim_data),
+          rvals = seq(0, 0.5, by = 0.05),
+          mark_var = "marks",
+          mark1 = "immune1",
+          mark2 = "immune2",
+          correction = params$correction,
+          univariate = params$univariate,
+          thin = TRUE,
+          p_thin = 0.5,
+          background = "background",
+          Rcpp = FALSE
+        )
+      })
+      
+      t_kperm <- system.time({
+        kperm_result <- perm_expectation(
+          sim_data,
+          rvals = seq(0, 0.5, by = 0.05),
+          mark1 = "immune1",
+          mark2 = "immune2",
+          correction = params$correction,
+          univariate = params$univariate,
+          nperm = 50
+        )
+      }) 
+      
+      list(
+        results = list(
+          k = k_result,
+          kinhom = kinhom_result,
+          kamp = kamp_result,
+          kamp_lite = kamp_lite_result,
+          kperm = kperm_result
+        ),
+        times = tibble(
+          n = params$n,
+          abundance = params$abundance,
+          clust = params$clust,
+          correction = params$correction,
+          rep = params$rep,
+          method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm"),
+          elapsed = c(
+            t_k["elapsed"],
+            t_kinhom["elapsed"],
+            t_kamp["elapsed"],
+            t_kamp_lite["elapsed"],
+            t_kperm["elapsed"]
+          )
+        )
+      )
+    }
+  )
+  
+  stopCluster(cl)
+  
+  
+} else { # this is on the cluster
+  scenario <- as.numeric(commandArgs(trailingOnly=TRUE))
+  
+  params <- param_grid[scenario, ]
+  
+  SEED.START <- params$seed_start
+  
+  # for loop looping through all the reps
+  results = vector("list", length = n_rep)
+  for (rep in 1:n_rep) {
+    
+    seed.iter = (SEED.START - 1)*n_rep + rep
+    set.seed(seed.iter)
+    
+    sim_data <- sim_pp_data_biv(
+      lambda_n = params$n,
+      abundance = params$abundance,
+      markvar1 = "immune1",
+      markvar2 = "immune2",
+      markvar3 = "background",
+      distribution = params$distribution,
+      clust = params$clust
+    )
+    t_k <- system.time({
+      k_result <- k_expectation(
+        sim_data,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate
+      )
+    })
+    
+    t_kinhom <- system.time({
+      kinhom_result <- kinhom_expectation(
+        sim_data,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate
+      )
+    })
+    
+    t_kamp <- system.time({
+      kamp_result <- kamp(
+        as.data.frame(sim_data),
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = FALSE,
+        background = "background",
+        Rcpp = FALSE
+      )
+    })
+    
+    t_kamp_lite <- system.time({
+      kamp_lite_result <- kamp(
+        as.data.frame(sim_data),
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = TRUE,
+        p_thin = 0.5,
+        background = "background",
+        Rcpp = FALSE
+      )
+    })
+    
+    t_kperm <- system.time({
+      kperm_result <- perm_expectation(
+        sim_data,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        nperm = 50
+      )
+    })
+    
+    results_list[[rep]] <- list(
+      results = list(
+        k = k_result,
+        kinhom = kinhom_result,
+        kamp = kamp_result,
+        kamp_lite = kamp_lite_result,
+        kperm = kperm_result
+      ),
+      times = tibble(
+        n = params$n,
+        abundance = params$abundance,
+        clust = params$clust,
+        correction = params$correction,
+        rep = rep,
+        method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm"),
+        elapsed = c(
+          t_k["elapsed"],
+          t_kinhom["elapsed"],
+          t_kamp["elapsed"],
+          t_kamp_lite["elapsed"],
+          t_kperm["elapsed"]
+        )
+      )
+    )
+  }
+  
+}
+
+filename = paste0(here::here("vignettes"), "/", scenario, ".RDA")
+save(results_list, file = filename)
+
+```
+
+
+Design for large simulation study:
+- n = (500, 1000, 5000)
+- Abundance = (0.1, 0.3)
+- clust = (TRUE, FALSE)
+- correction = (trans, iso)
+- Bivariate inhomogenous
+- reps = 100
+- Rcpp = TRUE (for speed)
+- Goal: compare K, Kinhom, KAMP, KAMP lite (thin_pct = 0.5)
+
+Analyses (what are we comparing?)
+- Computation time
+- Degree of clustering
+
