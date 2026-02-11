@@ -9,6 +9,8 @@ suppressPackageStartupMessages(library(Rcpp))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(parallel))
 
+source(file.path("vignettes", "sim_helpers.R"))
+
 n_values <- c(500, 1000, 5000)
 abundance_values <- c(0.1, 0.3)
 distribution_values <- "inhom"
