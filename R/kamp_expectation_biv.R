@@ -70,6 +70,13 @@ kamp_expectation_biv <- function(ppp_obj,
                              mark1 = "immune1",
                              mark2 = "immune2") {
 
+  # gets number of points
+  npts  <- npoints(ppp_obj)
+
+  if (npts > 10000) {
+    warning("Point pattern has more than 10,000 points. Switching to border correction")
+    correction = "border"
+  }
 
   k_orig = Kcross(ppp_obj, i = mark1, j = mark2,
              r = rvals,
@@ -92,6 +99,13 @@ kamp_expectation_biv <- function(ppp_obj,
     kamp_df = kamp_df %>%
       mutate(kamp_csr = iso,
              k = k_orig$iso,
+             theo_csr = k_orig$theo,
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
+  } else if (correction == "border") {
+    kamp_df = kamp_df %>%
+      mutate(kamp_csr = border,
+             k = k_orig$border,
              theo_csr = k_orig$theo,
              kamp = k - kamp_csr) %>%
       select(r, k, theo_csr, kamp_csr, kamp)

@@ -29,17 +29,21 @@
 #' }
 #'
 #' @export
-#'
+#' @importFrom purrr map_dfr
+#' @importFrom dplyr %>%
+#' @importFrom tibble as_tibble
 kamp_variance = function(ppp_obj,
                          rvals = c(0, .05, .075, .1, .15, .2),
                          correction = "trans",
                          mark1 = "immune") {
 
 
-  map_dfr(rvals,
+  results <- map_dfr(rvals,
           ~kamp_variance_helper(ppp_obj = ppp_obj,
                                 rvalue = .x,
                                 correction = correction,
                                 mark1 = mark1),
           .progress = TRUE)
+
+  return(results)
 }

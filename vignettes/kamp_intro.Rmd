@@ -228,6 +228,8 @@ univ_kamp_var
 We can visualize the variance of the KAMP expectation using `ggplot2`:
 
 ```{r}
+#devtools::load_all()
+
 univ_kamp_var %>%
   ggplot(aes(x = r, y = var)) +
   geom_line() +

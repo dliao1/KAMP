@@ -32,6 +32,7 @@
 #' @param thin A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
 #' @param p_thin Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
 #' @param background Variable used to define the background for the point pattern object.
+#' @param Rcpp A logical value indicating whether to use Rcpp implementation (default is FALSE).
 #' @param ... Additional arguments passed to the underlying functions.
 #'
 #' @returns
@@ -111,6 +112,7 @@ kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, m
                 thin = FALSE,
                 p_thin = 0.5,
                 background = NULL,
+                Rcpp = FALSE,
                 ...){
 
   ppp_obj  <- check_inputs(df,
@@ -135,29 +137,40 @@ kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, m
   }
 
   results <- NULL
-  if (univariate == TRUE && variance == FALSE) {
+  if (univariate == TRUE && Rcpp == FALSE && variance == FALSE) {
     results <- kamp_expectation(ppp_obj = ppp_obj,
                                 rvals = rvals,
                                 correction = correction,
                                 mark1 = mark1)
-  } else if (univariate == TRUE && variance == TRUE) {
+  } else if (univariate == TRUE && Rcpp == FALSE && variance == TRUE) {
     results <- kamp_variance(ppp_obj = ppp_obj,
                              rvals = rvals,
                              correction = correction,
                              mark1 = mark1)
   }
-  else if (univariate == FALSE && variance == FALSE) {
+  else if (univariate == FALSE && Rcpp == FALSE && variance == FALSE) {
     results <- kamp_expectation_biv(ppp_obj = ppp_obj,
                                     rvals = rvals,
                                     mark1 = mark1,
                                     mark2 = mark2,
                                     correction = correction)
-  } else if (univariate == FALSE && variance == TRUE) {
+  } else if (univariate == FALSE && Rcpp == FALSE && variance == TRUE) {
     results <- kamp_variance_biv(ppp_obj = ppp_obj,
                                  rvals = rvals,
                                  mark1 = mark1,
                                  mark2 = mark2,
                                  correction = correction)
+  } else if (univariate == TRUE && Rcpp == TRUE && variance == TRUE) {
+    results <- kamp_variance_Rcpp(ppp_obj = ppp_obj,
+                                  rvals = rvals,
+                                  correction = correction,
+                                  mark1 = mark1)
+  } else if (univariate == FALSE && Rcpp == TRUE && variance == TRUE) {
+    results <- kamp_variance_biv_Rcpp(ppp_obj = ppp_obj,
+                                      rvals = rvals,
+                                      mark1 = mark1,
+                                      mark2 = mark2,
+                                      correction = correction)
   }
   return(results)
 

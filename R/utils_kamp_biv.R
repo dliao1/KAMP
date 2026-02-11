@@ -40,24 +40,26 @@ kamp_variance_biv_helper <- function(ppp_obj,
                                      mark2 = "immune2") {
 
   npts = npoints(ppp_obj)
-  W = Window(ppp_obj)
-  areaW = spatstat.geom::area(W)
+  ppp_window = Window(ppp_obj)
+  areaW = spatstat.geom::area(ppp_window)
 
   pp_df = as.data.frame(ppp_obj)
   W = as.matrix(dist(as.matrix(select(pp_df, x, y))))
   Wr <- NULL
 
   # TODO: implement border correction
-  if (correction == "iso") {
-    e = edge.Ripley(ppp_obj)
-    W = ifelse(W <= rval, 1, 0)
-    diag(W) = 0
-    Wr = W * e
-  } else if (correction == "trans") {
+  if (correction == "trans") {
     e = edge.Trans(ppp_obj)
     W = ifelse(W <= rval, 1, 0)
     diag(W) = 0
     Wr = W * e
+  } else if (correction == "iso") {
+    e = edge.Ripley(ppp_obj, r = W)
+    W = ifelse(W <= rval, 1, 0)
+    diag(W) = 0
+    Wr = W * e
+  } else {
+    stop("Only translational and isotropic edge correction implemented as of right now.")
   }
 
   R0 = sum(Wr)
@@ -85,6 +87,7 @@ kamp_variance_biv_helper <- function(ppp_obj,
     k = K,
     theo_csr = pi * rval^2, # theoretical CSR using area of circle
     kamp_csr = mu_K, # K expectation under permutation distributions
+    kamp = k - kamp_csr,
     var = var_K,
     pvalue = min(1, pval_appx)
   )

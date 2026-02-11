@@ -35,23 +35,99 @@ kamp_variance_helper = function(ppp_obj,
                                 correction = "trans",
                                 mark1 = "immune") {
   npts = npoints(ppp_obj)
-  W = Window(ppp_obj)
-  areaW = spatstat.geom::area(W)
+  ppp_window = Window(ppp_obj)
+  areaW = spatstat.geom::area(ppp_window)
 
   pp_df = as.data.frame(ppp_obj)
   W = as.matrix(dist(as.matrix(select(pp_df, x, y))))
   Wr <- NULL
 
+  R0 <- NULL
+  R1 <- NULL
+  R2 <- NULL
+  R3 <- NULL
+  npairs <- NULL
+
+
 
   # TODO: implement border correction
 
- if (correction == "trans") {
-    e = edge.Trans(ppp_obj)
-    W = ifelse(W <= rvalue, 1, 0)
-    diag(W) = 0
-    Wr = W * e
+  if (npts > 10000) {
+    correction = "border"
   }
 
+ if (correction == "trans") {
+    e = edge.Trans(ppp_obj) #move this out of helper
+    W = ifelse(W <= rvalue, 1, 0) # create weight matrix
+    diag(W) = 0
+    Wr = W * e
+ } else if (correction == "border") {
+
+   dist_to_boundary <- spatstat.geom::bdist.points(ppp_obj)
+   eligible <- (dist_to_boundary >= rvalue)
+
+   is_m1 <- (ppp_obj$marks == mark1)
+   eligible_m1 <- eligible & is_m1
+
+   n_elig <- sum(eligible)
+   m <- sum(is_m1)
+   m_elig <- sum(eligible_m1)
+
+   # so m is # of marked points, m_elig is # of eligible marked points
+   # similarly, npts is total # of points, n_elig is # of eligible points
+
+   areaW <- spatstat.geom::area(Window(ppp_obj))
+
+   Wmat <- (W <= rvalue) * 1.0
+   diag(Wmat) <- 0
+   Wr <- Wmat
+   Wr[!eligible, ] <- 0 # zeroes out rows of ineligible points
+
+   R0 <- sum(Wr)
+   R1 <- sum(Wr^2)
+   R2 <- sum(rowSums(Wr)^2) - R1
+   R3 <- R0^2 - 2*R1 - 4*R2
+
+   Kmat <- Wr[which(eligible_m1), which(is_m1), drop = FALSE]
+
+   K <- areaW * sum(Kmat) / (m * m_elig) # K = areaW * sum(Kmat)/ m / (m - 1)
+   mu_K <- areaW * R0 / (n_elig * npts) # mu_K = areaW * R0 / npts / (npts - 1)
+
+   # Original were hypergeometric probabilities so these are probably no longer correct? not sure..
+   f1 <- m_elig*m / (n_elig*npts) # f1 = m*(m-1)/npts/(npts-1)
+   f2 <- f1*(m_elig-1) / (n_elig-1) #f2 = f1*(m-2)/(npts-2)
+   f3 <- f2*(m_elig-2) / (n_elig-2) #f3 = f2*(m-3)/(npts-3)
+
+
+
+  # var_K = areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) / m / m / (m - 1) / (m - 1) - mu_K^2
+   var_K <- areaW^2 * (2*R1*f1 + 4*R2*f2 + R3*f3) / m / m / m_elig/ m_elig - mu_K^2
+
+   Z_k <- (K - mu_K) / sqrt(var_K)
+   pval_appx <- pnorm(-Z_k)
+
+   return(tibble(
+     r = rvalue,
+     k = K,
+     theo_csr = pi * rvalue^2,
+     kamp_csr = mu_K,
+     kamp = K - mu_K,
+     var = var_K,
+     pvalue = min(1, pval_appx)
+   ))
+
+
+ } else if (correction %in% c("iso", "isotropic")) {
+   e <- spatstat.explore::edge.Ripley(ppp_obj, r = W)
+   W <- (W <= rvalue) * 1.0
+   diag(W) <- 0
+   Wr <- W * e
+ } else {
+   stop("Only translational edge correction implemented as of right now.")
+ }
+
+
+  # COMPUTE ALL THESE SUMS IN C
 
   # Compute R0 term
   R0 = sum(Wr)
@@ -68,10 +144,11 @@ kamp_variance_helper = function(ppp_obj,
   f3 = f2*(m-3)/(npts-3)
 
   Kmat = Wr[which(ppp_obj$marks == mark1),which(ppp_obj$marks == mark1)]
+
+
   K = areaW * sum(Kmat)/ m / (m - 1) # Ripley's K
   mu_K = areaW * R0 / npts / (npts - 1) # expectation
   var_K = areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) / m / m / (m - 1) / (m - 1) - mu_K^2   # variance
-
 
   Z_k = (K - mu_K) / sqrt(var_K) # Test statistic
   pval_appx = pnorm(-Z_k) # approximated p-value based on normal distribution
@@ -247,7 +324,7 @@ check_inputs <- function(df,
     message(paste0("Less than 5 target cells marked as '", mark1, "'. This may lead to unreliable results."))
   }
 
-  if (npoints(ppp_obj) <= 10000) {
+  if (npoints(ppp_obj) > 10000) {
     message("The point pattern object has more than 10000 points. Switching to border correction")
   }
 

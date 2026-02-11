@@ -16,6 +16,7 @@ kamp(
   thin = FALSE,
   p_thin = 0.5,
   background = NULL,
+  Rcpp = FALSE,
   ...
 )
 }
@@ -37,6 +38,8 @@ kamp(
 \item{p_thin}{Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.}
 
 \item{background}{Variable used to define the background for the point pattern object.}
+
+\item{Rcpp}{A logical value indicating whether to use Rcpp implementation (default is FALSE).}
 
 \item{...}{Additional arguments passed to the underlying functions.}
 

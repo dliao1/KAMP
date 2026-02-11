@@ -54,8 +54,13 @@ kamp_expectation <- function(ppp_obj,
                              rvals = c(0, .05, .075, .1, .15, .2),
                              correction = "trans",
                              mark1 = "immune") {
+  # gets number of points
+  npts  <- npoints(ppp_obj)
 
-
+  if (npts > 10000) {
+    warning("Point pattern has more than 10,000 points. Switching to border correction")
+    correction = "border"
+  }
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
   k_orig = Kcross(ppp_obj, i = mark1, j = mark1,
@@ -75,10 +80,17 @@ kamp_expectation <- function(ppp_obj,
              theo_csr = k_orig$theo,
              kamp = k - kamp_csr) %>% # difference between K and KAMP CSR
       select(r, k, theo_csr, kamp_csr, kamp)
-  } else {
+  } else if (correction == "iso") {
     kamp_df = kamp_df %>%
       mutate(kamp_csr = iso,
              k = k_orig$iso, # takes calculated K from Kcross
+             theo_csr = k_orig$theo,
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
+  } else if (correction == "border") {
+    kamp_df = kamp_df %>%
+      mutate(kamp_csr = border,
+             k = k_orig$border, # takes calculated K from Kcross
              theo_csr = k_orig$theo,
              kamp = k - kamp_csr) %>%
       select(r, k, theo_csr, kamp_csr, kamp)
