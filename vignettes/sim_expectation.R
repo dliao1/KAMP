@@ -8,8 +8,10 @@ suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(Rcpp))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(parallel))
+suppressPackageStartupMessages(library(here))
 
-source(file.path("vignettes", "sim_helpers.R"))
+
+source(here::here("vignettes", "sim_helpers.R"))
 
 n_values <- c(500, 1000, 5000)
 abundance_values <- c(0.1, 0.3)
