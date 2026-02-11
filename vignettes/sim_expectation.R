@@ -20,7 +20,7 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 2 # just in case...
+n_rep <- 100 # just in case...
 
 
 
@@ -33,7 +33,6 @@ param_grid <- expand.grid(n = n_values,
                           rep = seq_len(n_rep),
                           seed_start = seed_start,
                           stringsAsFactors = FALSE)
-head(param_grid)
 
 wd = getwd()
 
