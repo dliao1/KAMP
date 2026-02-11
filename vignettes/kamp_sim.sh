@@ -2,8 +2,8 @@
 #SBATCH --array=1-24%4
 #SBATCH --job-name=kamp_expec_job
 #SBATCH --partition=encore
-#SBATCH --output=logs/%x_%A_%a.out
-#SBATCH --error=logs/%x_%A_%a.err
+#SBATCH --output=kamp_expec_job.out
+#SBATCH --error=kamp_expec_job.err
 
 module purge
 module load R/4.3.2
