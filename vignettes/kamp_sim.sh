@@ -8,7 +8,7 @@
 module purge
 module load R/4.3.2
 
-export R_LIBS_USER=$HOME/R/4.3.2
+export R_LIBS_USER=$HOME/R/x86_64-pc-linux-gnu-library/4.3
 
 JOBID=$SLURM_ARRAY_TASK_ID
 Rscript sim_expectation.R $JOBID
