@@ -187,7 +187,8 @@ perm_variance <- function(ppp_obj,
       select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
 
     kf = function(obj){
-      kdf = Kcross(i = mark1,
+      kdf = Kcross(obj,
+                   i = mark1,
                    j = mark1,
                    r = rvals,
                    correction = correction)
@@ -213,7 +214,7 @@ perm_variance <- function(ppp_obj,
              method = "perm",
              initial_correction = k$initial_correction,
              theo_csr = k$theo_csr) %>%
-      select(r, theo_csr, kperm_csr = csr, correction_k, fundiff, method, initial_correction)
+      select(r, theo_csr, kperm_csr = csr, correction_k, fundiff, khat, var, pvalue, method, initial_correction)
 
     res = kperm %>%
       mutate(khat = rep(k$correction_k, times = 1))
@@ -272,7 +273,7 @@ perm_variance <- function(ppp_obj,
              method = "perm",
              initial_correction = k$initial_correction,
              theo_csr = k$theo_csr) %>%
-      select(r, theo_csr, kperm_csr = csr, correction_k, fundiff, method, initial_correction)
+      select(r, theo_csr, kperm_csr = csr, correction_k, fundiff, khat, var, pvalue, method, initial_correction)
 
     res = kperm %>%
       mutate(khat = rep(k$correction_k, times = 1))
