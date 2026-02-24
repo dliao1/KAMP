@@ -158,6 +158,9 @@ for (i in seq_along(sim_results)) {
     kperm_val    <- res$results$kperm   %>% filter(round(r, 2) == r0) %>% pull(fundiff)
     kamp_val     <- res$results$kamp    %>% filter (round(r, 2) == r0) %>% pull(kamp)
     kamp_lite_val<- res$results$kamp_lite %>% filter(round(r, 2) == r0) %>% pull(kamp)
+    kamp_var_val <- res$results$kamp_var %>% filter(round(r, 2) == r0) %>% pull(kamp)
+    kamp_lite_var_val <- res$results$kamp_lite_var %>% filter(round(r, 2) == r0) %>% pull(kamp)
+    kperm_var_val <- res$results$kperm_var %>% filter(method == "perm") %>% filter(round(r, 2) == r0) %>% pull(fundiff)
 
     tmp <- data.frame(
       scenario = i,
@@ -167,15 +170,21 @@ for (i in seq_along(sim_results)) {
       clust = unique(res$times$clust)[1],
       abundance = unique(res$times$abundance)[1],
       correction = unique(res$times$correction)[1],
-      method = c("K", "Kinhom", "Kperm", "KAMP", "KAMP_lite"),
-      doc = c(k_val, kinhom_val, kperm_val, kamp_val, kamp_lite_val)
+      method = c("K", "Kinhom", "Kperm", "KAMP", "KAMP_lite", "KAMP_var", "KAMP_lite_var", "Kperm_var"),
+      doc = c(k_val, kinhom_val, kperm_val, kamp_val, kamp_lite_val, kamp_var_val, kamp_lite_var_val, kperm_var_val)
     )
+    
 
     doc_long <- rbind(doc_long, tmp)
   }
 }
 
 ```
+
+```{r}
+res$results$kperm_var
+```
+
 
 ```{r}
 p1 <- ggplot(subset(doc_long, clust == FALSE),
@@ -209,6 +218,92 @@ p2 <- ggplot(subset(doc_long, clust == TRUE),
 p1 
 
 p2
+
+```
+
+# Variance
+```{r}
+r0 <- 0.20
+alpha <- 0.05
+
+get_p_at_r0 <- function(df, r0) {
+  if (is.null(df) || nrow(df) == 0) return(NA_real_)
+  df %>%
+    mutate(dist = abs(r - r0)) %>%
+    arrange(dist) %>%
+    slice(1) %>%
+    pull(pvalue)
+}
+
+p_long <- imap_dfr(sim_results, function(scn, i) {
+  imap_dfr(scn, function(res, j) {
+    tibble(
+      scenario   = i,
+      run        = j,
+      n          = unique(res$times$n)[1],
+      abundance  = unique(res$times$abundance)[1],
+      clust      = unique(res$times$clust)[1],
+      correction = unique(res$times$correction)[1],
+      
+      # use kperm method = "kperm approx"
+      Kperm      = get_p_at_r0(res$results$kperm_var %>% filter(method == "kperm approx"), r0),
+      KAMP       = get_p_at_r0(res$results$kamp_var, r0),
+      KAMP_lite  = get_p_at_r0(res$results$kamp_lite_var, r0)
+    ) %>%
+      pivot_longer(c(Kperm, KAMP, KAMP_lite),
+                   names_to = "method",
+                   values_to = "pvalue") %>%
+      mutate(reject = if_else(!is.na(pvalue) & pvalue <= alpha, 1L, 0L))
+  })
+})
+
+
+type1_df <- p_long %>%
+  filter(clust == FALSE) %>%
+  group_by(n, abundance, correction, method) %>%
+  summarise(type1_error = mean(reject, na.rm = TRUE), .groups = "drop")
+
+power_df <- p_long %>%
+  filter(clust == TRUE) %>%
+  group_by(n, abundance, correction, method) %>%
+  summarise(power = mean(reject, na.rm = TRUE), .groups = "drop")
+
+ggplot(type1_df, aes(x = factor(n), y = type1_error, color = method)) +
+  geom_hline(yintercept = alpha, linetype = "dashed") +
+  geom_point(size = 2, position = position_dodge(width = 0.4)) +
+  facet_grid(correction ~ abundance) +
+  labs(
+    title = "Type I error = P(reject H0 | H0 true)",
+    x = "Sample size (n)",
+    y = "type1_error"
+  ) +
+  theme_minimal()
+
+ggplot(power_df, aes(x = factor(n), y = power, color = method)) +
+  geom_hline(yintercept = alpha, linetype = "dashed") +
+  geom_point(size = 2, position = position_dodge(width = 0.4)) +
+  facet_grid(correction ~ abundance) +
+  labs(
+    title = "Power = P(reject H0 | H1 true)",
+    x = "Sample size (n)",
+    y = "power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+p_long %>%
+  filter(clust == FALSE) %>%
+  count(method, is.na(pvalue))
+
+type1_df %>%
+  count(method)
+
+type1_df %>%
+  filter(method == "KAMP")
+```
+```{r}
+p_long %>% filter(clust == TRUE) 
 
 ```
 

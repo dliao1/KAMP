@@ -199,8 +199,8 @@ check_inputs <- function(df,
   # Initialize ppp_obj
   ppp_obj <- NULL
 
-  # Check if df is a dataframe
-  if (!is.data.frame(df)) {
+  # Check if df is a dataframe or point process object
+  if (!is.data.frame(df) && !inherits(df, "ppp")) {
     stop("Input df must be a dataframe.")
   }
 
@@ -227,9 +227,15 @@ check_inputs <- function(df,
     stop("The mark_var column must have at least two unique values.")
   }
 
-  # Convert df to ppp object
-  win <- convexhull.xy(df$x, df$y)
-  ppp_obj <- ppp(df$x, df$y, window = win, marks = df$mark_var)
+  # if df, convert to ppp object
+
+  if (inherits(df, "ppp")) {
+    ppp_obj <- df
+  } else {
+    # Convert df to ppp object
+    win <- convexhull.xy(df$x, df$y)
+    ppp_obj <- ppp(df$x, df$y, window = win, marks = df$mark_var)
+  }
   all_marks <- unique(marks(ppp_obj))
 
   message("We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.")

@@ -20,8 +20,8 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 5 # just in case... tot est my variance addition works
-nperm <- 5
+n_rep <- 100 # just in case... tot est my variance addition works
+nperm <- 1000
 
 
 param_grid <- expand.grid(n = n_values,
@@ -102,11 +102,10 @@ if (doLocal == TRUE) {
       )
     })
 
-    sim_data_df <- as.data.frame(sim_data)
 
     t_kamp <- system.time({
       kamp_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -121,7 +120,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -150,7 +149,7 @@ if (doLocal == TRUE) {
     # VARIANCE
     t_kamp_var <- system.time({
       kamp_var_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -166,7 +165,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite_var <- system.time({
       kamp_lite_var_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -274,11 +273,9 @@ if (doLocal == TRUE) {
       )
     })
 
-    sim_data_df <- as.data.frame(sim_data)
-
     t_kamp <- system.time({
       kamp_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -293,7 +290,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -323,7 +320,7 @@ if (doLocal == TRUE) {
 
     t_kamp_var <- system.time({
       kamp_var_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -339,7 +336,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite_var <- system.time({
       kamp_lite_var_result <- kamp(
-        sim_data_df,
+        sim_data,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
