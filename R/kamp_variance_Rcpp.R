@@ -58,9 +58,9 @@ kamp_variance_Rcpp = function(ppp_obj,
     stop("Invalid j indices from closepairs")
   }
 
-  if (npts > 10000) {
-    correction = "border"
-  }
+  #if (npts > 10000) {
+  #  correction = "border"
+  #}
 
 
   bdist <- NULL

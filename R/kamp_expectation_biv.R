@@ -75,7 +75,7 @@ kamp_expectation_biv <- function(ppp_obj,
 
   if (npts > 10000) {
     warning("Point pattern has more than 10,000 points. Switching to border correction")
-    correction = "border"
+    #correction = "border"
   }
 
   k_orig = Kcross(ppp_obj, i = mark1, j = mark2,

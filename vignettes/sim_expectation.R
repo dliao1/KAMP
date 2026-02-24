@@ -187,11 +187,9 @@ if (doLocal == TRUE) {
         rvals = seq(0, 0.5, by = 0.05),
         mark1 = "immune1",
         mark2 = "immune2",
-        correction = params$correction,
         univariate = params$univariate,
-        nperm = nperm,
-        variance = TRUE
-      )
+        nperm = nperm
+        )
     })
 
     list(
@@ -362,10 +360,8 @@ if (doLocal == TRUE) {
         rvals = seq(0, 0.5, by = 0.05),
         mark1 = "immune1",
         mark2 = "immune2",
-        correction = params$correction,
         univariate = params$univariate,
-        nperm = nperm,
-        variance = TRUE
+        nperm = nperm
       )
     })
 

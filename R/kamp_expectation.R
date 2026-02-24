@@ -59,7 +59,7 @@ kamp_expectation <- function(ppp_obj,
 
   if (npts > 10000) {
     warning("Point pattern has more than 10,000 points. Switching to border correction")
-    correction = "border"
+    #correction = "border"
   }
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
