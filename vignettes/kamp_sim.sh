@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --array=1-24%4
 #SBATCH --job-name=kamp_expec_job
-#SBATCH --partition=day-long-cpu
+#SBATCH --partition=short-cpu
 #SBATCH --output=kamp_expec_job.out
 #SBATCH --error=kamp_expec_job.err
 
