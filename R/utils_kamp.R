@@ -196,47 +196,36 @@ check_inputs <- function(df,
                          thin,
                          p_thin,
                          background,...) {
-  # Initialize ppp_obj
   ppp_obj <- NULL
-
-  # Check if df is a dataframe or point process object
-  if (!is.data.frame(df) && !inherits(df, "ppp")) {
-    stop("Input must be either a data.frame or a spatstat ppp object.")
-  }
-
-  # Checks if mark_var is supplied
-  if (is.null(mark_var) || mark_var == "") {
-    stop("mark_var must be supplied and cannot be NULL or empty.")
-  }
-
-  # Check if df has x and y columns
-  if (!all(c("x", "y") %in% colnames(df))) {
-    stop("Input dataframe must contain 'x' and 'y' columns.")
-  }
-
-  # Factorize mark_var
-  if (!mark_var %in% colnames(df)) {
-    stop(paste0("mark_var '", mark_var, "' not found in dataframe columns."))
-  }
-
-  df$mark_var <- as.factor(df[[mark_var]])
-
-
-  # Check if mark_var has at least two unique values
-  if (nlevels(df$mark_var) < 2) {
-    stop("The mark_var column must have at least two unique values.")
-  }
-
-  # if df, convert to ppp object
-
+  # If it's already a ppp, use it and DO NOT run dataframe checks
   if (inherits(df, "ppp")) {
     ppp_obj <- df
+    all_marks <- unique(spatstat.geom::marks(ppp_obj))
+
+  } else if (is.data.frame(df)) {
+
+    if (is.null(mark_var) || mark_var == "") {
+      stop("mark_var must be supplied and cannot be NULL or empty.")
+    }
+    if (!all(c("x", "y") %in% colnames(df))) {
+      stop("Input dataframe must contain 'x' and 'y' columns.")
+    }
+    if (!mark_var %in% colnames(df)) {
+      stop(paste0("mark_var '", mark_var, "' not found in dataframe columns."))
+    }
+
+    df$mark_var <- as.factor(df[[mark_var]])
+    if (nlevels(df$mark_var) < 2) {
+      stop("The mark_var column must have at least two unique values.")
+    }
+
+    win <- spatstat.geom::convexhull.xy(df$x, df$y)
+    ppp_obj <- spatstat.geom::ppp(df$x, df$y, window = win, marks = df$mark_var)
+    all_marks <- unique(spatstat.geom::marks(ppp_obj))
+
   } else {
-    # Convert df to ppp object
-    win <- convexhull.xy(df$x, df$y)
-    ppp_obj <- ppp(df$x, df$y, window = win, marks = df$mark_var)
+    stop("Input must be either a data.frame or a spatstat ppp object.")
   }
-  all_marks <- unique(marks(ppp_obj))
 
   message("We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.")
 
