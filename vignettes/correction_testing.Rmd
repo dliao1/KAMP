@@ -509,6 +509,7 @@ if (doLocal == TRUE) {
         )
       })
       
+      
       t_kamp <- system.time({
         kamp_result <- kamp(
           as.data.frame(sim_data),
@@ -705,10 +706,7 @@ save(results_list, file = filename)
 
 
 ```{r}
-library(here)
-load(here("vignettes", "output", "23.RDA"))
 
-results_list[[26]]
 ```
 
 

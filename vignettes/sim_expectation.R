@@ -20,8 +20,8 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 100 # just in case...
-
+n_rep <- 10 # just in case... tot est my variance addition works
+nperm <- 10
 
 
 param_grid <- expand.grid(n = n_values,
@@ -102,9 +102,11 @@ if (doLocal == TRUE) {
       )
     })
 
+    sim_data_df <- as.data.frame(sim_data)
+
     t_kamp <- system.time({
       kamp_result <- kamp(
-        as.data.frame(sim_data),
+        sim_data_df,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -119,7 +121,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
-        as.data.frame(sim_data),
+        sim_data_df,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -141,7 +143,54 @@ if (doLocal == TRUE) {
         mark2 = "immune2",
         correction = params$correction,
         univariate = params$univariate,
-        nperm = 100
+        nperm = nperm
+      )
+    })
+
+    # VARIANCE
+    t_kamp_var <- system.time({
+      kamp_var_result <- kamp(
+        sim_data_df,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = FALSE,
+        background = "background",
+        Rcpp = TRUE,
+        variance = TRUE
+      )
+    })
+
+    t_kamp_lite_var <- system.time({
+      kamp_lite_var_result <- kamp(
+        sim_data_df,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = TRUE,
+        p_thin = 0.5,
+        background = "background",
+        Rcpp = TRUE,
+        variance = TRUE
+      )
+    })
+
+    t_kperm_var <- system.time({
+      kperm_var_result <- perm_variance(
+        sim_data,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        nperm = nperm,
+        variance = TRUE
       )
     })
 
@@ -151,7 +200,10 @@ if (doLocal == TRUE) {
         kinhom = kinhom_result,
         kamp = kamp_result,
         kamp_lite = kamp_lite_result,
-        kperm = kperm_result
+        kperm = kperm_result,
+        kamp_var = kamp_var_result,
+        kamp_lite_var = kamp_lite_var_result,
+        kperm_var = kperm_var_result
       ),
       times = tibble(
         n = params$n,
@@ -159,13 +211,16 @@ if (doLocal == TRUE) {
         clust = params$clust,
         correction = params$correction,
         rep = params$rep,
-        method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm"),
+        method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm", "KAMP_var", "KAMP_lite_var", "Kperm_var"),
         elapsed = c(
           t_k["elapsed"],
           t_kinhom["elapsed"],
           t_kamp["elapsed"],
           t_kamp_lite["elapsed"],
-          t_kperm["elapsed"]
+          t_kperm["elapsed"],
+          t_kamp_var["elapsed"],
+          t_kamp_lite_var["elapsed"],
+          t_kperm_var["elapsed"]
         )
       )
     )
@@ -221,9 +276,11 @@ if (doLocal == TRUE) {
       )
     })
 
+    sim_data_df <- as.data.frame(sim_data)
+
     t_kamp <- system.time({
       kamp_result <- kamp(
-        as.data.frame(sim_data),
+        sim_data_df,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -238,7 +295,7 @@ if (doLocal == TRUE) {
 
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
-        as.data.frame(sim_data),
+        sim_data_df,
         rvals = seq(0, 0.5, by = 0.05),
         mark_var = "marks",
         mark1 = "immune1",
@@ -260,7 +317,55 @@ if (doLocal == TRUE) {
         mark2 = "immune2",
         correction = params$correction,
         univariate = params$univariate,
-        nperm = 50
+        nperm = nperm
+      )
+    })
+
+    # VARIANCE
+
+    t_kamp_var <- system.time({
+      kamp_var_result <- kamp(
+        sim_data_df,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = FALSE,
+        background = "background",
+        Rcpp = TRUE,
+        variance = TRUE
+      )
+    })
+
+    t_kamp_lite_var <- system.time({
+      kamp_lite_var_result <- kamp(
+        sim_data_df,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark_var = "marks",
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        thin = TRUE,
+        p_thin = 0.5,
+        background = "background",
+        Rcpp = TRUE,
+        variance = TRUE
+      )
+    })
+
+    t_kperm_var <- system.time({
+      kperm_var_result <- perm_variance(
+        sim_data,
+        rvals = seq(0, 0.5, by = 0.05),
+        mark1 = "immune1",
+        mark2 = "immune2",
+        correction = params$correction,
+        univariate = params$univariate,
+        nperm = nperm,
+        variance = TRUE
       )
     })
 
@@ -270,7 +375,10 @@ if (doLocal == TRUE) {
         kinhom = kinhom_result,
         kamp = kamp_result,
         kamp_lite = kamp_lite_result,
-        kperm = kperm_result
+        kperm = kperm_result,
+        kamp_var = kamp_var_result,
+        kamp_lite_var = kamp_lite_var_result,
+        kperm_var = kperm_var_result
       ),
       times = tibble(
         n = params$n,
@@ -278,13 +386,16 @@ if (doLocal == TRUE) {
         clust = params$clust,
         correction = params$correction,
         rep = rep,
-        method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm"),
+        method = c("K", "Kinhom", "KAMP", "KAMP_lite", "Kperm", "KAMP_var", "KAMP_lite_var", "Kperm_var"),
         elapsed = c(
           t_k["elapsed"],
           t_kinhom["elapsed"],
           t_kamp["elapsed"],
           t_kamp_lite["elapsed"],
-          t_kperm["elapsed"]
+          t_kperm["elapsed"],
+          t_kamp_var["elapsed"],
+          t_kamp_lite_var["elapsed"],
+          t_kperm_var["elapsed"]
         )
       )
     )

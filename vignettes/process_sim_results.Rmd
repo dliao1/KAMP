@@ -1,0 +1,220 @@
+---
+title: "process_sim_results"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+    code_folding: hide
+hitheme: tomorrow
+highlighter: highlight.js
+date: "2026-02-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r}
+library(KAMP)
+library(tidyverse)
+library(spatstat.random)
+library(microbenchmark)
+library(spatstat.geom)
+library(spatstat.explore)
+library(ggplot2)
+library(Rcpp)
+library(kableExtra)
+library(parallel)
+library(here)
+library(patchwork)
+set.seed(50)
+```
+# Load data
+
+```{r}
+sim_results <- list()
+for (i in 1:24) {
+  load(here("vignettes", "output", paste0(i, ".RDA")))
+  sim_results[[i]] <- results_list
+}
+
+```
+
+# Runtime
+```{r}
+
+# Median runtime across the 100 reps for each of the 24 scenarios, where sim_results[[]][[]]$times is a df with 5 rows, the method name is a column, and elapsed has the runtimes. i also want the parameters of the scnario attached so we know what n that runtime is associated with, for example. the params are also in sim_results[[]][[]]$times, beingcols n, abundance, clust, correction. obviosly theyre just 1 val repeated 5 times tho
+
+runtime_summary <- data.frame()
+for (i in 1:24) {
+  scenario_times <- sim_results[[i]][[1]]$times
+  median_times <- scenario_times %>%
+    group_by(method) %>%
+    summarize(median_elapsed = median(elapsed)) %>%
+    mutate(
+      n = sim_results[[i]][[1]]$times$n,
+      abundance = sim_results[[i]][[1]]$times$abundance,
+      clust = sim_results[[i]][[1]]$times$clust,
+      correction = sim_results[[i]][[1]]$times$correction
+    )
+  
+  runtime_summary <- rbind(runtime_summary, median_times)
+}
+
+runtime_summary <- runtime_summary %>%
+  select(n, abundance, clust, correction, method, median_elapsed)
+
+trans_runtime <- runtime_summary %>%
+  filter(correction == "trans")
+
+# Boxplot for runtime by clustering
+ggplot(trans_runtime, aes(x = factor(n), y = median_elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
+  facet_wrap(
+    ~ clust,
+    scales = "free_y",
+    labeller = labeller(clust = c(
+      "clust" = "With Clustering",
+      "no_clust" = "No Clustering"
+    ))
+  ) +
+  labs(
+    title = "Runtime by Sample Size and Clustering (Translational Correction)",
+    x = "Sample Size (n)",
+    y = "Median Runtime (seconds, log10 scale)",
+    fill = "Method"
+  ) +
+  scale_y_log10() +
+  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
+  theme_minimal()
+```
+
+
+```{r}
+
+# Boxplot for runtime by clustering
+ggplot(runtime_summary %>% filter(correction == "iso"), aes(x = factor(n), y = median_elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
+  facet_wrap(
+    ~ clust,
+    scales = "free_y",
+    labeller = labeller(clust = c(
+      "clust" = "With Clustering",
+      "no_clust" = "No Clustering"
+    ))
+  ) +
+  labs(
+    title = "Runtime by Sample Size and Clustering (Isotropic Correction)",
+    x = "Sample Size (n)",
+    y = "Median Runtime (seconds, log10 scale)",
+    fill = "Method"
+  ) +
+  scale_y_log10() +
+  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
+  theme_minimal()
+
+```
+
+```{r, results='asis'}
+runtime_table <- trans_runtime %>%
+  group_by(n, method, clust) %>%
+  summarise(median_runtime = median(median_elapsed), .groups = "drop") %>%
+  pivot_wider(
+    names_from = clust,
+    values_from = median_runtime
+  ) %>%
+  arrange(n, method)
+
+# splots into separate tables by n
+tables_by_n <- split(runtime_table, runtime_table$n)
+
+# print tables for each n, for correction=trans
+for (n in names(tables_by_n)) {
+  print(tables_by_n[[n]] %>%
+          select(-n) %>%
+          kable(format = "html", digits = 3, caption = paste("Median Runtime (seconds) for n =", n)) %>%
+          kable_styling(full_width = FALSE, position = "center"))
+  cat("\n\n")
+}
+
+```
+
+# Degree of clustering
+
+
+```{r}
+r0 <- 0.15
+doc_long <- data.frame()
+
+for (i in seq_along(sim_results)) {
+  for (j in seq_along(sim_results[[i]])) {
+
+    res <- sim_results[[i]][[j]]
+
+    k_val        <- res$results$k %>% filter(round(r, 2) == r0) %>% pull(fundiff)
+    kinhom_val   <- res$results$kinhom  %>% filter(round(r, 2) == r0) %>% pull(fundiff)
+    kperm_val    <- res$results$kperm   %>% filter(round(r, 2) == r0) %>% pull(fundiff)
+    kamp_val     <- res$results$kamp    %>% filter (round(r, 2) == r0) %>% pull(kamp)
+    kamp_lite_val<- res$results$kamp_lite %>% filter(round(r, 2) == r0) %>% pull(kamp)
+
+    tmp <- data.frame(
+      scenario = i,
+      run = j,
+      r = r0,
+      n = unique(res$times$n)[1],
+      clust = unique(res$times$clust)[1],
+      abundance = unique(res$times$abundance)[1],
+      correction = unique(res$times$correction)[1],
+      method = c("K", "Kinhom", "Kperm", "KAMP", "KAMP_lite"),
+      doc = c(k_val, kinhom_val, kperm_val, kamp_val, kamp_lite_val)
+    )
+
+    doc_long <- rbind(doc_long, tmp)
+  }
+}
+
+```
+
+```{r}
+p1 <- ggplot(subset(doc_long, clust == FALSE),
+             aes(x = factor(n), y = doc, fill = method)) +
+  geom_hline(yintercept = 0, linewidth = 0.4) +
+  geom_boxplot(width = 0.85, size = 1, outlier.shape = NA,
+               position = position_dodge(0.9)) +
+  coord_cartesian(ylim = c(-0.025, 0.1)) +
+  labs(
+    title = "clust = FALSE",
+    x = "Sample Size (n)",
+    y = "Degree of clustering",
+    fill = "Method"
+  ) +
+  theme_minimal(base_size = 14)
+
+p2 <- ggplot(subset(doc_long, clust == TRUE),
+             aes(x = factor(n), y = doc, fill = method)) +
+  geom_hline(yintercept = 0, linewidth = 0.4) +
+  geom_boxplot(width = 0.85, size = 1, outlier.shape = NA,
+               position = position_dodge(0.9)) +
+  coord_cartesian(ylim = c(-0.1, 0.3)) +
+  labs(
+    title = "clust = TRUE",
+    x = "Sample Size (n)",
+    y = "Degree of clustering",
+    fill = "Method"
+  ) +
+  theme_minimal(base_size = 14)
+
+p1 
+
+p2
+
+```
+
+
+Notes
+- nperm = 1000
+- add variance to largeer simulation study
+- 1 kamp function w variance = TRUE/FALSE (same w/ gamp)
+
