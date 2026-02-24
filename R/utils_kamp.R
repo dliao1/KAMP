@@ -200,7 +200,7 @@ check_inputs <- function(df,
   ppp_obj <- NULL
 
   # Check if df is a dataframe or point process object
-  if (!is.data.frame(df) && !inherits(df, "ppp")) {
+  if (!is.data.frame(df) || !inherits(df, "ppp")) {
     stop("Input df must be a dataframe.")
   }
 
