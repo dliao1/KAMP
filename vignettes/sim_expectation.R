@@ -20,8 +20,8 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 10 # just in case... tot est my variance addition works
-nperm <- 10
+n_rep <- 5 # just in case... tot est my variance addition works
+nperm <- 5
 
 
 param_grid <- expand.grid(n = n_values,
