@@ -89,165 +89,187 @@ for (i in 1:num_scenarios) {
 # Runtime
 
 ## Expectation
-```{r}
-
-runtime_summary <- data.frame()
-for (i in 1:num_scenarios) {
-  scenario_times <- sim_results[[i]][[1]]$times
-  median_times <- scenario_times %>%
-    group_by(method) %>%
-    summarize(median_elapsed = median(elapsed)) %>%
-    mutate(
-      n = sim_results[[i]][[1]]$times$n,
-      abundance = sim_results[[i]][[1]]$times$abundance,
-      clust = sim_results[[i]][[1]]$times$clust,
-      correction = sim_results[[i]][[1]]$times$correction
-    )
-  
-  runtime_summary <- rbind(runtime_summary, median_times)
-}
-
-runtime_summary_expectation <- runtime_summary %>% # now i want to select only method = K, KAMP, KAMP_lite, Kperm for expectation
-  filter(method %in% c("K", "KAMP", "KAMP_lite", "Kinhom", "Kperm")) %>%
-  select(n, abundance, clust, correction, method, median_elapsed)
+```{r, figures=TRUE, fig.width=9, fig.height=9}
+runtime_long <- map_dfr(seq_along(sim_results), function(i) {
+  map_dfr(seq_along(sim_results[[i]]), function(j) {
+    sim_results[[i]][[j]]$times %>%
+      mutate(
+        scenario = i,
+        rep_index = j
+      )
+  })
+})
 
 
-ggplot(runtime_summary_expectation %>% filter(correction == "trans"), aes(x = factor(n), y = median_elapsed, fill = method)) +
-  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
-  facet_wrap(
-    ~ clust,
-    scales = "free_y",
-    labeller = labeller(clust = c(
-      "clust" = "With Clustering",
-      "no_clust" = "No Clustering"
-    ))
-  ) +
+plot_df <- runtime_long %>%
+  filter(correction == "trans", clust == FALSE) %>%
+  filter(method %in% c("K","Kinhom","KAMP","KAMP_lite","Kperm")) %>%  # adjust if names differ
+  mutate(n = factor(n), abundance = factor(abundance))
+
+ggplot(plot_df, aes(x = n, y = elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85),
+               width = 0.7, outlier.alpha = 0.25) +
+  facet_wrap(~ abundance, scales = "free_y") +
+  scale_y_log10() +
   labs(
-    title = "Runtime by Sample Size and Clustering (Translational Correction)",
+    title = "Runtime distribution across reps (trans, clust = FALSE)",
     x = "Sample Size (n)",
-    y = "Median Runtime (seconds, log10 scale)",
+    y = "Runtime per rep (seconds, log10 scale)",
     fill = "Method"
   ) +
-  scale_y_log10() +
-  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
   theme_minimal()
 
-ggplot(runtime_summary_expectation %>% filter(correction == "iso"), aes(x = factor(n), y = median_elapsed, fill = method)) +
-  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
-  facet_wrap(
-    ~ clust,
-    scales = "free_y",
-    labeller = labeller(clust = c(
-      "clust" = "With Clustering",
-      "no_clust" = "No Clustering"
-    ))
-  ) +
+ggplot(plot_df, aes(x = n, y = elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85),
+               width = 0.7, outlier.alpha = 0.25) +
+  scale_y_log10() +
   labs(
-    title = "Runtime by Sample Size and Clustering (Isotropic Correction)",
+    title = "Runtime distribution across reps (trans, clust = FALSE)",
     x = "Sample Size (n)",
-    y = "Median Runtime (seconds, log10 scale)",
+    y = "Runtime per rep (seconds, log10 scale)",
     fill = "Method"
   ) +
-  scale_y_log10() +
-  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
   theme_minimal()
 
 ```
 
 ```{r, results='asis'}
-runtime_expectation_table <- runtime_summary_expectation %>%
+
+
+runtime_expectation_table <- runtime_long %>% 
   filter(correction == "trans") %>%
-  group_by(n, method, clust) %>%
-  summarise(median_runtime = median(median_elapsed), .groups = "drop") %>%
+  filter(method %in% c("K","KAMP","KAMP_lite","Kinhom","Kperm")) %>% 
+  group_by(n, abundance, clust, method) %>%
+  summarise(median_runtime = median(elapsed), .groups = "drop") %>% 
+  mutate(
+    abundance = as.character(abundance),
+    clust = ifelse(as.logical(clust), "TRUE", "FALSE")
+  ) %>%
   pivot_wider(
-    names_from = clust,
-    values_from = median_runtime
+    names_from = c(abundance, clust),
+    values_from = median_runtime,
+    names_sep = "_"
   ) %>%
   arrange(n, method)
 
-# splots into separate tables by n
-tables_by_n <- split(runtime_expectation_table, runtime_expectation_table$n)
+for (nval in c(500, 1000, 5000)) {
 
-# print tables for each n, for correction=trans
-for (n in names(tables_by_n)) {
-  print(tables_by_n[[n]] %>%
-          select(-n) %>%
-          kable(format = "html", digits = 3, caption = paste("Median Runtime (seconds) for n =", n)) %>%
-          kable_styling(full_width = FALSE, position = "center"))
+  tab <- runtime_expectation_table %>%
+    filter(n == nval) %>%
+    select(-n)
+
+  if (nrow(tab) == 0) next
+
+  wanted <- c("method", "0.1_TRUE", "0.1_FALSE", "0.3_TRUE", "0.3_FALSE")
+  tab <- tab %>% select(any_of(wanted))
+
+  names(tab) <- gsub("_", " ", names(tab))
+  names(tab)[1] <- "Method"
+
+  runtime_cols <- names(tab)[-1]
+  abund <- sub(" .*", "", runtime_cols)
+  header_counts <- table(abund)
+  header <- c(" " = 1)
+  for (a in names(header_counts)) 
+    header[paste0("Abundance = ", a)] <- as.integer(header_counts[[a]])
+
+  print(
+    kable(tab,
+          format = "html",
+          digits = 3,
+          caption = paste("Median Runtime (seconds) for n =", nval)) %>%
+      add_header_above(header) %>%
+      kable_styling(full_width = FALSE, position = "center")
+  )
+
   cat("\n\n")
 }
 
 ```
 
 ## Variance
-```{r}
-runtime_summary_var <- runtime_summary %>% # now i want to select only method = KAMP_var, KAMP_lite_var, Kperm_var for variance
+
+```{r, figures=TRUE, fig.width=9, fig.height=9}
+
+plot_df <- runtime_long %>%
+  filter(correction == "trans", clust == FALSE) %>%
   filter(method %in% c("KAMP_var", "KAMP_lite_var", "Kperm_var")) %>%
-  select(n, abundance, clust, correction, method, median_elapsed)
+  mutate(n = factor(n), abundance = factor(abundance))
 
-
-ggplot(runtime_summary_var  %>% filter(correction == "trans"), aes(x = factor(n), y = median_elapsed, fill = method)) +
-  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
-  facet_wrap(
-    ~ clust,
-    scales = "free_y",
-    labeller = labeller(clust = c(
-      "clust" = "With Clustering",
-      "no_clust" = "No Clustering"
-    ))
-  ) +
+ggplot(plot_df, aes(x = n, y = elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85),
+               width = 0.7, outlier.alpha = 0.25) +
+  facet_wrap(~ abundance, scales = "free_y") +
+  scale_y_log10() +
   labs(
-    title = "Runtime by Sample Size and Clustering (Translational Correction)",
+    title = "Runtime distribution across reps (trans, clust = FALSE)",
     x = "Sample Size (n)",
-    y = "Median Runtime (seconds, log10 scale)",
+    y = "Runtime per rep (seconds, log10 scale)",
     fill = "Method"
   ) +
-  scale_y_log10() +
-  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
   theme_minimal()
 
-ggplot(runtime_summary_var %>% filter(correction == "iso"), aes(x = factor(n), y = median_elapsed, fill = method)) +
-  geom_boxplot(position = position_dodge(width = 0.85), width = 0.7) +
-  facet_wrap(
-    ~ clust,
-    scales = "free_y",
-    labeller = labeller(clust = c(
-      "clust" = "With Clustering",
-      "no_clust" = "No Clustering"
-    ))
-  ) +
+ggplot(plot_df, aes(x = n, y = elapsed, fill = method)) +
+  geom_boxplot(position = position_dodge(width = 0.85),
+               width = 0.7, outlier.alpha = 0.25) +
+  scale_y_log10() +
   labs(
-    title = "Runtime by Sample Size and Clustering (Isotropic Correction)",
+    title = "Runtime distribution across reps (trans, clust = FALSE)",
     x = "Sample Size (n)",
-    y = "Median Runtime (seconds, log10 scale)",
+    y = "Runtime per rep (seconds, log10 scale)",
     fill = "Method"
   ) +
-  scale_y_log10() +
-  scale_x_discrete(expand = expansion(mult = c(0.15, 0.15))) +
   theme_minimal()
-
 ```
 
 ```{r, results='asis'}
-runtime_var_table <- runtime_summary_var %>%
+
+runtime_var_table <- runtime_long %>% 
   filter(correction == "trans") %>%
-  group_by(n, method, clust) %>%
-  summarise(median_runtime = median(median_elapsed), .groups = "drop") %>%
+  filter(method %in% c("KAMP_var", "KAMP_lite_var", "Kperm_var")) %>%
+  group_by(n, abundance, clust, method) %>%
+  summarise(median_runtime = median(elapsed), .groups = "drop") %>% 
+  mutate(
+    abundance = as.character(abundance),
+    clust = ifelse(as.logical(clust), "TRUE", "FALSE")
+  ) %>%
   pivot_wider(
-    names_from = clust,
-    values_from = median_runtime
+    names_from = c(abundance, clust),
+    values_from = median_runtime,
+    names_sep = "_"
   ) %>%
   arrange(n, method)
 
-# splots into separate tables by n
-tables_by_n <- split(runtime_var_table, runtime_var_table$n)
+for (nval in c(500, 1000, 5000)) {
 
-# print tables for each n, for correction=trans
-for (n in names(tables_by_n)) {
-  print(tables_by_n[[n]] %>%
-          select(-n) %>%
-          kable(format = "html", digits = 3, caption = paste("Median Runtime (seconds) for n =", n)) %>%
-          kable_styling(full_width = FALSE, position = "center"))
+  tab <- runtime_var_table %>%
+    filter(n == nval) %>%
+    select(-n)
+
+  if (nrow(tab) == 0) next
+
+  wanted <- c("method", "0.1_TRUE", "0.1_FALSE", "0.3_TRUE", "0.3_FALSE")
+  tab <- tab %>% select(any_of(wanted))
+
+  names(tab) <- gsub("_", " ", names(tab))
+  names(tab)[1] <- "Method"
+
+  runtime_cols <- names(tab)[-1]
+  abund <- sub(" .*", "", runtime_cols)
+  header_counts <- table(abund)
+  header <- c(" " = 1)
+  for (a in names(header_counts)) 
+    header[paste0("Abundance = ", a)] <- as.integer(header_counts[[a]])
+
+  print(
+    kable(tab,
+          format = "html",
+          digits = 3,
+          caption = paste("Median Runtime (seconds) for n =", nval)) %>%
+      add_header_above(header) %>%
+      kable_styling(full_width = FALSE, position = "center")
+  )
+
   cat("\n\n")
 }
 
@@ -258,7 +280,7 @@ for (n in names(tables_by_n)) {
 
 
 ```{r}
-r0 <- 0.15
+r0 <- 1
 doc_long <- data.frame()
 
 for (i in seq_along(sim_results)) {
@@ -335,7 +357,7 @@ p2
 
 # Variance
 ```{r}
-r0 <- 0.25
+r0 <- 1
 alpha <- 0.05
 
 get_p_at_r0 <- function(df, r0) {
@@ -369,42 +391,115 @@ p_long <- imap_dfr(sim_results, function(scn, i) {
   })
 })
 
+alpha <- 0.05
+z <- qnorm(0.975)
+
 type1_df <- p_long %>%
   filter(clust == FALSE) %>%
   group_by(n, abundance, correction, method) %>%
   summarise(
-    n_eff = sum(!is.na(pvalue)),  #effective sample size
+    n_eff = sum(!is.na(pvalue)),
     type1_error = mean(reject[!is.na(pvalue)]),
+    mcse = sqrt(type1_error * (1 - type1_error) / n_eff),
+    ci_lower = pmax(0, type1_error - z * mcse),
+    ci_upper = pmin(1, type1_error + z * mcse),
     .groups = "drop"
   )
 
 power_df <- p_long %>%
   filter(clust == TRUE) %>%
   group_by(n, abundance, correction, method) %>%
-  summarise(power = mean(reject, na.rm = TRUE), .groups = "drop")
+  summarise(
+    n_eff = sum(!is.na(pvalue)),
+    power = mean(reject, na.rm = TRUE),
+    mcse = sqrt(power * (1 - power) / n_eff),
+    ci_lower = pmax(0, power - z * mcse),
+    ci_upper = pmin(1, power + z * mcse),
+    .groups = "drop"
+  )
 
-ggplot(type1_df, aes(x = factor(n), y = type1_error, color = method)) +
+pd <- position_dodge(width = 0.4)
+
+ggplot(type1_df, aes(x = factor(n), y = type1_error, color = method, group = method)) +
   geom_hline(yintercept = alpha, linetype = "dashed") +
-  geom_point(size = 2, position = position_dodge(width = 0.4)) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15, position = pd) +
+  geom_point(size = 2, position = pd) +
   facet_grid(correction ~ abundance) +
   labs(
     title = "Type I error = P(reject H0 | H0 true)",
     x = "Sample size (n)",
-    y = "type1_error"
+    y = "Type I error"
   ) +
   theme_minimal()
 
-ggplot(power_df, aes(x = factor(n), y = power, color = method)) +
+ggplot(power_df, aes(x = factor(n), y = power, color = method, group = method)) +
   geom_hline(yintercept = alpha, linetype = "dashed") +
-  geom_point(size = 2, position = position_dodge(width = 0.4)) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15, position = pd) +
+  geom_point(size = 2, position = pd) +
   facet_grid(correction ~ abundance) +
   labs(
     title = "Power = P(reject H0 | H1 true)",
     x = "Sample size (n)",
-    y = "power"
+    y = "Power"
   ) +
   theme_minimal()
 ```
 
 
+# Testing fixed window
+```{r}
+sim_data <- sim_pp_data_biv(
+      lambda_n = 1000,
+      abundance = 0.3,
+      markvar1 = "immune1",
+      markvar2 = "immune2",
+      markvar3 = "background",
+      distribution = "hom",
+      clust = TRUE
+    )
+
+# plot sim data
+
+df <- as_tibble(sim_data)
+
+ggplot(df, aes(x = x, y = y, color = marks)) +
+  geom_point(alpha = 0.6, size = 1) +
+  coord_fixed() +
+  theme_minimal() +
+  labs(title = "Simulated Point Pattern",
+       color = "Cell Type")
+
+# calc num of immune1 cells in df
+sum(df$marks == "immune1")
+sum(df$marks == "immune2")
+
+```
+```{r}
+# sim univariate data
+
+sim_data <- sim_pp_data(
+      lambda_n = 1000,
+      abundance = 0.3,
+      markvar1 = "immune",
+      markvar2 = "background",
+      distribution = "inhom",
+      clust = TRUE
+    )
+
+# plot sim data
+
+df <- as_tibble(sim_data)
+
+ggplot(df, aes(x = x, y = y, color = marks)) +
+  geom_point(alpha = 0.6, size = 1) +
+  coord_fixed() +
+  theme_minimal() +
+  labs(title = "Simulated Point Pattern",
+       color = "Cell Type")
+
+# calc num of immune1 cells in df
+sum(df$marks == "immune")
+
+kamp(sim_data, markvar = "immune", mark1 = "immune", rvals = seq(0, 3, length.out = 10), correction = "trans")
+```
 

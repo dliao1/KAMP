@@ -20,8 +20,8 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 100 # just in case... to test my variance addition works
-nperm <- 1000
+n_rep <- 1 # just in case... to test my variance addition works
+nperm <- 1
 
 
 param_grid <- expand.grid(n = n_values,
@@ -80,10 +80,12 @@ if (doLocal == TRUE) {
       clust = params$clust
     )
 
+    rvals <- seq(0, 3, length.out = 10)
+
     t_k <- system.time({
       k_result <- k_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -94,7 +96,7 @@ if (doLocal == TRUE) {
     t_kinhom <- system.time({
       kinhom_result <- kinhom_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -106,7 +108,7 @@ if (doLocal == TRUE) {
     t_kamp <- system.time({
       kamp_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -121,7 +123,7 @@ if (doLocal == TRUE) {
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -137,7 +139,7 @@ if (doLocal == TRUE) {
     t_kperm <- system.time({
       kperm_result <- perm_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -150,7 +152,7 @@ if (doLocal == TRUE) {
     t_kamp_var <- system.time({
       kamp_var_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -166,7 +168,7 @@ if (doLocal == TRUE) {
     t_kamp_lite_var <- system.time({
       kamp_lite_var_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -183,7 +185,7 @@ if (doLocal == TRUE) {
     t_kperm_var <- system.time({
       kperm_var_result <- perm_variance(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         univariate = params$univariate,
@@ -251,10 +253,14 @@ if (doLocal == TRUE) {
       distribution = params$distribution,
       clust = params$clust
     )
+
+    rvals <- seq(0, 3, length.out = 10)
+
+
     t_k <- system.time({
       k_result <- k_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -265,7 +271,7 @@ if (doLocal == TRUE) {
     t_kinhom <- system.time({
       kinhom_result <- kinhom_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -276,7 +282,7 @@ if (doLocal == TRUE) {
     t_kamp <- system.time({
       kamp_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -291,7 +297,7 @@ if (doLocal == TRUE) {
     t_kamp_lite <- system.time({
       kamp_lite_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -307,7 +313,7 @@ if (doLocal == TRUE) {
     t_kperm <- system.time({
       kperm_result <- perm_expectation(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         correction = params$correction,
@@ -321,7 +327,7 @@ if (doLocal == TRUE) {
     t_kamp_var <- system.time({
       kamp_var_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -337,7 +343,7 @@ if (doLocal == TRUE) {
     t_kamp_lite_var <- system.time({
       kamp_lite_var_result <- kamp(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark_var = "marks",
         mark1 = "immune1",
         mark2 = "immune2",
@@ -354,7 +360,7 @@ if (doLocal == TRUE) {
     t_kperm_var <- system.time({
       kperm_var_result <- perm_variance(
         sim_data,
-        rvals = seq(0, 0.5, by = 0.05),
+        rvals = rvals,
         mark1 = "immune1",
         mark2 = "immune2",
         univariate = params$univariate,

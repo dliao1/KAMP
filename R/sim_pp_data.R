@@ -59,15 +59,17 @@ sim_pp_data <- function(lambda_n,
 
 
 
-  wm <- spatstat.geom::owin(xrange = c(0, 1), yrange = c(0, 1))
+  wm <- spatstat.geom::owin(xrange = c(0, 10), yrange = c(0, 10))
+  A  <- spatstat.geom::area.owin(wm)
+
   pp_obj = NULL
 
   if (clust == FALSE) {
     #lambda_immune = round((lambda_n * abundance)/(1-abundance))
     #lambda_background = lambda_n - lambda_immune
 
-    lambda_immune <- round(lambda_n * abundance)
-    lambda_background <- lambda_n * (1 - abundance)
+    lambda_immune <- (lambda_n * abundance) / A
+    lambda_background <- (lambda_n * (1 - abundance)) / A
 
 
     if(distribution == "hom"){
@@ -76,8 +78,9 @@ sim_pp_data <- function(lambda_n,
                         win = wm)
     }else if(distribution == "inhom"){
       # inhomogeneous background and inhomogeneous immune
-      lams <- list(function(x,y){lambda_immune*5*x^2},
-                   function(x,y){lambda_background*5*x^2}
+      lams <- list(
+        function(x, y) { lambda_immune     * 3 * (x/10)^2 },
+        function(x, y) { lambda_background * 3 * (x/10)^2 }
       )
 
       pp_obj = rmpoispp(lams, types = c(markvar1, markvar2),
@@ -85,25 +88,53 @@ sim_pp_data <- function(lambda_n,
     }
 
   } else {
-    # larger window for clustering
-    wm <- spatstat.geom::owin(xrange = c(0, 10), yrange = c(0, 10))
-    sim_object = CreateSimulationObject(sims = 1, cell_types = 1, window = wm)
-    sim_object = GenerateSpatialPattern(sim_object,
-                                        lambda = lambda_n/100)
+    N_target <- lambda_n
 
-    sim_object = GenerateCellPositivity(sim_object,
-                                        k = 25,
-                                        sdmin = .7, sdmax = .71,
-                                        step_size = 0.1, cores = 1,
-                                        probs = c(0.0, 1))
+    keep_target <- 0.4
+
+    sim_object = CreateSimulationObject(sims = 1, cell_types = 1, window = wm)
+    sim_object <- GenerateSpatialPattern(
+      sim_object,
+      lambda = (N_target / keep_target) / A
+    )
+
+    sim_object <- GenerateCellPositivity(
+      sim_object,
+      k = 25,
+      sdmin = 0.7, sdmax = 0.71,
+      step_size = 0.1, cores = 1,
+      probs = c(0, 1)
+    )
 
     # Generate holes for inhomogeneity
     if(distribution == "inhom"){
-      sim_object = GenerateHoles(sim_object, step_size = 0.1, cores = 1)
+      sim_object <- GenerateHoles(
+        sim_object,
+        use_window = TRUE,
+        density_heatmap = TRUE,
+        hole_prob = c(0.9, 0.995),
+        sdmin = 1.25,
+        sdmax = 2.25,
+        step_size = 0.05,
+        overwrite = TRUE
+      )
     }
 
     pp = CreateSpatialList(sim_object, single_df = TRUE) %>%
       rename(immune = `Cell 1 Assignment`)
+
+    # apply holes first for inhom only
+    if (distribution == "inhom") {
+      pp <- pp %>%
+        dplyr::rename(hole = `Hole Assignment`) %>%
+        dplyr::filter(hole == "Keep") %>%
+        dplyr::select(-hole)
+    }
+
+    # enforce exactly N_target points (downsample if needed)
+    if (nrow(pp) > N_target) {
+      pp <- pp[sample.int(nrow(pp), N_target), ]
+    }
 
     phat = sum(pp$immune)/nrow(pp)
 
@@ -115,13 +146,6 @@ sim_pp_data <- function(lambda_n,
       pp$immune[sample(indices, nthin)] <- 0
     }
 
-    if(distribution == "inhom"){
-      pp = pp %>%
-        rename(hole = `Hole Assignment`) %>%
-        filter(hole == "Keep") %>%
-        select(-hole)
-
-    }
 
     pp = pp %>%
       mutate(immune = ifelse(immune == 0, markvar2, markvar1))
@@ -201,34 +225,39 @@ sim_pp_data_biv <- function(lambda_n,
   }
 
 
-  wm <- spatstat.geom::owin(xrange = c(0, 1), yrange = c(0, 1))
+  wm <- spatstat.geom::owin(xrange = c(0, 10), yrange = c(0, 10))
+  A  <- spatstat.geom::area.owin(wm)
+
   pp_obj = NULL
 
-  lambda_immune <- round(lambda_n * abundance)
-  lambda_background <- lambda_n * (1 - abundance)
+  lambda_immune <- (lambda_n * abundance / 2) / A
+  lambda_background  <- (lambda_n * (1 - abundance)) / A
 
   if (clust == FALSE) {
-    if(distribution == c("inhom")){
-      lams <- list(function(x,y){lambda_immune*5*x^2},
-                   function(x,y){lambda_immune*5*x^2},
-                   function(x,y){lambda_background*5*x^2}
+    if(distribution == "inhom"){
+      lams <- list(
+        function(x,y){ lambda_immune     * 3 * (x/10)^2 },
+        function(x,y){ lambda_immune     * 3 * (x/10)^2 },
+        function(x,y){ lambda_background * 3 * (x/10)^2 }
       )
 
       pp_obj = rmpoispp(lams,
-                        types = c("immune1", "immune2", "background"),
+                        types = c(markvar1, markvar2, markvar3),
                         win = wm)
     } else {
       pp_obj = rmpoispp(c(lambda_immune, lambda_immune, lambda_background),
-                        types = c("immune1", "immune2", "background"),
+                        types = c(markvar1, markvar2, markvar3),
                         win = wm)
     }
 
 
   } else {
-    wm <- spatstat.geom::owin(xrange = c(0, 10), yrange = c(0, 10))
+    N_target <- lambda_n
+    keep_target <- 0.6
+
     sim_object = CreateSimulationObject(sims = 1, cell_types = 2, window = wm)
     sim_object = GenerateSpatialPattern(sim_object,
-                                        lambda = lambda_n/100)
+                                        lambda = (N_target / keep_target) / A)
 
     sim_object = GenerateCellPositivity(sim_object,
                                         k = 25,
@@ -237,29 +266,23 @@ sim_pp_data_biv <- function(lambda_n,
                                         probs = c(0.0, 1, 1))
 
     if (distribution == "inhom") {
-      sim_object = GenerateHoles(sim_object, step_size = 0.1, cores = 1)
+      sim_object <- GenerateHoles(
+        sim_object,
+        use_window = TRUE,
+        density_heatmap = TRUE,
+        hole_prob = c(0.9, 0.995),
+        sdmin = 1.25, # bigger holes
+        sdmax = 2.25,
+        step_size = 0.05,
+        overwrite = TRUE
+      )
     }
 
     pp = CreateSpatialList(sim_object, single_df = TRUE) %>%
       rename(immune1 = `Cell 1 Assignment`,
              immune2 = `Cell 2 Assignment`)
 
-    phat1 = sum(pp$immune1)/nrow(pp)
-    phat2 = sum(pp$immune2)/nrow(pp)
 
-    if (phat1 > abundance){
-      nhat = nrow(pp)
-      nthin = round((phat1 - abundance) * nhat)
-      indices = which(pp$immune1 == 1)
-      pp$immune1[sample(indices, nthin)] <- 0
-    }
-
-    if (phat2 > abundance){
-      nhat = nrow(pp)
-      nthin = round((phat2 - abundance) * nhat)
-      indices = which(pp$immune2 == 1)
-      pp$immune2[sample(indices, nthin)] <- 0
-    }
 
     if (distribution == "inhom"){
       pp = pp %>%
@@ -268,10 +291,34 @@ sim_pp_data_biv <- function(lambda_n,
         select(-hole)
     }
 
+    if (nrow(pp) > N_target) {
+      pp <- pp[sample.int(nrow(pp), N_target), ]
+    }
+
+
+    phat1 = sum(pp$immune1)/nrow(pp)
+    phat2 = sum(pp$immune2)/nrow(pp)
+
+    target <- abundance/2
+    if (phat1 > target){
+      nhat <- nrow(pp)
+      nthin <- round((phat1 - target) * nhat)
+      idx <- which(pp$immune1 == 1)
+      pp$immune1[sample(idx, nthin)] <- 0
+    }
+
+    if (phat2 > target){
+      nhat <- nrow(pp)
+      nthin <- round((phat2 - target) * nhat)
+      idx <- which(pp$immune2 == 1)
+      pp$immune2[sample(idx, nthin)] <- 0
+    }
+
+
     pp = pp %>%
-      mutate(immune = case_when(immune1 == 1 ~ "immune1",
-                                immune2 == 1 ~ "immune2",
-                                TRUE ~ "background"))
+      mutate(immune = case_when(immune1 == 1 ~ markvar1,
+                                immune2 == 1 ~ markvar2,
+                                TRUE ~ markvar3))
     pp_obj = spatstat.geom::ppp(pp$x, pp$y, window = wm,  marks = factor(pp$immune))
   }
 
