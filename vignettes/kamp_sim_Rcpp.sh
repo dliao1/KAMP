@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=1-24%4
+#SBATCH --array=1-2
 #SBATCH --job-name=kamp_sim_Rcpp
 #SBATCH --partition=week-long-cpu
 #SBATCH --output=kamp_sim_Rcpp.out
