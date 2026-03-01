@@ -11,7 +11,7 @@ suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(here))
 
 
-source(here::here("vignettes", "sim_helpers.R"))
+source(here::here("vignettes", "kamp_sim_helpers.R"))
 
 n_values <- c(500, 1000, 5000)
 abundance_values <- c(0.1, 0.3)
@@ -20,7 +20,7 @@ clust_values <- c(TRUE, FALSE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 100 # just in case... tot est my variance addition works
+n_rep <- 100 # just in case... to test my variance addition works
 nperm <- 1000
 
 
@@ -188,7 +188,7 @@ if (doLocal == TRUE) {
         mark2 = "immune2",
         univariate = params$univariate,
         nperm = nperm
-        )
+      )
     })
 
     list(
@@ -396,5 +396,5 @@ if (doLocal == TRUE) {
 
 }
 
-filename = paste0(here::here("vignettes", "output"), "/", scenario, ".RDA")
+filename = paste0(here::here("vignettes", "output_large"), "/", scenario, ".RDA")
 save(results_list, file = filename)
