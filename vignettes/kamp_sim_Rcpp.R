@@ -241,6 +241,8 @@ if (doLocal == TRUE) {
   for (rep in 1:n_rep) {
 
     seed.iter = (SEED.START - 1)*n_rep + rep
+    # print seed start
+    print(paste0("Seed start: ", SEED.START))
     print(seed.iter)
     set.seed(seed.iter)
 
