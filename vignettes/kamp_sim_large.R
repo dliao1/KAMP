@@ -21,7 +21,7 @@ correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
 n_rep <- 1 # just in case... to test my variance addition works
-nperm <- 1
+nperm <- 3
 
 
 param_grid <- expand.grid(n = n_values,
