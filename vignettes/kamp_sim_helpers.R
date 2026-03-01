@@ -93,7 +93,8 @@ perm_expectation <- function(ppp_obj,
       select(r, theo_csr = theo, correction_k, fundiff, method, initial_correction)
 
     kf = function(obj){
-      kdf = Kcross(i = mark1,
+      kdf = Kcross(obj,
+                   i = mark1,
                    j = mark1,
                    r = rvals,
                    correction = correction)

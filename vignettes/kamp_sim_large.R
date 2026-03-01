@@ -256,17 +256,6 @@ if (doLocal == TRUE) {
 
     rvals <- seq(0, 3, length.out = 10)
 
-    if (!spatstat.geom::is.ppp(sim_data)) {
-      stop("sim_data is not a ppp. class = ", paste(class(sim_data), collapse = ", "))
-    }
-    if (spatstat.geom::npoints(sim_data) == 0) {
-      stop("sim_data has 0 points")
-    }
-    if (anyNA(sim_data$x) || anyNA(sim_data$y)) {
-      stop("sim_data has NA coordinates")
-    }
-
-
     t_k <- system.time({
       k_result <- k_expectation(
         sim_data,
