@@ -86,6 +86,10 @@ for (i in 1:num_scenarios) {
 
 ```
 
+```{r}
+sim_results[[1]][[1]]$results$kperm
+```
+
 # Runtime
 
 ## Expectation
@@ -454,7 +458,7 @@ sim_data <- sim_pp_data_biv(
       markvar1 = "immune1",
       markvar2 = "immune2",
       markvar3 = "background",
-      distribution = "hom",
+      distribution = "inhom",
       clust = TRUE
     )
 
