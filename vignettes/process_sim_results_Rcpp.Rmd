@@ -1,0 +1,49 @@
+---
+title: "process_sim_results_Rcpp"
+output: html_document
+date: "2026-03-01"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r}
+library(KAMP)
+library(tidyverse)
+library(spatstat.random)
+library(microbenchmark)
+library(spatstat.geom)
+library(spatstat.explore)
+library(ggplot2)
+library(Rcpp)
+library(kableExtra)
+library(parallel)
+library(here)
+library(patchwork)
+set.seed(50)
+```
+
+
+```{r}
+num_scenarios <- 2
+sim_results <- list()
+for (i in 1:num_scenarios) {
+  load(here("vignettes", "output_Rcpp", paste0(i, ".RDA")))
+  sim_results[[i]] <- results_list
+}
+
+```
+
+```{r}
+sim_results[[1]][[1]]$results$k
+sim_results[[1]][[1]]$results$kamp_Rcpp_true_var
+
+sim_results[[1]][[1]]$results$kamp_Rcpp_false_var
+
+```
+
+

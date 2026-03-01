@@ -22,8 +22,8 @@ clust_values <- c(TRUE)
 correction <- c("trans", "iso")
 univariate <- FALSE
 seed_start = 500
-n_rep <- 1 # just in case for testing!
-nperm <- 5
+n_rep <- 100 # just in case for testing!
+nperm <- 1000
 
 
 param_grid <- expand.grid(n = n_values,

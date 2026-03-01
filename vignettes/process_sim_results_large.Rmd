@@ -1,5 +1,5 @@
 ---
-title: "process_sim_results"
+title: "process_sim_results_large"
 output:
   html_document: 
     toc: true
@@ -77,8 +77,9 @@ set.seed(50)
 
 
 ```{r}
+num_scenarios <- 24
 sim_results <- list()
-for (i in 1:23) {
+for (i in 1:num_scenarios) {
   load(here("vignettes", "output_large", paste0(i, ".RDA")))
   sim_results[[i]] <- results_list
 }
@@ -91,7 +92,7 @@ for (i in 1:23) {
 ```{r}
 
 runtime_summary <- data.frame()
-for (i in 1:23) {
+for (i in 1:num_scenarios) {
   scenario_times <- sim_results[[i]][[1]]$times
   median_times <- scenario_times %>%
     group_by(method) %>%
