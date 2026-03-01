@@ -232,6 +232,7 @@ if (doLocal == TRUE) {
   scenario <- as.numeric(commandArgs(trailingOnly=TRUE))
 
   params <- param_grid[scenario, ]
+  print(scenario)
 
   SEED.START <- params$seed_start
 
