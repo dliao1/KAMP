@@ -330,7 +330,6 @@ p1 <- ggplot(subset(clustering_df, clust == FALSE),
   geom_hline(yintercept = 0, linewidth = 0.4) +
   geom_boxplot(width = 0.85, size = 1, outlier.shape = NA,
                position = position_dodge(0.9)) +
-  coord_cartesian(ylim = c(-0.025, 0.1)) +
   labs(
     title = "clust = FALSE",
     x = "Sample Size (n)",
@@ -344,7 +343,6 @@ p2 <- ggplot(subset(clustering_df, clust == TRUE),
   geom_hline(yintercept = 0, linewidth = 0.4) +
   geom_boxplot(width = 0.85, size = 1, outlier.shape = NA,
                position = position_dodge(0.9)) +
-  coord_cartesian(ylim = c(-0.1, 0.3)) +
   labs(
     title = "clust = TRUE",
     x = "Sample Size (n)",
@@ -353,16 +351,17 @@ p2 <- ggplot(subset(clustering_df, clust == TRUE),
   ) +
   theme_minimal(base_size = 14)
 
-p1 
+p1 + coord_cartesian(ylim = c(-5, 5))
 
-p2
+p2 + coord_cartesian(ylim = c(-5, 15))
 
 ```
 
 # Variance
 ```{r}
-r0 <- 1
+r0 <- 2
 alpha <- 0.05
+z <- qnorm(0.975)
 
 get_p_at_r0 <- function(df, r0) {
   if (is.null(df) || nrow(df) == 0) return(NA_real_)
@@ -395,9 +394,6 @@ p_long <- imap_dfr(sim_results, function(scn, i) {
   })
 })
 
-alpha <- 0.05
-z <- qnorm(0.975)
-
 type1_df <- p_long %>%
   filter(clust == FALSE) %>%
   group_by(n, abundance, correction, method) %>%
@@ -424,7 +420,7 @@ power_df <- p_long %>%
 
 pd <- position_dodge(width = 0.4)
 
-ggplot(type1_df, aes(x = factor(n), y = type1_error, color = method, group = method)) +
+ggplot(type1_df %>% filter(method != "KAMP_lite"), aes(x = factor(n), y = type1_error, color = method, group = method)) +
   geom_hline(yintercept = alpha, linetype = "dashed") +
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15, position = pd) +
   geom_point(size = 2, position = pd) +
@@ -436,7 +432,7 @@ ggplot(type1_df, aes(x = factor(n), y = type1_error, color = method, group = met
   ) +
   theme_minimal()
 
-ggplot(power_df, aes(x = factor(n), y = power, color = method, group = method)) +
+ggplot(power_df %>% filter(method != "KAMP_lite"), aes(x = factor(n), y = power, color = method, group = method)) +
   geom_hline(yintercept = alpha, linetype = "dashed") +
   geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15, position = pd) +
   geom_point(size = 2, position = pd) +
@@ -446,64 +442,7 @@ ggplot(power_df, aes(x = factor(n), y = power, color = method, group = method)) 
     x = "Sample size (n)",
     y = "Power"
   ) +
-  theme_minimal()
+  theme_minimal() + coord_cartesian(ylim = c(0.3, 1.01))
 ```
 
-
-# Testing fixed window
-```{r}
-sim_data <- sim_pp_data_biv(
-      lambda_n = 1000,
-      abundance = 0.3,
-      markvar1 = "immune1",
-      markvar2 = "immune2",
-      markvar3 = "background",
-      distribution = "inhom",
-      clust = TRUE
-    )
-
-# plot sim data
-
-df <- as_tibble(sim_data)
-
-ggplot(df, aes(x = x, y = y, color = marks)) +
-  geom_point(alpha = 0.6, size = 1) +
-  coord_fixed() +
-  theme_minimal() +
-  labs(title = "Simulated Point Pattern",
-       color = "Cell Type")
-
-# calc num of immune1 cells in df
-sum(df$marks == "immune1")
-sum(df$marks == "immune2")
-
-```
-```{r}
-# sim univariate data
-
-sim_data <- sim_pp_data(
-      lambda_n = 1000,
-      abundance = 0.3,
-      markvar1 = "immune",
-      markvar2 = "background",
-      distribution = "inhom",
-      clust = TRUE
-    )
-
-# plot sim data
-
-df <- as_tibble(sim_data)
-
-ggplot(df, aes(x = x, y = y, color = marks)) +
-  geom_point(alpha = 0.6, size = 1) +
-  coord_fixed() +
-  theme_minimal() +
-  labs(title = "Simulated Point Pattern",
-       color = "Cell Type")
-
-# calc num of immune1 cells in df
-sum(df$marks == "immune")
-
-kamp(sim_data, markvar = "immune", mark1 = "immune", rvals = seq(0, 3, length.out = 10), correction = "trans")
-```
 
