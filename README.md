@@ -31,7 +31,7 @@ print(kamp_var)
 
 ## Bivariate
 ```r
-library(kperm)
+library(KAMP)
 
 # Simulate a point pattern
 pp <- sim_pp_data_biv(lambda_n = 500, abundance = 0.3)
