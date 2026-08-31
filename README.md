@@ -1,5 +1,5 @@
 # Introduction
-`kperm` is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called **KAMP** (K adjusted by Analytical Moments of the Permutation distribution). 
+`KAMP` is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called **KAMP** (K adjusted by Analytical Moments of the Permutation distribution). 
 
 KAMP avoids the need for computationally expensive permutations while accounting for spatial inhomogeneity, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.
 
@@ -15,7 +15,7 @@ devtools::install_github("dliao1/kperm")
 
 ## Univariate
 ```r
-library(kperm)
+library(KAMP)
 
 # Simulate a point pattern
 pp <- sim_pp_data(lambda_n = 500, abundance = 0.3)
