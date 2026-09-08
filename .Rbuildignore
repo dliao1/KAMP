@@ -1,4 +1,5 @@
 ^data-raw$
+^simulations$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$

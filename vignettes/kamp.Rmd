@@ -1,22 +1,48 @@
-## ----include = FALSE----------------------------------------------------------
+---
+title: "KAMP"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{KAMP}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+```
 
-## -----------------------------------------------------------------------------
+# Introduction
+
+Hello and welcome to the `KAMP` package! 
+This package is designed to calculate the expectation and variance of KAMP (K adjustment by Analytical Moments of the Permutation distribution) for point patterns with marks. The package is partially built on the `spatstat` package, which is a powerful tool for analyzing spatial data in R.
+The `KAMP` package provides functions to simulate point patterns, calculate the KAMP CSR, and visualize the results. The package is designed to be user-friendly and easy to use, with a focus on providing clear and concise output.
+The package is still in development, and we welcome any feedback or suggestions for improvement. If you have any questions or issues, please feel free to reach out to us.
+
+# Setup
+```{r}
 library(KAMP)
 #library(devtools)
 library(tidyverse)
 library(spatstat.random)
 #devtools::load_all()
 set.seed(50)
+```
 
-## -----------------------------------------------------------------------------
+# Ovarian Dataset
+
+The `ovarian_df` dataset is a small dataframe that contains a snapshot of 5 images of ovarian cancer cells from the `HumanOvarianCancerVP()` dataset in the `VectraPolarisData` package. Each image is represented by a unique sample ID, and within each image, there are multiple cells with their respective x and y coordinates. The dataset includes an `immune` column that indicates whether the cell is an immune cell or a background cell. There is also a `phenotype` column that indicates the type of immune cell, such as "helper t cells", "cytotoxic t cells", "b cells", or "macrophages". The `x` and `y` columns represent the coordinates of the cells in the image.
+
+```{r}
 data(ovarian_df)
 head(ovarian_df)
+```
 
-## -----------------------------------------------------------------------------
+Since we have a dataframe of multiple images, let's go through, subset our dataframe by id, and plot it.
+```{r}
 ids <- unique(ovarian_df$sample_id)
 mark_var <- "immune"
 
@@ -32,14 +58,75 @@ for (id in ids) {
   
   print(p)
 }
+```
 
-## -----------------------------------------------------------------------------
+# KAMP
+
+Now that we have our data, we can use the `kamp()` function to calculate the KAMP expectation and variance for both univariate and bivariate data.
+
+## Univariate
+
+We can use the `kamp()` function to calculate the KAMP expectation for univariate data. 
+
+The `kamp()` function has several parameters that allow us to customize the calculation:
+
+- `ppp_obj`: The point pattern object created using the `ppp()` function from the `spatstat` package.
+
+- `rvals`: A sequence of distances at which to calculate the K function.
+
+- `univariate`: A logical value indicating whether to calculate the univariate K function (default is `TRUE`).
+
+- `marks_var`: The name of the marks variable in the point pattern object (default is `"marks"`).
+
+- `mark1`: The value of the marks variable for the first mark (required for univariate).
+
+- `mark2`: The value of the marks variable for the second mark (optional for univariate).
+
+- `variance`: A logical value indicating whether to calculate the variance (default is `FALSE`).
+
+- `thin`: A logical value indicating whether to use thinning (default is `FALSE`).
+
+- `p_thin`: Percentage to thin by (default is `0.5`).
+
+For univariate data, we only need to specify one marks variable.
+In this case, we set `univariate = TRUE` and `variance = FALSE` (the default).
+
+- `univariate = TRUE` calculates the K function for one mark versus background.
+
+- `variance = FALSE` means we only compute the expectation.
+
+- `correction` uses translational correction by default.
+
+### Subsetting Data
+
+To perform univariate analysis, we can subset our `ovarian_df` dataframe to include only the first image ID and the `immune` marks variable.
+
+```{r}
 ids <- unique(ovarian_df$sample_id)
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
 mark_var <- "immune"
 head(univ_data)
+```
 
-## -----------------------------------------------------------------------------
+### Expectation
+
+We can now calculate the KAMP expectation for the univariate data using the `kamp()` function.
+What we are doing here is calculating the KAMP expectation for the `immune` marks variable against the background cells, using a sequence of distances from 0 to 100 with a step of 10. Furthermore, we use the option `univariate = TRUE` and specify the marks variable for the first mark as `mark1 = "immune"` - we are not setting `mark2` since we are only interested in the univariate case.
+
+What's returned is a data frame with the following columns:
+
+- `r`: The distance at which the K function is calculated.
+
+- `k`: The K function value.
+
+- `theo_csr`: The theoretical CSR (Complete Spatial Randomness) value.
+
+- `kamp_csr`: The KAMP CSR value.
+
+- `kamp`: The difference between K and the KAMP CSR.
+
+
+```{r}
 univ_kamp <- kamp(univ_data, 
                   rvals = seq(0, 100, by = 10),
                   univariate = TRUE,
@@ -47,8 +134,13 @@ univ_kamp <- kamp(univ_data,
                   mark1 = "immune")
 
 univ_kamp
+```
 
-## -----------------------------------------------------------------------------
+
+We can visualize KAMP using `ggplot2`. Plotted here is the original K from translational edge correctionm, the theoretical CSR, and the KAMP CSR. The KAMP CSR is the expected value of K under the null hypothesis of CSR, which is calculated using the analytical moments of the permutation distribution.
+
+
+```{r}
 univ_kamp %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
@@ -78,8 +170,15 @@ univ_kamp %>%
   ) +
   theme_minimal()
 
+```
 
-## -----------------------------------------------------------------------------
+
+Looking at the plot, we can see that the KAMP CSR (blue line) is slightly higher than the theoretical CSR (black line) at larger distances. This result aligns with our expectations, as, if we view the plots of the first sample image, the first image is more inhomogenous - i.e. there are large holes/"patches" of empty
+space that could make the immune cells appear more clustered than expected under CSR.
+
+Let's plot the differences between k and the theo_csr and kamp_csr to get a better idea:
+
+```{r}
 univ_kamp %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = k - kamp_csr, color = "k - kamp_csr", linetype = "k - kamp_csr"), size = 1) +
@@ -105,8 +204,18 @@ univ_kamp %>%
     linetype = "Series"
   ) +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+As expected, the difference between k and the theoretical CSR values tended to be higher than the difference between k and the KAMP CSR values, indicating that the KAMP CSR seems to do a better job accounting for the inhomogenous tissue quality.
+
+###  Variance
+
+To calculate the variance of the KAMP expectation, we still use the kamp() function, but we set `variance = TRUE`. This will compute the variance of the KAMP expectation at each distance `r`. The new output will include all the same columns as before, but with additional column `var` that contains the variance of the KAMP expectation at each distance, and a `p-val` column that contains the p-value for the variance test.
+
+
+**Note:** `variance = TRUE` is not compatible with `thin = TRUE`. If both are set to TRUE, a warning will be thrown and variance will still be calculated, but the results may be unreliable.
+
+```{r}
 univ_kamp_var <- kamp(univ_data,
                       rvals = seq(0, 100, by = 10),
                       univariate = TRUE,
@@ -114,8 +223,11 @@ univ_kamp_var <- kamp(univ_data,
                       mark1 = "immune",
                       variance = TRUE)
 univ_kamp_var
+```
 
-## -----------------------------------------------------------------------------
+We can visualize the variance of the KAMP expectation using `ggplot2`:
+
+```{r}
 #devtools::load_all()
 
 univ_kamp_var %>%
@@ -124,8 +236,14 @@ univ_kamp_var %>%
   geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +
   labs(title = "Univariate KAMP Variance", x = "r", y = "Variance") +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+## Bivariate
+
+### Subsetting Data
+For bivariate analysis, we can subset our `ovarian_df` dataframe to include two types of immune cells and background cells. In this example, we will use "helper t cells" and "cytotoxic t cells".
+
+```{r}
 ids <- unique(ovarian_df$sample_id)
 biv_data <- ovarian_df %>% 
   filter(sample_id == ids[1]) #%>%
@@ -135,8 +253,16 @@ biv_data <- ovarian_df %>%
 mark_var <- "phenotype"
 
 head(biv_data)
+```
 
-## -----------------------------------------------------------------------------
+
+
+### Expectation
+
+To calculate the KAMP expectation for bivariate data, we set `univariate = FALSE` and specify the marks variables for both marks.
+
+
+```{r}
 
 biv_kamp <- kamp(df = biv_data,
                  rvals = seq(0, 100, by = 10),
@@ -145,8 +271,9 @@ biv_kamp <- kamp(df = biv_data,
                  mark1 = "helper t cell",
                  mark2 = "cytotoxic t cell")
 head(biv_kamp)
+```
 
-## -----------------------------------------------------------------------------
+```{r}
 biv_kamp %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
@@ -175,8 +302,11 @@ biv_kamp %>%
     linetype = "Series"
   ) +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+### Variance
+
+```{r}
 biv_kamp_var <- kamp(df = biv_data,
                      rvals = seq(0, 100, by = 10),
                      univariate = FALSE,
@@ -185,16 +315,25 @@ biv_kamp_var <- kamp(df = biv_data,
                      mark2 = "cytotoxic t cell",
                      variance = TRUE)
 head(biv_kamp_var)
+```
 
-## -----------------------------------------------------------------------------
+```{r}
 biv_kamp_var %>%
   ggplot(aes(x = r, y = var)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +
   labs(title = "Bivariate KAMP Variance", x = "r", y = "Variance") +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+# KAMP-lite (Thinning)
+
+KAMP-lite refers to running KAMP with a thinned point pattern using `thin = TRUE` and specifying `p_thin` between 0 and 1. This helps with performance on large datasets.
+
+## Univariate
+
+### Expectation
+```{r}
 ids <- unique(ovarian_df$sample_id)
 mark_var <- "immune"
 univ_data <- ovarian_df %>% filter(sample_id == ids[1])
@@ -207,8 +346,9 @@ univ_kamp_lite <- kamp(df = univ_data,
                        thin = TRUE,
                        p_thin = 0.3)
 univ_kamp_lite
+```
 
-## -----------------------------------------------------------------------------
+```{r}
 univ_kamp_lite %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
@@ -237,8 +377,10 @@ univ_kamp_lite %>%
     linetype = "Series"
   ) +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+### Variance
+```{r}
 univ_kamp_lite_var <- kamp(df = univ_data,
                            rvals = seq(0, 100, by = 10),
                            univariate = TRUE,
@@ -248,8 +390,10 @@ univ_kamp_lite_var <- kamp(df = univ_data,
                            p_thin = 0.3,
                            variance = TRUE) # should display a warning message
 univ_kamp_lite_var
+```
 
-## -----------------------------------------------------------------------------
+## Bivariate
+```{r}
 ids <- unique(ovarian_df$sample_id)
 biv_data <- ovarian_df %>% 
   filter(sample_id == ids[1]) #%>%
@@ -259,8 +403,10 @@ biv_data <- ovarian_df %>%
 mark_var <- "phenotype"
 
 head(biv_data)
+```
 
-## -----------------------------------------------------------------------------
+### Expectation
+```{r}
 biv_kamp_lite <- kamp(df = biv_data,
                       rvals = seq(0, 100, by = 10),
                       univariate = FALSE,
@@ -270,8 +416,9 @@ biv_kamp_lite <- kamp(df = biv_data,
                       thin = TRUE,
                       p_thin = 0.3)
 head(biv_kamp_lite)
+```
 
-## -----------------------------------------------------------------------------
+```{r}
 biv_kamp_lite %>%
   ggplot(aes(x = r)) +
   geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
@@ -300,8 +447,10 @@ biv_kamp_lite %>%
     linetype = "Series"
   ) +
   theme_minimal()
+```
 
-## -----------------------------------------------------------------------------
+### Variance
+```{r}
 biv_kamp_lite_var <- kamp(df = biv_data,
                           rvals = seq(0, 100, by = 10),
                           univariate = FALSE,
@@ -312,12 +461,14 @@ biv_kamp_lite_var <- kamp(df = biv_data,
                           thin = TRUE,
                           p_thin = 0.3) # should display a warning message
 head(biv_kamp_lite_var)
+```
 
-## -----------------------------------------------------------------------------
+```{r}
 biv_kamp_lite_var %>%
   ggplot(aes(x = r, y = var)) +
   geom_line() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "blue") +
   labs(title = "Bivariate KAMP lite Variance", x = "r", y = "Variance") +
   theme_minimal()
+```
 

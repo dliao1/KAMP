@@ -52,7 +52,6 @@ kamp_variance_biv <- function(ppp_obj,
                                  mark1 = "immune1",
                                  mark2 = "immune2") {
 
-
   map_dfr(rvals,
           ~kamp_variance_biv_helper(ppp_obj = ppp_obj,
                                     rval = .x,

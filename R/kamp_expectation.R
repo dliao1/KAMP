@@ -21,8 +21,6 @@
 #'
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
 #'
-#' See `kamp_expectation_mat` for the matrix-based implementation.
-#'
 #'
 #'
 #
@@ -58,7 +56,7 @@ kamp_expectation <- function(ppp_obj,
   npts  <- npoints(ppp_obj)
 
   if (npts > 10000) {
-    warning("Point pattern has more than 10,000 points. Switching to border correction")
+    warning("Point pattern has more than 10,000 points. ")
     #correction = "border"
   }
   # Pre-existing code that uses spatstat

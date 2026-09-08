@@ -39,8 +39,6 @@ check_inputs(
 \item{p_thin}{Percentage that determines how much to thin}
 
 \item{background}{Value used to define the background for the point pattern object.}
-
-\item{...}{}
 }
 \value{
 TRUE if all inputs are valid, otherwise throws an error with a descriptive message.

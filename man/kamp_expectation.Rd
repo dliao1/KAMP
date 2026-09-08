@@ -48,8 +48,6 @@ automatically uses border correction when the number of
 points in the point pattern is more than 3000.
 
 See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
-
-See \code{kamp_expectation_mat} for the matrix-based implementation.
 }
 \details{
 Compute KAMP Expectation

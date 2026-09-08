@@ -44,7 +44,7 @@ kamp_variance_Rcpp = function(ppp_obj,
   Wwin  <- Window(ppp_obj)
   areaW <- spatstat.geom::area(Wwin)
 
-  marks_vec <- marks(ppp_obj) == mark1
+  marks_vec <- spatstat.geom::marks(ppp_obj) == mark1
   m <- sum(marks_vec) # number of marked points
 
   rmax <- max(rvals) # maximum radius

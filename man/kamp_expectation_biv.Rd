@@ -46,9 +46,6 @@ avoiding the computational burden of permuting the point pattern.
 
 Note: This function uses the \code{spatstat} package under the hood.
 See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
-
-See \code{kamp_expectation_biv_mat} for the matrix-based implementation of the KAMP
-bivariate expectation.
 }
 \details{
 Computes KAMP Expectation for Bivariate Point Patterns

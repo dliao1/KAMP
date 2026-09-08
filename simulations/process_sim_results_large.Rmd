@@ -7,7 +7,7 @@ output:
     code_folding: hide
 hitheme: tomorrow
 highlighter: highlight.js
-date: "2026-02-11"
+date: "2026-08-31"
 ---
 
 ```{r setup, include=FALSE}
@@ -32,49 +32,6 @@ library(patchwork)
 set.seed(50)
 ```
 
-# TODOS
-- Code profiling 
-- Simulation studies
-- Cleaning up code, comments
-- Continued edits to vignettes, README, and function documentation
-- Help files
-- Edit unit tests
-
-
-# Progress
-
-## Larger simulation study:
-
-- n = (500, 1000, 5000)
-- Abundance = (0.1, 0.3)
-- clust = (TRUE, FALSE)
-- correction = (trans, iso)
-- Bivariate inhomogenous
-- reps = 100
-- nperm = 1000
-- Goal: compare K, Kinhom, KAMP, KAMP lite (thin_pct = 0.5), Kperm, KAMP variance, KAMP_lite variance, Kperm variance
-
-### Analyses
-
-- Computation time
-- Degree of clustering 
-- Variance: Power, Type 1 error 
-
-### Results
-- Successfully sped up KAMP by accepting a dataframe or a point process object in the main function :)
-
-- Runtime 
-  - KAMP and KAMP lite runtime were faster than K and much faster than Kperm, but was about 2x slower than Kinhom when n was larger
-- Variance
-  - Type 1 Error
-    - Using correction = trans, KAMP type 1 error rate was pretty much the same as Kperm, while using correction = iso, KAMP type 1 error rate was lower than Kperm for smaller n and then higher than Kperm for larger n
-  - Power
-    - KAMP and Kperm had similar power, with KAMP_lite consistently having lower power (probably expected due to the thinning) 
-
-# Questions + Next Steps
-- Next Steps?
-
-
 
 ```{r}
 num_scenarios <- 24
@@ -86,9 +43,6 @@ for (i in 1:num_scenarios) {
 
 ```
 
-```{r}
-sim_results[[1]][[1]]$results$kperm
-```
 
 # Runtime
 
@@ -189,6 +143,33 @@ for (nval in c(500, 1000, 5000)) {
   cat("\n\n")
 }
 
+```
+
+### Summary statistics for 1 scenario
+
+```{r}
+runtime_summary <- runtime_long %>%
+  filter(
+    correction == "trans",
+    n == 5000,
+    clust == TRUE,
+    abundance == 0.3,
+    method %in% c("K","KAMP","KAMP_lite","Kinhom","Kperm")
+  ) %>%
+  group_by(method) %>%
+  summarise(
+    min   = min(elapsed),
+    q1    = quantile(elapsed, 0.25),
+    median = median(elapsed),
+    q3    = quantile(elapsed, 0.75),
+    max   = max(elapsed),
+    mean  = mean(elapsed),
+    sd    = sd(elapsed),
+    .groups = "drop"
+  )
+
+kable(runtime_summary, digits = 3,
+      caption = "Runtime summary statistics for n = 5000, clust = TRUE, abundance = 0.3, correction = trans")
 ```
 
 ## Variance

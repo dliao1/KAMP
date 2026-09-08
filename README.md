@@ -1,5 +1,5 @@
 # Introduction
-`kperm` is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called **KAMP** (K adjusted by Analytical Moments of the Permutation distribution). 
+`KAMP` is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called **KAMP** (K adjusted by Analytical Moments of the Permutation distribution). 
 
 KAMP avoids the need for computationally expensive permutations while accounting for spatial inhomogeneity, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.
 
@@ -10,12 +10,12 @@ This package provides functions to compute both **univariate** and **bivariate**
 ## Installation
 ```r
 # Install from GitHub
-devtools::install_github("dliao1/kperm")
+devtools::install_github("dliao1/KAMP")
 ```
 
 ## Univariate
 ```r
-library(kperm)
+library(KAMP)
 
 # Simulate a point pattern
 pp <- sim_pp_data(lambda_n = 500, abundance = 0.3)
@@ -31,7 +31,7 @@ print(kamp_var)
 
 ## Bivariate
 ```r
-library(kperm)
+library(KAMP)
 
 # Simulate a point pattern
 pp <- sim_pp_data_biv(lambda_n = 500, abundance = 0.3)
@@ -49,5 +49,5 @@ print(kamp_var_biv)
 Link to documentation and vignettes: https://dliao1.github.io/KAMP/
 
   <!-- badges: start -->
-  [![Codecov test coverage](https://codecov.io/gh/dliao1/kperm/graph/badge.svg)](https://app.codecov.io/gh/dliao1/KAMP)
+  [![Codecov test coverage](https://codecov.io/gh/dliao1/KAMP/graph/badge.svg)](https://app.codecov.io/gh/dliao1/KAMP)
   <!-- badges: end -->

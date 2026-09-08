@@ -37,7 +37,6 @@ kamp_variance = function(ppp_obj,
                          correction = "trans",
                          mark1 = "immune") {
 
-
   results <- map_dfr(rvals,
           ~kamp_variance_helper(ppp_obj = ppp_obj,
                                 rvalue = .x,

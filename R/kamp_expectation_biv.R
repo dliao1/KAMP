@@ -15,9 +15,6 @@
 #' Note: This function uses the `spatstat` package under the hood.
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
 #'
-#' See `kamp_expectation_biv_mat` for the matrix-based implementation of the KAMP
-#' bivariate expectation.
-#'
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
 #' @param rvec Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 #' @param correction Type of edge correction. Defaults to translational.
@@ -112,56 +109,4 @@ kamp_expectation_biv <- function(ppp_obj,
   }
 
   return(kamp_df)
-}
-
-#' Bivariate KAMP Expectation (Matrix Implementation)
-#'
-#' @title KAMP bivariate expectation (Matrix Implementation)
-#' @description
-#' Computes the KAMP (K-function Adjusted for Marked Permutations) expectation
-#' for bivariate point patterns using a matrix-based approach. Note that this
-#' is slower.
-#'
-#' See `kamp_expectation_biv` for the `spatstat`-based implementation of the KAMP
-#' bivariate expectation.
-#'
-#' @param ppp_obj A point pattern object from the `spatstat.geom` package.
-#' @param rvec Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
-#' @param correction Type of edge correction method. Defaults to translational.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
-#'
-#' @returns
-#' A dataframe with the following columns:
-#' \describe{
-#'  \item{r}{The radius at which K was calculated.}
-#'  \item{k}{The observed K value}
-#'  \item{theo_csr}{The theoretical K under CSR}
-#'  \item{kamp_csr}{The adjusted CSR representing the KAMP permuted expectation.}
-#'  \item{kamp}{The difference between observed K and KAMP CSR}
-#' }
-#'
-#'
-#' @importFrom spatstat.explore Kcross Kest
-#' @importFrom spatstat.geom area.owin ppp as.owin
-#' @importFrom spatstat.random rthin
-#' @importFrom dplyr mutate select
-#' @importFrom tibble as_tibble
-#' @importFrom magrittr %>%
-#'
-#' @export
-#'
-kamp_expectation_biv_mat <- function(ppp_obj,
-                                     rvals = c(0, .05, .075, .1, .15, .2),
-                                     correction = "trans",
-                                     mark1 = "immune1",
-                                     mark2 = "immune2") {
-
-  map_dfr(rvals,
-          ~kamp_expectation_biv_mat_helper(ppp_obj = ppp_obj,
-                                           rval = .x,
-                                           correction = correction,
-                                           mark1 = mark1,
-                                           mark2 = mark2),
-          .progress = TRUE)
 }

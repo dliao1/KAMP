@@ -1,0 +1,354 @@
+---
+title: "process_sim_results_Rcpp"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+    code_folding: hide
+hitheme: tomorrow
+highlighter: highlight.js
+date: "2026-08-31"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r}
+library(KAMP)
+library(tidyverse)
+library(spatstat.random)
+library(microbenchmark)
+library(spatstat.geom)
+library(spatstat.explore)
+library(ggplot2)
+library(Rcpp)
+library(kableExtra)
+library(parallel)
+library(here)
+library(patchwork)
+set.seed(50)
+```
+
+# TODOS
+- GAMP Implementation
+- Cleaning up code, comments
+- Continued edits to vignettes, README, and function documentation
+- Help files
+- Edit unit tests
+
+# Progress
+
+- GAMP paper and implementation
+
+
+# Questions + Next Steps
+- Next Steps?
+
+
+
+```{r}
+num_scenarios <- 2
+sim_results <- list()
+for (i in 1:num_scenarios) {
+  load(here("vignettes", "output_Rcpp", paste0(i, ".RDA")))
+  sim_results[[i]] <- results_list
+}
+
+```
+
+# Runtime
+
+```{r, figure.width=15, figure.height=10}
+runtime_long <- imap_dfr(sim_results, function(scn, i) {
+  imap_dfr(scn, function(res, j) {
+    res$times %>%
+      mutate(scenario = i, rep_index = j)
+  })
+})
+
+plot_df <- runtime_long %>%
+  mutate(
+    method_clean = method %>%
+      str_remove("_var$") %>%
+      str_replace("Rcpp_true", "Rcpp") %>%
+      str_replace("Rcpp_false", "no Rcpp") %>%
+      str_replace("KAMP_lite", "KAMP lite") %>%
+      str_replace("_", " ")
+  ) %>%
+  filter(method_clean %in% c("KAMP lite no Rcpp", 
+                             "KAMP lite Rcpp", 
+                             "KAMP no Rcpp",
+                             "KAMP Rcpp",
+                             "Kperm")
+  )
+
+plot_df <- plot_df %>%
+  mutate(
+    is_rcpp = if_else(
+      str_detect(method_clean, "no Rcpp"),
+      "No Rcpp",
+      if_else(str_detect(method_clean, "Rcpp"), "Rcpp", "No Rcpp")
+    )
+  )
+
+
+ggplot(
+  plot_df %>% filter(!str_detect(method_clean, "KAMP lite")),
+  aes(
+    x = method_clean,
+    y = elapsed,
+    fill = method_clean,
+    linetype = is_rcpp
+  )
+) +
+  geom_boxplot(width = 0.7, outlier.alpha = 0.25) +
+  scale_linetype_manual(
+    values = c("Rcpp" = "solid", "No Rcpp" = "dashed")
+  ) +
+  scale_y_log10() +
+  labs(
+    title = "Runtime distribution across 100 reps (trans, clust = TRUE)",
+    x = NULL,
+    y = "Runtime (seconds, log10 scale)",
+    fill = "Method",
+    linetype = "Implementation"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+
+# paneled plot by correction
+ggplot(
+  plot_df %>% filter(!str_detect(method_clean, "KAMP lite")),
+  aes(
+    x = method_clean,
+    y = elapsed,
+    fill = method_clean,
+    linetype = is_rcpp
+  )
+) +
+  geom_boxplot(width = 0.7, outlier.alpha = 0.25) +
+  scale_linetype_manual(
+    values = c("Rcpp" = "solid", "No Rcpp" = "dashed")
+  ) +
+  scale_y_log10() +
+  labs(
+    title = "Runtime distribution across 100 reps (clust = TRUE)",
+    x = NULL,
+    y = "Runtime (seconds, log10 scale)",
+    fill = "Method",
+    linetype = "Implementation"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  facet_wrap(~ correction)
+
+```
+
+
+# Accuracy
+
+Does the Rcpp match the non Rcpp?
+
+```{r}
+cmp_df <- imap_dfr(sim_results, function(scn, scenario_id) {
+  
+  imap_dfr(scn, function(res, rep_id) {
+    
+    kamp_cmp <- res$results$kamp_Rcpp_true_var %>%
+      select(r, var_true = var, kamp_true = kamp) %>%
+      inner_join(
+        res$results$kamp_Rcpp_false_var %>%
+          select(r, var_false = var, kamp_false = kamp),
+        by = "r"
+      ) %>%
+      mutate(
+        scenario = scenario_id,
+        rep = rep_id,
+        method = "KAMP"
+      )
+    
+    kamp_lite_cmp <- res$results$kamp_lite_Rcpp_true_var %>%
+      select(r, var_true = var, kamp_true = kamp) %>%
+      inner_join(
+        res$results$kamp_lite_Rcpp_false_var %>%
+          select(r, var_false = var, kamp_false = kamp),
+        by = "r"
+      ) %>%
+      mutate(
+        scenario = scenario_id,
+        rep = rep_id,
+        method = "KAMP_lite"
+      )
+    
+    bind_rows(kamp_cmp, kamp_lite_cmp)
+  })
+})
+
+rep_summary <- cmp_df %>%
+  group_by(scenario, rep, method) %>%
+  summarise(
+    max_abs_var  = max(abs(var_true - var_false), na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(method != "KAMP_lite") %>%
+  group_by(scenario, method) %>% # scenario 1 is trans, scenario 2 is iso
+  summarise(
+    max_abs_diff = max(max_abs_var), # max difference across all reps for a given scenario and method
+    .groups = "drop"
+  ) %>% 
+  mutate(correction = case_when(
+    scenario == 1 ~ "trans",
+    scenario == 2 ~ "iso",
+    TRUE ~ as.character(scenario)
+  )) %>%
+  select(correction, method, max_abs_diff)
+
+kable(
+  rep_summary %>% mutate(across(where(is.numeric), ~ format(.x, scientific = TRUE, digits = 6))),
+  caption = "Max abs difference in variances between Rcpp and non-Rcpp"
+) %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 2, "KAMP" = 1)) %>%
+  column_spec(1, bold = TRUE) 
+
+cmp_df <- imap_dfr(sim_results, function(scn, scenario_id) {
+
+  imap_dfr(scn, function(res, rep_id) {
+
+    kamp_cmp <- res$results$kamp_Rcpp_true_var %>%
+      select(r, var_true = var) %>%
+      inner_join(
+        res$results$kamp_Rcpp_false_var %>%
+          select(r, var_false = var),
+        by = "r"
+      ) %>%
+      mutate(
+        scenario = scenario_id,
+        rep = rep_id,
+        method = "KAMP"
+      )
+
+    kamp_lite_cmp <- res$results$kamp_lite_Rcpp_true_var %>%
+      select(r, var_true = var) %>%
+      inner_join(
+        res$results$kamp_lite_Rcpp_false_var %>%
+          select(r, var_false = var),
+        by = "r"
+      ) %>%
+      mutate(
+        scenario = scenario_id,
+        rep = rep_id,
+        method = "KAMP_lite"
+      )
+
+    bind_rows(kamp_cmp, kamp_lite_cmp)
+  })
+})
+
+tol <- 1e-8
+
+percent_match <- cmp_df %>%
+  filter(method != "KAMP_lite") %>%
+  mutate(match = abs(var_true - var_false) < tol) %>%
+  group_by(scenario, method) %>%
+  summarise(
+    total = n(),
+    matches = sum(match),
+    percent_match = 100 * matches / total,
+    .groups = "drop"
+  ) %>% 
+  mutate(correction = case_when(
+    scenario == 1 ~ "trans",
+    scenario == 2 ~ "iso",
+    TRUE ~ as.character(scenario)
+  )) %>%
+  select(correction, method, percent_match)
+
+kable(
+  percent_match,
+  digits = 3,
+  caption = "% of variancea that match between Rcpp and non-Rcpp (tol = 1e-8)"
+) %>%
+  kable_styling(full_width = FALSE) %>%
+  add_header_above(c(" " = 2, "Match %" = 1)) %>% 
+  column_spec(1, bold = TRUE) 
+```
+
+
+# Power
+
+```{r}
+r0 <- 2
+alpha <- 0.05
+z <- qnorm(0.975)
+
+get_p_at_r0 <- function(df, r0) {
+  if (is.null(df) || nrow(df) == 0) return(NA_real_)
+  df %>%
+    mutate(dist = abs(r - r0)) %>%
+    arrange(dist) %>%
+    slice(1) %>%
+    pull(pvalue)
+}
+
+p_long_rcpp <- imap_dfr(sim_results, function(scn, i) {
+  imap_dfr(scn, function(res, j) {
+
+    tibble(
+      scenario   = i,
+      run        = j,
+      clust      = unique(res$times$clust)[1],
+      correction = unique(res$times$correction)[1],
+
+      Kperm      = get_p_at_r0(res$results$kperm_var %>% filter(method == "kperm approx"), r0),
+      KAMP       = get_p_at_r0(res$results$kamp_Rcpp_true_var, r0),
+      KAMP_lite  = get_p_at_r0(res$results$kamp_lite_Rcpp_true_var, r0)
+    ) %>%
+      pivot_longer(c(Kperm, KAMP, KAMP_lite),
+                   names_to = "method",
+                   values_to = "pvalue") %>%
+      mutate(reject = if_else(!is.na(pvalue) & pvalue <= alpha, 1L, 0L))
+  })
+})
+
+
+
+power_df <- p_long_rcpp %>%
+  group_by(correction, method) %>%
+  summarise(
+    n_eff = sum(!is.na(pvalue)),
+    power = mean(reject, na.rm = TRUE),
+    mcse = sqrt(power * (1 - power) / n_eff),
+    ci_lower = pmax(0, power - z * mcse),
+    ci_upper = pmin(1, power + z * mcse),
+    .groups = "drop"
+  )
+
+
+ggplot(power_df %>% filter(method != "KAMP_lite"), aes(x = method, y = power, color = method)) +
+  geom_hline(yintercept = 0.8, linetype = "dashed") +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.15) +
+  geom_point(size = 2) +
+  facet_wrap(~ correction) +
+  labs(
+    title = "Power (clust = TRUE)",
+    x = NULL,
+    y = "Power"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1)) +
+  coord_cartesian(ylim = c(0, 1.01))
+```
+

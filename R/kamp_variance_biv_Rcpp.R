@@ -60,8 +60,8 @@ kamp_variance_biv_Rcpp <- function(ppp_obj,
   m2 = sum(ppp_obj$marks == mark2)
 
 
-  is_m1 <- marks(ppp_obj) == mark1
-  is_m2 <- marks(ppp_obj) == mark2
+  is_m1 <- spatstat.geom::marks(ppp_obj) == mark1
+  is_m2 <- spatstat.geom::marks(ppp_obj) == mark2
 
   rmax <- max(rvals)
   cp <- spatstat.geom::closepairs(ppp_obj, rmax = rmax, what = "all")

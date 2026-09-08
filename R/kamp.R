@@ -19,9 +19,6 @@
 #'
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
 #'
-#' See `kamp_expectation_mat` for the matrix-based implementation (Note: currently
-#' not recommended due to slow speed)
-#'
 #' @param ppp_obj A point pattern object of class `ppp` from the `spatstat` package.
 #' @param rvals A vector of distances at which to compute the KAMP expectation and variance.
 #' @param univariate A logical value indicating whether to compute univariate KAMP (default is TRUE).

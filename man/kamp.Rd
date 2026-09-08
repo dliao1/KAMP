@@ -75,9 +75,6 @@ points in the point pattern is more than 3000.
 For variance, this function utlizes a matrix-based implementation.
 
 See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
-
-See \code{kamp_expectation_mat} for the matrix-based implementation (Note: currently
-not recommended due to slow speed)
 }
 \details{
 Computes KAMP expectation and variance

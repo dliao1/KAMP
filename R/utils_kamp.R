@@ -315,7 +315,7 @@ check_inputs <- function(df,
 
   # End of most input sanitization checks
 
-  if (sum(marks(ppp_obj) == mark1) < 5) {
+  if (sum(spatstat.geom::marks(ppp_obj) == mark1) < 5) {
     message(paste0("Less than 5 target cells marked as '", mark1, "'. This may lead to unreliable results."))
   }
 
@@ -323,7 +323,9 @@ check_inputs <- function(df,
     message("The point pattern object has more than 10000 points. Switching to border correction")
   }
 
-
+  if (npoints(ppp_obj) > 100000) {
+    message("Point pattern has more than 100,000 points. At this sample size, we suggest using no edge correction (correction = \"none\") for faster computation. The requested edge correction will still be used.")
+  }
 
   return(ppp_obj)
 }
