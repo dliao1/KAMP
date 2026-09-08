@@ -74,3 +74,20 @@ A dataframe with the following columns:
 ## Details
 
 KAMP Variance
+
+## Examples
+
+``` r
+win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+pp <- spatstat.random::rpoispp(lambda = 150, win = win)
+marks <- sample(c("immune", "background"), pp$n, replace = TRUE, prob = c(0.4, 0.6))
+marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+
+result <- kamp_variance(marked_pp, rvals = c(0.05, 0.1), mark1 = "immune")
+print(result)
+#> # A tibble: 2 × 7
+#>       r       k theo_csr kamp_csr      kamp        var pvalue
+#>   <dbl>   <dbl>    <dbl>    <dbl>     <dbl>      <dbl>  <dbl>
+#> 1  0.05 0.00919  0.00785  0.00840  0.000792 0.00000311  0.327
+#> 2  0.1  0.0287   0.0314   0.0325  -0.00378  0.0000131   0.852
+```

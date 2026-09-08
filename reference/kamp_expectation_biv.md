@@ -34,21 +34,21 @@ kamp_expectation_biv(
 
   A point pattern object from the `spatstat.geom` package.
 
-- correction:
-
-  Type of edge correction. Defaults to translational.
-
-- rvec:
+- rvals:
 
   Vector of radii at which to calculate the KAMP expectation. Defaults
   to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 
-- markvar1:
+- correction:
+
+  Type of edge correction. Defaults to translational.
+
+- mark1:
 
   Variable used to mark the points in the point pattern object for the
   first type. Default is "immune1".
 
-- markvar2:
+- mark2:
 
   Variable used to mark the points in the point pattern object for the
   second type. Default is "immune2".
@@ -95,14 +95,23 @@ if (requireNamespace("spatstat.geom", quietly = TRUE) &&
   pp <- spatstat.random::rpoispp(lambda = 200, win = win)
 
   # Assigns three marks: immune1, immune2, and background
-  marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
+  mark_labels <- c("immune1", "immune2", "background")
+  marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
 
   # Creates marked point pattern
   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 
   # Computes KAMP expectation
-  result <- kamp_expectation_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
+  result <- kamp_expectation_biv(marked_pp, mark1 = "immune1", mark2 = "immune2")
   print(result)
 }
-#> Error in kamp_expectation_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2"): unused arguments (markvar1 = "immune1", markvar2 = "immune2")
+#> # A tibble: 6 × 5
+#>       r      k theo_csr kamp_csr    kamp
+#>   <dbl>  <dbl>    <dbl>    <dbl>   <dbl>
+#> 1 0     0       0        0       0      
+#> 2 0.05  0.0122  0.00785  0.00922 0.00298
+#> 3 0.075 0.0191  0.0177   0.0163  0.00279
+#> 4 0.1   0.0314  0.0314   0.0287  0.00270
+#> 5 0.15  0.0737  0.0707   0.0680  0.00573
+#> 6 0.2   0.123   0.126    0.119   0.00403
 ```

@@ -14,6 +14,39 @@ concise output. The package is still in development, and we welcome any
 feedback or suggestions for improvement. If you have any questions or
 issues, please feel free to reach out to us.
 
+## Before You Begin
+
+A few concepts that come up throughout this vignette:
+
+- **`ppp` object**: `spatstat`’s representation of a point pattern – a
+  set of point locations (`x`/`y` coordinates) inside a bounding window,
+  optionally with a `marks` attribute labeling each point (e.g. by cell
+  type). [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) can
+  build one for you from a plain data.frame, or you can pass one in
+  directly.
+
+- **Ripley’s K function**: A measure of spatial clustering. For a given
+  radius `r`, K(r) roughly captures the expected number of additional
+  points within distance `r` of a typical point, normalized by point
+  density. Values higher than expected under randomness indicate
+  clustering; lower values indicate dispersion (points spread out more
+  than expected).
+
+- **Complete spatial randomness (CSR)**: The null hypothesis that points
+  are distributed independently and uniformly at random. The
+  *theoretical* K under CSR (`theo_csr`) assumes a homogeneous point
+  density across the whole window – an assumption that’s often violated
+  in real tissue images (e.g. due to holes, folds, or regions with no
+  cells).
+
+- **KAMP**: Rather than comparing observed K only to the theoretical CSR
+  baseline, KAMP computes the expectation and variance of K under a
+  *permutation* null – what you’d see if the marks were randomly
+  reassigned among the existing point locations. This adapts to the
+  actual inhomogeneity of the tissue. KAMP computes this permutation
+  distribution’s moments analytically (in closed form) instead of by
+  simulating many permutations, so it stays fast even on large datasets.
+
 ## Setup
 
 ``` r
@@ -42,6 +75,46 @@ library(spatstat.random)
 set.seed(50)
 ```
 
+## Quick Start
+
+Here’s the whole workflow in a few lines, before we walk through it in
+more detail below: load the data, subset to a single image, and compute
+the KAMP expectation.
+
+``` r
+
+data(ovarian_df)
+one_sample <- ovarian_df %>% filter(sample_id == unique(sample_id)[1])
+
+quick_kamp <- kamp(df = one_sample,
+                   rvals = seq(0, 100, by = 10),
+                   univariate = TRUE,
+                   mark_var = "immune",
+                   mark1 = "immune")
+#> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
+quick_kamp
+#> # A tibble: 11 × 5
+#>        r      k theo_csr kamp_csr   kamp
+#>    <dbl>  <dbl>    <dbl>    <dbl>  <dbl>
+#>  1     0     0        0        0      0 
+#>  2    10  2338.     314.     521.  1817.
+#>  3    20  5855.    1257.    2108.  3747.
+#>  4    30 10460.    2827.    4527.  5933.
+#>  5    40 14735.    5027.    7727.  7008.
+#>  6    50 20228.    7854.   11713.  8515.
+#>  7    60 27485.   11310.   16472. 11013.
+#>  8    70 35859.   15394.   22039. 13820.
+#>  9    80 43814.   20106.   28302. 15511.
+#> 10    90 52296.   25447.   35277. 17019.
+#> 11   100 60732.   31416.   42914. 17818.
+```
+
+`k` is the observed K for the “immune” cells at each radius `r`, and
+`kamp_csr` is KAMP’s adjusted null expectation for that same radius. The
+rest of this vignette walks through what these numbers mean, how to
+visualize them, and how to run bivariate and large-scale (KAMP-lite)
+analyses.
+
 ## Ovarian Dataset
 
 The `ovarian_df` dataset is a small dataframe that contains a snapshot
@@ -51,9 +124,9 @@ a unique sample ID, and within each image, there are multiple cells with
 their respective x and y coordinates. The dataset includes an `immune`
 column that indicates whether the cell is an immune cell or a background
 cell. There is also a `phenotype` column that indicates the type of
-immune cell, such as “helper t cells”, “cytotoxic t cells”, “b cells”,
-or “macrophages”. The `x` and `y` columns represent the coordinates of
-the cells in the image.
+cell, with levels “helper t cell”, “cytotoxic t cell”, “b cell”,
+“macrophage”, “tumor”, and “other”. The `x` and `y` columns represent
+the coordinates of the cells in the image.
 
 ``` r
 
@@ -97,7 +170,7 @@ for (id in ids) {
 }
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-4-1.png)![](kamp_files/figure-html/unnamed-chunk-4-2.png)![](kamp_files/figure-html/unnamed-chunk-4-3.png)![](kamp_files/figure-html/unnamed-chunk-4-4.png)![](kamp_files/figure-html/unnamed-chunk-4-5.png)
+![](kamp_files/figure-html/unnamed-chunk-5-1.png)![](kamp_files/figure-html/unnamed-chunk-5-2.png)![](kamp_files/figure-html/unnamed-chunk-5-3.png)![](kamp_files/figure-html/unnamed-chunk-5-4.png)![](kamp_files/figure-html/unnamed-chunk-5-5.png)
 
 ## KAMP
 
@@ -115,17 +188,18 @@ calculate the KAMP expectation for univariate data.
 The [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) function
 has several parameters that allow us to customize the calculation:
 
-- `ppp_obj`: The point pattern object created using the
+- `df`: Either a point pattern object created using the
   [`ppp()`](https://rdrr.io/pkg/spatstat.geom/man/ppp.html) function
-  from the `spatstat` package.
+  from the `spatstat` package, or a plain data.frame with `x`/`y`
+  columns and a marks column (in which case `mark_var` is required).
 
 - `rvals`: A sequence of distances at which to calculate the K function.
 
 - `univariate`: A logical value indicating whether to calculate the
   univariate K function (default is `TRUE`).
 
-- `marks_var`: The name of the marks variable in the point pattern
-  object (default is `"marks"`).
+- `mark_var`: The name of the marks column in `df`, when `df` is a
+  data.frame. Ignored when `df` is already a `ppp` object.
 
 - `mark1`: The value of the marks variable for the first mark (required
   for univariate).
@@ -135,6 +209,9 @@ has several parameters that allow us to customize the calculation:
 
 - `variance`: A logical value indicating whether to calculate the
   variance (default is `FALSE`).
+
+- `correction`: The edge correction to use – `"trans"`/`"translational"`
+  (the default), `"iso"`/`"isotropic"`, or `"none"`.
 
 - `thin`: A logical value indicating whether to use thinning (default is
   `FALSE`).
@@ -150,6 +227,20 @@ case, we set `univariate = TRUE` and `variance = FALSE` (the default).
 - `variance = FALSE` means we only compute the expectation.
 
 - `correction` uses translational correction by default.
+
+**Choosing a correction:** edge correction matters because points near
+the window’s boundary have fewer visible neighbors than points in the
+interior, which can bias K downward at larger radii if left uncorrected.
+
+- `"trans"`/`"translational"` (the default): a good default for most
+  cases; reweights each pair of points by how much the window overlaps
+  with itself when shifted by their separation vector.
+- `"iso"`/`"isotropic"`: another commonly-used correction; can behave
+  differently for irregularly-shaped windows and is more computationally
+  expensive.
+- `"none"`: no correction at all – fastest option, but biased whenever
+  edge effects aren’t negligible (e.g. large `r` relative to the
+  window’s size, or a small/irregular window).
 
 #### Subsetting Data
 
@@ -237,9 +328,9 @@ permutation distribution.
 
 univ_kamp %>%
   ggplot(aes(x = r)) +
-  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
-  geom_line(aes(y = kamp_csr, color = "kamp_csr", linetype = "kamp_csr"), size = 1) +
-  geom_line(aes(y = k, color = "k", linetype = "k"), size = 1) +
+  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), linewidth = 1) +
+  geom_line(aes(y = kamp_csr, color = "kamp_csr", linetype = "kamp_csr"), linewidth = 1) +
+  geom_line(aes(y = k, color = "k", linetype = "k"), linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
@@ -263,14 +354,9 @@ univ_kamp %>%
     linetype = "Series"
   ) +
   theme_minimal()
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-7-1.png)
+![](kamp_files/figure-html/unnamed-chunk-8-1.png)
 
 Looking at the plot, we can see that the KAMP CSR (blue line) is
 slightly higher than the theoretical CSR (black line) at larger
@@ -286,8 +372,8 @@ get a better idea:
 
 univ_kamp %>%
   ggplot(aes(x = r)) +
-  geom_line(aes(y = k - kamp_csr, color = "k - kamp_csr", linetype = "k - kamp_csr"), size = 1) +
-  geom_line(aes(y = k - theo_csr, color = "k - theo_csr", linetype = "k - theo_csr"), size = 1) +
+  geom_line(aes(y = k - kamp_csr, color = "k - kamp_csr", linetype = "k - kamp_csr"), linewidth = 1) +
+  geom_line(aes(y = k - theo_csr, color = "k - theo_csr", linetype = "k - theo_csr"), linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
@@ -311,7 +397,7 @@ univ_kamp %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-8-1.png)
+![](kamp_files/figure-html/unnamed-chunk-9-1.png)
 
 As expected, the difference between k and the theoretical CSR values
 tended to be higher than the difference between k and the KAMP CSR
@@ -341,31 +427,21 @@ univ_kamp_var <- kamp(univ_data,
                       mark1 = "immune",
                       variance = TRUE)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-#>  ■■■■                               9% |  ETA:  2m
-#>  ■■■■■■                            18% |  ETA:  1m
-#>  ■■■■■■■■■                         27% |  ETA:  1m
-#>  ■■■■■■■■■■■■                      36% |  ETA:  1m
-#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 47s
-#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 38s
-#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 31s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 23s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA: 15s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  8s
 univ_kamp_var
 #> # A tibble: 11 × 7
 #>        r      k theo_csr kamp_csr   kamp      var     pvalue
 #>    <dbl>  <dbl>    <dbl>    <dbl>  <dbl>    <dbl>      <dbl>
 #>  1     0     0        0        0      0        0  NaN       
-#>  2    10  2338.     314.     523.  1816.   18683.   1.43e-40
-#>  3    20  5855.    1257.    2108.  3747.   80000.   2.30e-40
-#>  4    30 10460.    2827.    4527.  5933.  190355.   2.03e-42
-#>  5    40 14735.    5027.    7727.  7008.  367573.   3.34e-31
-#>  6    50 20228.    7854.   11713.  8515.  633052.   4.99e-27
-#>  7    60 27485.   11310.   16473. 11012. 1019381.   5.33e-28
-#>  8    70 35859.   15394.   22040. 13819. 1558782.   8.92e-29
-#>  9    80 43814.   20106.   28302. 15511. 2275297.   4.19e-25
-#> 10    90 52296.   25447.   35277. 17019. 3211674.   1.09e-21
-#> 11   100 60732.   31416.   42914. 17818. 4377696.   8.26e-18
+#>  2    10  2337.     314.     522.  1815.   18654.   1.37e-40
+#>  3    20  5847.    1257.    2105.  3742.   79757.   2.23e-40
+#>  4    30 10435.    2827.    4515.  5920.  189378.   1.89e-42
+#>  5    40 14687.    5027.    7698.  6989.  364776.   2.87e-31
+#>  6    50 20139.    7854.   11654.  8485.  626577.   4.16e-27
+#>  7    60 27325.   11310.   16367. 10958. 1006029.   4.38e-28
+#>  8    70 35593.   15394.   21863. 13730. 1533400.   7.21e-29
+#>  9    80 43423.   20106.   28027. 15396. 2230285.   3.19e-25
+#> 10    90 51744.   25447.   34870. 16874. 3136488.   8.04e-22
+#> 11   100 59996.   31416.   42340. 17656. 4259010.   5.87e-18
 ```
 
 We can visualize the variance of the KAMP expectation using `ggplot2`:
@@ -382,7 +458,7 @@ univ_kamp_var %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-10-1.png)
+![](kamp_files/figure-html/unnamed-chunk-11-1.png)
 
 ### Bivariate
 
@@ -450,9 +526,9 @@ head(biv_kamp)
 
 biv_kamp %>%
   ggplot(aes(x = r)) +
-  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
-  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), size = 1) +
-  geom_line(aes(y = k, color = "k", linetype = "k"), size = 1) +
+  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), linewidth = 1) +
+  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), linewidth = 1) +
+  geom_line(aes(y = k, color = "k", linetype = "k"), linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
@@ -478,7 +554,7 @@ biv_kamp %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-13-1.png)
+![](kamp_files/figure-html/unnamed-chunk-14-1.png)
 
 #### Variance
 
@@ -492,26 +568,17 @@ biv_kamp_var <- kamp(df = biv_data,
                      mark2 = "cytotoxic t cell",
                      variance = TRUE)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-#>  ■■■■                               9% |  ETA:  1m
-#>  ■■■■■■                            18% |  ETA:  1m
-#>  ■■■■■■■■■                         27% |  ETA:  1m
-#>  ■■■■■■■■■■■■                      36% |  ETA:  1m
-#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 44s
-#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 36s
-#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 29s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 22s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA: 15s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  7s
+#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  0s
 head(biv_kamp_var)
 #> # A tibble: 6 × 7
 #>       r      k theo_csr kamp_csr  kamp      var   pvalue
 #>   <dbl>  <dbl>    <dbl>    <dbl> <dbl>    <dbl>    <dbl>
 #> 1     0     0        0        0     0        0  NaN     
-#> 2    10   663.     314.     523.  140.  173055.   0.368 
-#> 3    20  2667.    1257.    2108.  559.  716375.   0.255 
-#> 4    30  7386.    2827.    4527. 2859. 1609555.   0.0121
-#> 5    40  8745.    5027.    7727. 1017. 2907985.   0.275 
-#> 6    50 13191.    7854.   11713. 1478. 4691046.   0.248
+#> 2    10   663.     314.     522.  140.  172784.   0.368 
+#> 3    20  2663.    1257.    2105.  558.  714201.   0.254 
+#> 4    30  7361.    2827.    4515. 2846. 1601329.   0.0123
+#> 5    40  8712.    5027.    7698. 1014. 2886001.   0.275 
+#> 6    50 13126.    7854.   11654. 1472. 4643398.   0.247
 ```
 
 ``` r
@@ -524,7 +591,7 @@ biv_kamp_var %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-15-1.png)
+![](kamp_files/figure-html/unnamed-chunk-16-1.png)
 
 ## KAMP-lite (Thinning)
 
@@ -571,9 +638,9 @@ univ_kamp_lite
 
 univ_kamp_lite %>%
   ggplot(aes(x = r)) +
-  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
-  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), size = 1) +
-  geom_line(aes(y = k, color = "k", linetype = "k"), size = 1) +
+  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), linewidth = 1) +
+  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), linewidth = 1) +
+  geom_line(aes(y = k, color = "k", linetype = "k"), linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
@@ -599,7 +666,7 @@ univ_kamp_lite %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-17-1.png)
+![](kamp_files/figure-html/unnamed-chunk-18-1.png)
 
 #### Variance
 
@@ -616,31 +683,21 @@ univ_kamp_lite_var <- kamp(df = univ_data,
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
 #> Variance calculation is not supported with KAMP lite
 #> Variance calculation with KAMP lite is not recommended. Variance will still be computed, but interpret with caution.
-#>  ■■■■                               9% |  ETA: 33s
-#>  ■■■■■■                            18% |  ETA: 31s
-#>  ■■■■■■■■■                         27% |  ETA: 28s
-#>  ■■■■■■■■■■■■                      36% |  ETA: 24s
-#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 21s
-#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 18s
-#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 14s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 11s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA:  7s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  4s
 univ_kamp_lite_var
 #> # A tibble: 11 × 7
 #>        r      k theo_csr kamp_csr   kamp      var     pvalue
 #>    <dbl>  <dbl>    <dbl>    <dbl>  <dbl>    <dbl>      <dbl>
 #>  1     0     0        0        0      0        0  NaN       
-#>  2    10  1964.     314.     530.  1434.   41463.   9.52e-13
-#>  3    20  6079.    1257.    2112.  3968.  172314.   5.98e-22
-#>  4    30 11184.    2827.    4538.  6647.  399411.   3.61e-26
-#>  5    40 16411.    5027.    7745.  8666.  744554.   4.91e-24
-#>  6    50 20947.    7854.   11735.  9212. 1239598.   6.46e-17
-#>  7    60 27720.   11310.   16462. 11258. 1928490.   2.60e-16
-#>  8    70 35789.   15394.   22025. 13764. 2869955.   2.24e-16
-#>  9    80 43263.   20106.   28282. 14981. 4070528.   5.63e-14
-#> 10    90 51724.   25447.   35275. 16449. 5615689.   1.94e-12
-#> 11   100 60087.   31416.   42967. 17120. 7546680.   2.30e-10
+#>  2    10  1963.     314.     530.  1433.   41397.   9.45e-13
+#>  3    20  6070.    1257.    2108.  3961.  171792.   6.01e-22
+#>  4    30 11157.    2827.    4526.  6630.  397368.   3.56e-26
+#>  5    40 16355.    5027.    7716.  8639.  738918.   4.57e-24
+#>  6    50 20857.    7854.   11676.  9181. 1226994.   5.74e-17
+#>  7    60 27564.   11310.   16356. 11208. 1903377.   2.26e-16
+#>  8    70 35531.   15394.   21849. 13683. 2823443.   1.93e-16
+#>  9    80 42889.   20106.   28007. 14882. 3990433.   4.67e-14
+#> 10    90 51187.   25447.   34869. 16319. 5484783.   1.61e-12
+#> 11   100 59364.   31416.   42392. 16973. 7342327.   1.88e-10
 ```
 
 ### Bivariate
@@ -701,9 +758,9 @@ head(biv_kamp_lite)
 
 biv_kamp_lite %>%
   ggplot(aes(x = r)) +
-  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), size = 1) +
-  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), size = 1) +
-  geom_line(aes(y = k, color = "k", linetype = "k"), size = 1) +
+  geom_line(aes(y = theo_csr, color = "theo_csr", linetype = "theo_csr"), linewidth = 1) +
+  geom_line(aes(y = kamp, color = "kamp", linetype = "kamp"), linewidth = 1) +
+  geom_line(aes(y = k, color = "k", linetype = "k"), linewidth = 1) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   scale_color_manual(
     values = c(
@@ -729,7 +786,7 @@ biv_kamp_lite %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-21-1.png)
+![](kamp_files/figure-html/unnamed-chunk-22-1.png)
 
 #### Variance
 
@@ -747,26 +804,16 @@ biv_kamp_lite_var <- kamp(df = biv_data,
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
 #> Variance calculation is not supported with KAMP lite
 #> Variance calculation with KAMP lite is not recommended. Variance will still be computed, but interpret with caution.
-#>  ■■■■                               9% |  ETA: 38s
-#>  ■■■■■■                            18% |  ETA: 36s
-#>  ■■■■■■■■■                         27% |  ETA: 31s
-#>  ■■■■■■■■■■■■                      36% |  ETA: 27s
-#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 23s
-#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 19s
-#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 15s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 11s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA:  8s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  4s
 head(biv_kamp_lite_var)
 #> # A tibble: 6 × 7
 #>       r      k theo_csr kamp_csr   kamp      var  pvalue
 #>   <dbl>  <dbl>    <dbl>    <dbl>  <dbl>    <dbl>   <dbl>
 #> 1     0     0        0        0     0         0  NaN    
-#> 2    10     0      314.     524. -524.   366275.   0.807
-#> 3    20  2104.    1257.    2138.  -33.3 1523941.   0.511
-#> 4    30  6365.    2827.    4609. 1756.  3399440.   0.170
-#> 5    40  7795.    5027.    7830.  -35.1 6014528.   0.506
-#> 6    50 14284.    7854.   11862. 2422.  9554116.   0.217
+#> 2    10     0      314.     524. -524.   365704.   0.807
+#> 3    20  2102.    1257.    2135.  -32.5 1519302.   0.511
+#> 4    30  6337.    2827.    4597. 1740.  3382062.   0.172
+#> 5    40  7760.    5027.    7801.  -41.3 5969226.   0.507
+#> 6    50 14199.    7854.   11803. 2397.  9457495.   0.218
 ```
 
 ``` r
@@ -779,4 +826,108 @@ biv_kamp_lite_var %>%
   theme_minimal()
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-23-1.png)
+![](kamp_files/figure-html/unnamed-chunk-24-1.png)
+
+## Troubleshooting
+
+A few messages/errors you may encounter, and what they mean:
+
+- **“We expect the dataframe to be a single point process…”** – this is
+  an informational message (not an error), printed every time
+  [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md)/[`check_inputs()`](https://dliao1.github.io/KAMP/reference/check_inputs.md)
+  runs. If your dataframe actually contains multiple images/samples,
+  subset it to one `sample_id` (as we do throughout this vignette)
+  before calling
+  [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md), and loop
+  over samples yourself.
+
+- **`mark1 is not a mark in the point pattern object`** – the value you
+  passed to `mark1` (or `mark2`) doesn’t match any level of the marks
+  column exactly, including case and whitespace. Check
+  `unique(your_df[[mark_var]])` to see the exact values available.
+
+- **`mark_var must be supplied and cannot be NULL or empty`** – you
+  passed a plain data.frame as `df` but didn’t specify `mark_var`. This
+  is only required when `df` isn’t already a `ppp` object.
+
+- **`The mark_var column must have at least two unique values`** –
+  [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) needs at
+  least two distinct mark values (e.g. your mark of interest plus
+  “everything else”) to compare against.
+
+- **“Variance calculation with KAMP-lite is not recommended”** –
+  thinning (`thin = TRUE`) randomly drops points, which adds noise on
+  top of the variance KAMP already estimates; results with both
+  `thin = TRUE` and `variance = TRUE` are usable but should be
+  interpreted cautiously.
+
+## Next Steps
+
+- See the [README](https://dliao1.github.io/KAMP/) for a condensed
+  summary of
+  [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md)’s
+  arguments and output columns.
+- [`?kamp`](https://dliao1.github.io/KAMP/reference/kamp.md),
+  [`?kamp_expectation`](https://dliao1.github.io/KAMP/reference/kamp_expectation.md),
+  [`?kamp_variance`](https://dliao1.github.io/KAMP/reference/kamp_variance.md),
+  [`?kamp_expectation_biv`](https://dliao1.github.io/KAMP/reference/kamp_expectation_biv.md),
+  and
+  [`?kamp_variance_biv`](https://dliao1.github.io/KAMP/reference/kamp_variance_biv.md)
+  document every argument in detail, including the lower-level functions
+  that [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md)
+  dispatches to.
+- Questions or issues? Please open one on
+  [GitHub](https://github.com/dliao1/KAMP/issues).
+
+``` r
+
+sessionInfo()
+#> R version 4.6.1 (2026-06-24)
+#> Platform: x86_64-pc-linux-gnu
+#> Running under: Ubuntu 24.04.4 LTS
+#> 
+#> Matrix products: default
+#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> 
+#> locale:
+#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#> 
+#> time zone: UTC
+#> tzcode source: system (glibc)
+#> 
+#> attached base packages:
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
+#> 
+#> other attached packages:
+#>  [1] spatstat.random_3.5-1 spatstat.geom_3.8-2   spatstat.univar_3.2-0
+#>  [4] spatstat.data_3.1-9   lubridate_1.9.5       forcats_1.0.1        
+#>  [7] stringr_1.6.0         dplyr_1.2.1           purrr_1.2.2          
+#> [10] readr_2.2.0           tidyr_1.3.2           tibble_3.3.1         
+#> [13] ggplot2_4.0.3         tidyverse_2.0.0       KAMP_0.0.0.9000      
+#> 
+#> loaded via a namespace (and not attached):
+#>  [1] gtable_0.3.6           xfun_0.60              bslib_0.12.0          
+#>  [4] spatstat.sparse_3.2-0  lattice_0.22-9         tzdb_0.5.0            
+#>  [7] vctrs_0.7.3            tools_4.6.1            spatstat.utils_3.2-4  
+#> [10] generics_0.1.4         goftest_1.2-3          pkgconfig_2.0.3       
+#> [13] Matrix_1.7-5           RColorBrewer_1.1-3     S7_0.2.2              
+#> [16] desc_1.4.3             lifecycle_1.0.5        compiler_4.6.1        
+#> [19] farver_2.1.2           deldir_2.0-4           textshaping_1.0.5     
+#> [22] spatstat.explore_3.8-2 htmltools_0.5.9        sass_0.4.10           
+#> [25] yaml_2.3.12            pillar_1.11.1          pkgdown_2.2.1         
+#> [28] jquerylib_0.1.4        cachem_1.1.0           abind_1.4-8           
+#> [31] nlme_3.1-169           tidyselect_1.2.1       digest_0.6.39         
+#> [34] stringi_1.8.9          labeling_0.4.3         polyclip_1.10-7       
+#> [37] fastmap_1.2.0          grid_4.6.1             cli_3.6.6             
+#> [40] magrittr_2.0.5         withr_3.0.3            tensor_1.5.1          
+#> [43] scales_1.4.0           timechange_0.4.0       rmarkdown_2.32        
+#> [46] otel_0.2.0             scSpatialSIM_0.1.4     ragg_1.5.2            
+#> [49] hms_1.1.4              evaluate_1.0.5         knitr_1.52            
+#> [52] rlang_1.3.0            Rcpp_1.1.2             glue_1.8.1            
+#> [55] jsonlite_2.0.0         R6_2.6.1               systemfonts_1.3.2     
+#> [58] fs_2.1.0
+```

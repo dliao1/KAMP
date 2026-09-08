@@ -8,7 +8,7 @@ avoiding the computational burden of permuting the point pattern.
 For expectation, this function uses the spatstat package under the hood, which
 automatically uses border correction when the number of
 points in the point pattern is more than 3000.
-For variance, this function utlizes a matrix-based implementation.
+For variance, this function uses the Rcpp-accelerated implementation.
 See ?Kcross and ?Kest for more details on the K calculation methods."><meta property="og:description" content="This function computes the KAMP expectation and variance for a given point pattern.
 Calculates Ripley's K using both the traditional Ripley's K method
 (based on Kcross) and the KAMP-adjusted CSR baseline (based on Kest).
@@ -18,7 +18,7 @@ avoiding the computational burden of permuting the point pattern.
 For expectation, this function uses the spatstat package under the hood, which
 automatically uses border correction when the number of
 points in the point pattern is more than 3000.
-For variance, this function utlizes a matrix-based implementation.
+For variance, this function uses the Rcpp-accelerated implementation.
 See ?Kcross and ?Kest for more details on the K calculation methods."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -65,7 +65,7 @@ avoiding the computational burden of permuting the point pattern.</p>
 <p>For expectation, this function uses the <code>spatstat</code> package under the hood, which
 automatically uses border correction when the number of
 points in the point pattern is more than 3000.</p>
-<p>For variance, this function utlizes a matrix-based implementation.</p>
+<p>For variance, this function uses the Rcpp-accelerated implementation.</p>
 <p>See <code>?Kcross</code> and <code>?Kest</code> for more details on the K calculation methods.</p>
     </div>
 
@@ -82,8 +82,6 @@ points in the point pattern is more than 3000.</p>
 <span>  correction <span class="op">=</span> <span class="st">"trans"</span>,</span>
 <span>  thin <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  p_thin <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  background <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  Rcpp <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -92,12 +90,23 @@ points in the point pattern is more than 3000.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-rvals">rvals<a class="anchor" aria-label="anchor" href="#arg-rvals"></a></dt>
+<dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
+<dd><p>Either a point pattern object of class <code>ppp</code> from the <code>spatstat</code> package, or a
+data.frame with <code>x</code>/<code>y</code> columns and a marks column named by <code>mark_var</code> (used to build a <code>ppp</code>
+internally via a convex-hull window). Should contain one point process at a time.</p></dd>
+
+
+<dt id="arg-rvals">rvals<a class="anchor" aria-label="anchor" href="#arg-rvals"></a></dt>
 <dd><p>A vector of distances at which to compute the KAMP expectation and variance.</p></dd>
 
 
 <dt id="arg-univariate">univariate<a class="anchor" aria-label="anchor" href="#arg-univariate"></a></dt>
 <dd><p>A logical value indicating whether to compute univariate KAMP (default is TRUE).</p></dd>
+
+
+<dt id="arg-mark-var">mark_var<a class="anchor" aria-label="anchor" href="#arg-mark-var"></a></dt>
+<dd><p>Column name in <code>df</code> containing the marks, when <code>df</code> is a data.frame. Ignored
+when <code>df</code> is already a <code>ppp</code> object.</p></dd>
 
 
 <dt id="arg-mark-">mark1<a class="anchor" aria-label="anchor" href="#arg-mark-"></a></dt>
@@ -124,20 +133,8 @@ points in the point pattern is more than 3000.</p>
 <dd><p>Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.</p></dd>
 
 
-<dt id="arg-background">background<a class="anchor" aria-label="anchor" href="#arg-background"></a></dt>
-<dd><p>Variable used to define the background for the point pattern object.</p></dd>
-
-
-<dt id="arg-rcpp">Rcpp<a class="anchor" aria-label="anchor" href="#arg-rcpp"></a></dt>
-<dd><p>A logical value indicating whether to use Rcpp implementation (default is FALSE).</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to the underlying functions.</p></dd>
-
-
-<dt id="arg-ppp-obj">ppp_obj<a class="anchor" aria-label="anchor" href="#arg-ppp-obj"></a></dt>
-<dd><p>A point pattern object of class <code>ppp</code> from the <code>spatstat</code> package.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -192,44 +189,88 @@ observed, under the null hypothesis of CSR). Calculated using a normal approxima
 <span class="r-in"><span><span class="va">y_coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">marks_vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"immune"</span>, <span class="st">"background"</span><span class="op">)</span>, <span class="fl">100</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">win</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/owin.html" class="external-link">owin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ppp_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">x_coords</span>, <span class="va">y_coords</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="va">marks_vec</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ppp_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">x_coords</span>, <span class="va">y_coords</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">marks_vec</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Defines radius values for K-function estimation</span></span></span>
-<span class="r-in"><span><span class="va">r_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Defines radius values for K-function estimation (must start at 0 for Kcross/Kest)</span></span></span>
+<span class="r-in"><span><span class="va">r_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Computes univariate KAMP expectation</span></span></span>
-<span class="r-in"><span><span class="va">kamp_result</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">ppp_obj</span>,</span></span>
+<span class="r-in"><span><span class="co"># Computes univariate KAMP expectation, passing in a ppp object directly</span></span></span>
+<span class="r-in"><span><span class="va">kamp_result</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>df <span class="op">=</span> <span class="va">ppp_obj</span>,</span></span>
 <span class="r-in"><span>                    rvals <span class="op">=</span> <span class="va">r_vals</span>,</span></span>
 <span class="r-in"><span>                    univariate <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>                    mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in kamp(ppp_obj = ppp_obj, rvals = r_vals, univariate = TRUE, mark1 = "immune"):</span> argument "df" is missing, with no default</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kamp_result</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'kamp_result' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r       k theo_csr kamp_csr      kamp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0    0       0        0         0       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.01 0       0.000<span style="text-decoration: underline;">314</span> 0.000<span style="text-decoration: underline;">203</span> -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">203</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.02 0.001<span style="text-decoration: underline;">18</span> 0.001<span style="text-decoration: underline;">26</span>  0.001<span style="text-decoration: underline;">03</span>   0.000<span style="text-decoration: underline;">153</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.03 0.003<span style="text-decoration: underline;">58</span> 0.002<span style="text-decoration: underline;">83</span>  0.002<span style="text-decoration: underline;">49</span>   0.001<span style="text-decoration: underline;">09</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.04 0.004<span style="text-decoration: underline;">78</span> 0.005<span style="text-decoration: underline;">03</span>  0.005<span style="text-decoration: underline;">65</span>  -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">872</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.05 0.007<span style="text-decoration: underline;">24</span> 0.007<span style="text-decoration: underline;">85</span>  0.010<span style="text-decoration: underline;">2</span>   -<span style="color: #BB0000;">0.002</span><span style="color: #BB0000; text-decoration: underline;">93</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># df can also be a plain data.frame with x/y columns and a marks column,</span></span></span>
+<span class="r-in"><span><span class="co"># identified via mark_var -- kamp() builds the ppp object internally</span></span></span>
+<span class="r-in"><span><span class="va">pts_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x_coords</span>, y <span class="op">=</span> <span class="va">y_coords</span>, cell_type <span class="op">=</span> <span class="va">marks_vec</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">kamp_from_df</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>df <span class="op">=</span> <span class="va">pts_df</span>,</span></span>
+<span class="r-in"><span>                     rvals <span class="op">=</span> <span class="va">r_vals</span>,</span></span>
+<span class="r-in"><span>                     univariate <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                     mark_var <span class="op">=</span> <span class="st">"cell_type"</span>,</span></span>
+<span class="r-in"><span>                     mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kamp_from_df</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r        k theo_csr kamp_csr      kamp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0    0        0        0         0       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.01 0        0.000<span style="text-decoration: underline;">314</span> 0.000<span style="text-decoration: underline;">167</span> -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">167</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.02 0.000<span style="text-decoration: underline;">974</span> 0.001<span style="text-decoration: underline;">26</span>  0.000<span style="text-decoration: underline;">848</span>  0.000<span style="text-decoration: underline;">126</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.03 0.002<span style="text-decoration: underline;">96</span>  0.002<span style="text-decoration: underline;">83</span>  0.002<span style="text-decoration: underline;">06</span>   0.000<span style="text-decoration: underline;">902</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.04 0.003<span style="text-decoration: underline;">96</span>  0.005<span style="text-decoration: underline;">03</span>  0.004<span style="text-decoration: underline;">68</span>  -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">724</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.05 0.005<span style="text-decoration: underline;">98</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">42</span>  -<span style="color: #BB0000;">0.002</span><span style="color: #BB0000; text-decoration: underline;">44</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Compute univariate KAMP expectation with thinning</span></span></span>
-<span class="r-in"><span><span class="va">kamp_thin</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">ppp_obj</span>,</span></span>
+<span class="r-in"><span><span class="va">kamp_thin</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>df <span class="op">=</span> <span class="va">ppp_obj</span>,</span></span>
 <span class="r-in"><span>                  rvals <span class="op">=</span> <span class="va">r_vals</span>,</span></span>
 <span class="r-in"><span>                  univariate <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>                  mark1 <span class="op">=</span> <span class="st">"immune"</span>,</span></span>
 <span class="r-in"><span>                  thin <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>                  p_thin <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in kamp(ppp_obj = ppp_obj, rvals = r_vals, univariate = TRUE, mark1 = "immune",     thin = TRUE, p_thin = 0.3):</span> argument "df" is missing, with no default</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kamp_thin</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'kamp_thin' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r       k theo_csr kamp_csr      kamp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0    0       0        0         0       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.01 0       0.000<span style="text-decoration: underline;">314</span> 0.000<span style="text-decoration: underline;">482</span> -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">482</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.02 0.002<span style="text-decoration: underline;">89</span> 0.001<span style="text-decoration: underline;">26</span>  0.001<span style="text-decoration: underline;">95</span>   0.000<span style="text-decoration: underline;">941</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.03 0.005<span style="text-decoration: underline;">86</span> 0.002<span style="text-decoration: underline;">83</span>  0.003<span style="text-decoration: underline;">45</span>   0.002<span style="text-decoration: underline;">41</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.04 0.005<span style="text-decoration: underline;">86</span> 0.005<span style="text-decoration: underline;">03</span>  0.006<span style="text-decoration: underline;">46</span>  -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">603</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.05 0.008<span style="text-decoration: underline;">88</span> 0.007<span style="text-decoration: underline;">85</span>  0.010<span style="text-decoration: underline;">6</span>   -<span style="color: #BB0000;">0.001</span><span style="color: #BB0000; text-decoration: underline;">68</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use real data from VectraPolarisData in package</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">sample_id</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">$</span><span class="va">sample_id</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">ov_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">ovarian_df</span>, <span class="va">sample_id</span> <span class="op">==</span> <span class="va">sample_id</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">first_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">$</span><span class="va">sample_id</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">ov_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">ovarian_df</span>, <span class="va">sample_id</span> <span class="op">==</span> <span class="va">first_sample</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">win</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/convexhull.xy.html" class="external-link">convexhull.xy</a></span><span class="op">(</span><span class="va">ov_df</span><span class="op">$</span><span class="va">x</span>, <span class="va">ov_df</span><span class="op">$</span><span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ppp_real</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">ov_df</span><span class="op">$</span><span class="va">x</span>, <span class="va">ov_df</span><span class="op">$</span><span class="va">y</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="va">ov_df</span><span class="op">$</span><span class="va">immune</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">kamp_real</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>ppp_obj <span class="op">=</span> <span class="va">ppp_real</span>,</span></span>
-<span class="r-in"><span>                  rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="fl">0.01</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span><span class="va">kamp_real</span> <span class="op">&lt;-</span> <span class="fu">kamp</span><span class="op">(</span>df <span class="op">=</span> <span class="va">ppp_real</span>,</span></span>
+<span class="r-in"><span>                  rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.01</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                  univariate <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>                  mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in kamp(ppp_obj = ppp_real, rvals = seq(0.01, 0.1, 0.01), univariate = TRUE,     mark1 = "immune"):</span> argument "df" is missing, with no default</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">kamp_real</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'kamp_real' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r     k theo_csr kamp_csr  kamp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0        0 0               0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.01     0 0.000<span style="text-decoration: underline;">314</span>        0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.02     0 0.001<span style="text-decoration: underline;">26</span>         0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.03     0 0.002<span style="text-decoration: underline;">83</span>         0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>  0.04     0 0.005<span style="text-decoration: underline;">03</span>         0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>  0.05     0 0.007<span style="text-decoration: underline;">85</span>         0     0</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

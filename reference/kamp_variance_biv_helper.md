@@ -21,6 +21,10 @@ kamp_variance_biv_helper(
 
   A point pattern object "ppp" from the `spatstat` package.
 
+- rval:
+
+  A single radius
+
 - correction:
 
   Type of edge correction. Defaults to translational.
@@ -34,10 +38,6 @@ kamp_variance_biv_helper(
 
   Variable used to mark the points in the point pattern object for the
   second type. Default is "immune2".
-
-- rvalue:
-
-  A single radius
 
 ## Value
 

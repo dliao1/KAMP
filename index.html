@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns">
-<meta name="description" content="Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.">
-<meta property="og:description" content="Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.">
+<meta name="description" content="Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogeneous spatial point pattern data.">
+<meta property="og:description" content="Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogeneous spatial point pattern data.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -54,12 +54,26 @@
 <div class="page-header"><h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h1></div>
 <p><code>KAMP</code> is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called <strong>KAMP</strong> (K adjusted by Analytical Moments of the Permutation distribution).</p>
-<p>KAMP avoids the need for computationally expensive permutations while accounting for spatial inhomogeneity, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.</p>
+<p>Rather than repeatedly permuting marks across a point pattern and simulating a null distribution – the traditional way to get a permutation-based null for K – KAMP computes that permutation distribution’s mean and variance analytically, in closed form. This gives the same permutation-adapted baseline (one that accounts for spatial inhomogeneity, unlike the standard theoretical CSR baseline) without the computational cost of actually running permutations, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.</p>
 </div>
 <div class="section level1">
 <h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h1>
-<p>This package provides functions to compute both <strong>univariate</strong> and <strong>bivariate</strong> KAMP expectation and variance (<code>spatstat</code> and matrix-based implementation both included). At this time, the only edge correction methods supported are translational (<code>trans</code>) and isotropic (<code>iso</code>).</p>
+<p>This package provides functions to compute both <strong>univariate</strong> and <strong>bivariate</strong> KAMP expectation and variance (<code>spatstat</code> and matrix-based implementation both included). Supported edge corrections are translational (<code>trans</code>/<code>translational</code>), isotropic (<code>iso</code>/<code>isotropic</code>), and no correction (<code>none</code>).</p>
+<div class="section level2">
+<h2 id="table-of-contents">Table of Contents<a class="anchor" aria-label="anchor" href="#table-of-contents"></a>
+</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#input-data">Input data</a></li>
+<li><a href="#univariate">Univariate</a></li>
+<li><a href="#bivariate">Bivariate</a></li>
+<li><a href="#understanding-the-output">Understanding the output</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#getting-help">Getting help</a></li>
+<li><a href="#citation">Citation</a></li>
+</ul>
+</div>
 </div>
 <div class="section level1">
 <h1 id="basic-functionality-and-examples">Basic Functionality and Examples<a class="anchor" aria-label="anchor" href="#basic-functionality-and-examples"></a>
@@ -70,46 +84,115 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dliao1/KAMP"</span><span class="op">)</span></span></code></pre></div>
+<p><code>KAMP</code> contains compiled C++ code (via <code>Rcpp</code>), so installing from source requires a working build toolchain: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> on Windows, Xcode Command Line Tools on macOS, or a C++ compiler (e.g. <code>build-essential</code>) on Linux.</p>
+</div>
+<div class="section level2">
+<h2 id="input-data">Input data<a class="anchor" aria-label="anchor" href="#input-data"></a>
+</h2>
+<p><code><a href="reference/kamp.html">kamp()</a></code> takes either a <code>ppp</code> point pattern object from <code>spatstat</code>, or a plain data.frame with <code>x</code>/<code>y</code> coordinate columns and a column of marks (cell types) – pass the marks column’s name via <code>mark_var</code>. Either way, it should describe a single point process (e.g. one tissue image); if you have multiple, loop over them and call <code><a href="reference/kamp.html">kamp()</a></code> separately for each.</p>
 </div>
 <div class="section level2">
 <h2 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
 </h2>
+<p>Univariate KAMP compares the spatial pattern of a single mark (e.g. “immune” cells) against the full point pattern.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate a point pattern</span></span>
 <span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compute KAMP expectation</span></span>
-<span><span class="va">kamp_expec_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_expectation.html">kamp_expectation</a></span><span class="op">(</span><span class="va">pp</span>, markvar <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
+<span><span class="co"># KAMP expectation</span></span>
+<span><span class="va">kamp_expec_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                        univariate <span class="op">=</span> <span class="cn">TRUE</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_univ</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compute KAMP variance</span></span>
-<span><span class="va">kamp_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_variance.html">kamp_variance</a></span><span class="op">(</span><span class="va">pp</span>, markvar <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># KAMP expectation and variance</span></span>
+<span><span class="va">kamp_var_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                      univariate <span class="op">=</span> <span class="cn">TRUE</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span>, variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var_univ</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
 </h2>
+<p>Bivariate KAMP compares the spatial relationship between two marks (e.g. “immune1” and “immune2” cells).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate a point pattern</span></span>
-<span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span><span class="va">pp_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compute KAMP expectation</span></span>
-<span><span class="va">kamp_expec_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_expectation_biv.html">kamp_expectation_biv</a></span><span class="op">(</span><span class="va">pp</span><span class="op">)</span></span>
+<span><span class="co"># KAMP expectation</span></span>
+<span><span class="va">kamp_expec_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp_biv</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                       univariate <span class="op">=</span> <span class="cn">FALSE</span>, mark1 <span class="op">=</span> <span class="st">"immune1"</span>, mark2 <span class="op">=</span> <span class="st">"immune2"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_biv</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Compute KAMP variance</span></span>
-<span><span class="va">kamp_var_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp_variance_biv.html">kamp_variance_biv</a></span><span class="op">(</span><span class="va">pp</span><span class="op">)</span></span>
+<span><span class="co"># KAMP expectation and variance</span></span>
+<span><span class="va">kamp_var_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp_biv</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                     univariate <span class="op">=</span> <span class="cn">FALSE</span>, mark1 <span class="op">=</span> <span class="st">"immune1"</span>, mark2 <span class="op">=</span> <span class="st">"immune2"</span>, variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var_biv</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="understanding-the-output">Understanding the output<a class="anchor" aria-label="anchor" href="#understanding-the-output"></a>
+</h2>
+<p><code><a href="reference/kamp.html">kamp()</a></code> returns a dataframe with one row per radius in <code>rvals</code>:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>r</code></td>
+<td>The radius at which K was calculated</td>
+</tr>
+<tr>
+<td><code>k</code></td>
+<td>The observed Ripley’s K value</td>
+</tr>
+<tr>
+<td><code>theo_csr</code></td>
+<td>The theoretical K under complete spatial randomness (CSR)</td>
+</tr>
+<tr>
+<td><code>kamp_csr</code></td>
+<td>The KAMP-adjusted expectation of K under CSR – a more realistic baseline than <code>theo_csr</code> for inhomogeneous data</td>
+</tr>
+<tr>
+<td><code>kamp</code></td>
+<td>
+<code>k - kamp_csr</code>; positive values suggest more clustering than expected, negative values suggest more dispersion</td>
+</tr>
+<tr>
+<td><code>var</code></td>
+<td>(if <code>variance = TRUE</code>) variance of K under the KAMP null distribution</td>
+</tr>
+<tr>
+<td><code>pvalue</code></td>
+<td>(if <code>variance = TRUE</code>) p-value for a test of <code>k</code> against the KAMP null</td>
+</tr>
+</tbody>
+</table>
+<p>See <code><a href="reference/kamp.html">?kamp</a></code> for the full set of arguments, including <code>correction</code> (edge correction method) and <code>thin</code>/<code>p_thin</code> (KAMP-lite, for large datasets). The lower-level functions <code><a href="reference/kamp_expectation.html">kamp_expectation()</a></code>, <code><a href="reference/kamp_variance.html">kamp_variance()</a></code>, <code><a href="reference/kamp_expectation_biv.html">kamp_expectation_biv()</a></code>, and <code><a href="reference/kamp_variance_biv.html">kamp_variance_biv()</a></code> that <code><a href="reference/kamp.html">kamp()</a></code> dispatches to are also exported, if you’d rather skip <code><a href="reference/kamp.html">kamp()</a></code>’s input handling and call them directly.</p>
 </div>
 </div>
 <div class="section level1">
 <h1 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h1>
 <p>Link to documentation and vignettes: <a href="https://dliao1.github.io/KAMP/" class="uri">https://dliao1.github.io/KAMP/</a></p>
+</div>
+<div class="section level1">
+<h1 id="getting-help">Getting help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
+</h1>
+<p>If you run into a bug or have a question, please <a href="https://github.com/dliao1/KAMP/issues" class="external-link">open an issue on GitHub</a>.</p>
+</div>
+<div class="section level1">
+<h1 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h1>
+<p>If you use <code>KAMP</code> in a publication, please cite the package. Run <code>citation("KAMP")</code> in R for the current citation info.</p>
 <p><!-- badges: start --> <a href="https://app.codecov.io/gh/dliao1/KAMP" class="external-link"><img src="https://codecov.io/gh/dliao1/KAMP/graph/badge.svg" alt="Codecov test coverage"></a> <!-- badges: end --></p>
 </div>
 

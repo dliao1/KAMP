@@ -1,13 +1,13 @@
 # KAMP: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns
 
 Provides functions to calculate KAMP, a more robust and scalable
-K-statistic for inhomogenous spatial point pattern data.
+K-statistic for inhomogeneous spatial point pattern data.
 
 ## See also
 
 Useful links:
 
-- <https://dliao1.github.io/kamp/>
+- <https://dliao1.github.io/KAMP/>
 
 ## Author
 

@@ -91,19 +91,19 @@ over a vector of radii.</p>
 <dd><p>A point pattern object from the <code>spatstat.geom</code> package.</p></dd>
 
 
+<dt id="arg-rvals">rvals<a class="anchor" aria-label="anchor" href="#arg-rvals"></a></dt>
+<dd><p>A vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).</p></dd>
+
+
 <dt id="arg-correction">correction<a class="anchor" aria-label="anchor" href="#arg-correction"></a></dt>
 <dd><p>Type of edge correction. Defaults to translational.</p></dd>
 
 
-<dt id="arg-rvec">rvec<a class="anchor" aria-label="anchor" href="#arg-rvec"></a></dt>
-<dd><p>A vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).</p></dd>
-
-
-<dt id="arg-markvar-">markvar1<a class="anchor" aria-label="anchor" href="#arg-markvar-"></a></dt>
+<dt id="arg-mark-">mark1<a class="anchor" aria-label="anchor" href="#arg-mark-"></a></dt>
 <dd><p>Variable used to mark the points in the point pattern object for the first type. Default is "immune1".</p></dd>
 
 
-<dt id="arg-markvar-">markvar2<a class="anchor" aria-label="anchor" href="#arg-markvar-"></a></dt>
+<dt id="arg-mark-">mark2<a class="anchor" aria-label="anchor" href="#arg-mark-"></a></dt>
 <dd><p>Variable used to mark the points in the point pattern object for the second type. Default is "immune2".</p></dd>
 
 </dl></div>
@@ -137,6 +137,24 @@ over a vector of radii.</p>
     <p>Computes KAMP Variance for Bivariate Point Patterns</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">win</span> <span class="op">&lt;-</span> <span class="fu">spatstat.geom</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/owin.html" class="external-link">owin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu">spatstat.random</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/spatstat.random/man/rpoispp.html" class="external-link">rpoispp</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="fl">150</span>, win <span class="op">=</span> <span class="va">win</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mark_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"immune1"</span>, <span class="st">"immune2"</span>, <span class="st">"background"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">marks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">mark_labels</span>, <span class="va">pp</span><span class="op">$</span><span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">marked_pp</span> <span class="op">&lt;-</span> <span class="fu">spatstat.geom</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/spatstat.geom/man/ppp.html" class="external-link">ppp</a></span><span class="op">(</span><span class="va">pp</span><span class="op">$</span><span class="va">x</span>, <span class="va">pp</span><span class="op">$</span><span class="va">y</span>, window <span class="op">=</span> <span class="va">win</span>, marks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">marks</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">kamp_variance_biv_Rcpp</span><span class="op">(</span><span class="va">marked_pp</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                 mark1 <span class="op">=</span> <span class="st">"immune1"</span>, mark2 <span class="op">=</span> <span class="st">"immune2"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       r       k theo_csr kamp_csr      kamp        var pvalue</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.05 0.008<span style="text-decoration: underline;">76</span>  0.007<span style="text-decoration: underline;">85</span>  0.008<span style="text-decoration: underline;">01</span>  0.000<span style="text-decoration: underline;">758</span> 0.000<span style="text-decoration: underline;">004</span>24  0.357</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.1  0.029<span style="text-decoration: underline;">2</span>   0.031<span style="text-decoration: underline;">4</span>   0.029<span style="text-decoration: underline;">8</span>  -<span style="color: #BB0000;">0.000</span><span style="color: #BB0000; text-decoration: underline;">569</span> 0.000<span style="text-decoration: underline;">015</span>8   0.557</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

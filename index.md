@@ -5,17 +5,34 @@ complete spatial randomness using a robust statistical approach called
 **KAMP** (K adjusted by Analytical Moments of the Permutation
 distribution).
 
-KAMP avoids the need for computationally expensive permutations while
-accounting for spatial inhomogeneity, making it suitable for large-scale
-spatial analyses such as those encountered in spatial proteomics
-multiplex imaging datasets.
+Rather than repeatedly permuting marks across a point pattern and
+simulating a null distribution – the traditional way to get a
+permutation-based null for K – KAMP computes that permutation
+distribution’s mean and variance analytically, in closed form. This
+gives the same permutation-adapted baseline (one that accounts for
+spatial inhomogeneity, unlike the standard theoretical CSR baseline)
+without the computational cost of actually running permutations, making
+it suitable for large-scale spatial analyses such as those encountered
+in spatial proteomics multiplex imaging datasets.
 
 # Overview
 
 This package provides functions to compute both **univariate** and
 **bivariate** KAMP expectation and variance (`spatstat` and matrix-based
-implementation both included). At this time, the only edge correction
-methods supported are translational (`trans`) and isotropic (`iso`).
+implementation both included). Supported edge corrections are
+translational (`trans`/`translational`), isotropic (`iso`/`isotropic`),
+and no correction (`none`).
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Input data](#input-data)
+- [Univariate](#univariate)
+- [Bivariate](#bivariate)
+- [Understanding the output](#understanding-the-output)
+- [Documentation](#documentation)
+- [Getting help](#getting-help)
+- [Citation](#citation)
 
 # Basic Functionality and Examples
 
@@ -27,7 +44,27 @@ methods supported are translational (`trans`) and isotropic (`iso`).
 devtools::install_github("dliao1/KAMP")
 ```
 
+`KAMP` contains compiled C++ code (via `Rcpp`), so installing from
+source requires a working build toolchain:
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows,
+Xcode Command Line Tools on macOS, or a C++ compiler
+(e.g. `build-essential`) on Linux.
+
+## Input data
+
+[`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) takes either
+a `ppp` point pattern object from `spatstat`, or a plain data.frame with
+`x`/`y` coordinate columns and a column of marks (cell types) – pass the
+marks column’s name via `mark_var`. Either way, it should describe a
+single point process (e.g. one tissue image); if you have multiple, loop
+over them and call
+[`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) separately
+for each.
+
 ## Univariate
+
+Univariate KAMP compares the spatial pattern of a single mark
+(e.g. “immune” cells) against the full point pattern.
 
 ``` r
 
@@ -36,36 +73,82 @@ library(KAMP)
 # Simulate a point pattern
 pp <- sim_pp_data(lambda_n = 500, abundance = 0.3)
 
-# Compute KAMP expectation
-kamp_expec_univ <- kamp_expectation(pp, markvar = "immune")
+# KAMP expectation
+kamp_expec_univ <- kamp(df = pp, rvals = seq(0, 0.1, by = 0.01),
+                        univariate = TRUE, mark1 = "immune")
 print(kamp_expec_univ)
 
-# Compute KAMP variance
-kamp_var <- kamp_variance(pp, markvar = "immune")
-print(kamp_var)
+# KAMP expectation and variance
+kamp_var_univ <- kamp(df = pp, rvals = seq(0, 0.1, by = 0.01),
+                      univariate = TRUE, mark1 = "immune", variance = TRUE)
+print(kamp_var_univ)
 ```
 
 ## Bivariate
+
+Bivariate KAMP compares the spatial relationship between two marks
+(e.g. “immune1” and “immune2” cells).
 
 ``` r
 
 library(KAMP)
 
 # Simulate a point pattern
-pp <- sim_pp_data_biv(lambda_n = 500, abundance = 0.3)
+pp_biv <- sim_pp_data_biv(lambda_n = 500, abundance = 0.3)
 
-# Compute KAMP expectation
-kamp_expec_biv <- kamp_expectation_biv(pp)
+# KAMP expectation
+kamp_expec_biv <- kamp(df = pp_biv, rvals = seq(0, 0.1, by = 0.01),
+                       univariate = FALSE, mark1 = "immune1", mark2 = "immune2")
 print(kamp_expec_biv)
 
-# Compute KAMP variance
-kamp_var_biv <- kamp_variance_biv(pp)
+# KAMP expectation and variance
+kamp_var_biv <- kamp(df = pp_biv, rvals = seq(0, 0.1, by = 0.01),
+                     univariate = FALSE, mark1 = "immune1", mark2 = "immune2", variance = TRUE)
 print(kamp_var_biv)
 ```
+
+## Understanding the output
+
+[`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) returns a
+dataframe with one row per radius in `rvals`:
+
+| Column | Meaning |
+|----|----|
+| `r` | The radius at which K was calculated |
+| `k` | The observed Ripley’s K value |
+| `theo_csr` | The theoretical K under complete spatial randomness (CSR) |
+| `kamp_csr` | The KAMP-adjusted expectation of K under CSR – a more realistic baseline than `theo_csr` for inhomogeneous data |
+| `kamp` | `k - kamp_csr`; positive values suggest more clustering than expected, negative values suggest more dispersion |
+| `var` | (if `variance = TRUE`) variance of K under the KAMP null distribution |
+| `pvalue` | (if `variance = TRUE`) p-value for a test of `k` against the KAMP null |
+
+See [`?kamp`](https://dliao1.github.io/KAMP/reference/kamp.md) for the
+full set of arguments, including `correction` (edge correction method)
+and `thin`/`p_thin` (KAMP-lite, for large datasets). The lower-level
+functions
+[`kamp_expectation()`](https://dliao1.github.io/KAMP/reference/kamp_expectation.md),
+[`kamp_variance()`](https://dliao1.github.io/KAMP/reference/kamp_variance.md),
+[`kamp_expectation_biv()`](https://dliao1.github.io/KAMP/reference/kamp_expectation_biv.md),
+and
+[`kamp_variance_biv()`](https://dliao1.github.io/KAMP/reference/kamp_variance_biv.md)
+that [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md)
+dispatches to are also exported, if you’d rather skip
+[`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md)’s input
+handling and call them directly.
 
 # Documentation
 
 Link to documentation and vignettes: <https://dliao1.github.io/KAMP/>
+
+# Getting help
+
+If you run into a bug or have a question, please [open an issue on
+GitHub](https://github.com/dliao1/KAMP/issues).
+
+# Citation
+
+If you use `KAMP` in a publication, please cite the package. Run
+`citation("KAMP")` in R for the current citation info.
 
 [![Codecov test
 coverage](https://codecov.io/gh/dliao1/KAMP/graph/badge.svg)](https://app.codecov.io/gh/dliao1/KAMP)
