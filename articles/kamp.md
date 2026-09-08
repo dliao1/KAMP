@@ -568,7 +568,6 @@ biv_kamp_var <- kamp(df = biv_data,
                      mark2 = "cytotoxic t cell",
                      variance = TRUE)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  0s
 head(biv_kamp_var)
 #> # A tibble: 6 × 7
 #>       r      k theo_csr kamp_csr  kamp      var   pvalue
