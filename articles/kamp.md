@@ -345,12 +345,12 @@ univ_kamp_var <- kamp(univ_data,
 #>  ■■■■■■                            18% |  ETA:  1m
 #>  ■■■■■■■■■                         27% |  ETA:  1m
 #>  ■■■■■■■■■■■■                      36% |  ETA:  1m
-#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 46s
+#>  ■■■■■■■■■■■■■■■                   45% |  ETA: 47s
 #>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 38s
-#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 30s
+#>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 31s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 23s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA: 15s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  7s
+#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  8s
 univ_kamp_var
 #> # A tibble: 11 × 7
 #>        r      k theo_csr kamp_csr   kamp      var     pvalue
@@ -500,7 +500,7 @@ biv_kamp_var <- kamp(df = biv_data,
 #>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 36s
 #>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 29s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 22s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA: 14s
+#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA: 15s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  7s
 head(biv_kamp_var)
 #> # A tibble: 6 × 7
@@ -621,9 +621,9 @@ univ_kamp_lite_var <- kamp(df = univ_data,
 #>  ■■■■■■■■■                         27% |  ETA: 28s
 #>  ■■■■■■■■■■■■                      36% |  ETA: 24s
 #>  ■■■■■■■■■■■■■■■                   45% |  ETA: 21s
-#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 17s
+#>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 18s
 #>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 14s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 10s
+#>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 11s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA:  7s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  4s
 univ_kamp_lite_var
@@ -747,15 +747,15 @@ biv_kamp_lite_var <- kamp(df = biv_data,
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
 #> Variance calculation is not supported with KAMP lite
 #> Variance calculation with KAMP lite is not recommended. Variance will still be computed, but interpret with caution.
-#>  ■■■■                               9% |  ETA: 37s
-#>  ■■■■■■                            18% |  ETA: 35s
-#>  ■■■■■■■■■                         27% |  ETA: 30s
-#>  ■■■■■■■■■■■■                      36% |  ETA: 26s
+#>  ■■■■                               9% |  ETA: 38s
+#>  ■■■■■■                            18% |  ETA: 36s
+#>  ■■■■■■■■■                         27% |  ETA: 31s
+#>  ■■■■■■■■■■■■                      36% |  ETA: 27s
 #>  ■■■■■■■■■■■■■■■                   45% |  ETA: 23s
 #>  ■■■■■■■■■■■■■■■■■                 55% |  ETA: 19s
 #>  ■■■■■■■■■■■■■■■■■■■■              64% |  ETA: 15s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■           73% |  ETA: 11s
-#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA:  7s
+#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■        82% |  ETA:  8s
 #>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  4s
 head(biv_kamp_lite_var)
 #> # A tibble: 6 × 7
