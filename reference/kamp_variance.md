@@ -1,0 +1,76 @@
+# KAMP univariate variance
+
+Computes the KAMP (K-function Adjusted for Marked Permutations) variance
+for a given spatial point pattern. Also returns the KAMP expectation,
+z-statistic, and p-value.
+
+Note: this a matrix-based implementation of the KAMP variance that does
+not use the `spatstat` package. It is a wrapper around the
+`kamp_variance_helper` function that calculates the KAMP variance at one
+radius and maps it over a vector of radii.
+
+## Usage
+
+``` r
+kamp_variance(
+  ppp_obj,
+  rvals = c(0, 0.05, 0.075, 0.1, 0.15, 0.2),
+  correction = "trans",
+  mark1 = "immune"
+)
+```
+
+## Arguments
+
+- ppp_obj:
+
+  A point pattern object of class "ppp" from the spatstat package.
+
+- rvals:
+
+  A vector of radii at which to calculate the KAMP variance.
+
+- correction:
+
+  Type of edge correction. Defaults to translational.
+
+- mark1:
+
+  The variable used to mark the points in the point pattern object.
+  Default is "immune".
+
+## Value
+
+A dataframe with the following columns:
+
+- r:
+
+  The radius at which K was calculated.
+
+- k:
+
+  The observed K value
+
+- theo_csr:
+
+  The theoretical K under CSR
+
+- kamp_csr:
+
+  The adjusted CSR representing the KAMP permuted expectation.
+
+- kamp:
+
+  The difference between observed K and KAMP CSR
+
+- var:
+
+  Variance of K under the permutation null distribution
+
+- pval:
+
+  P-value, calculated using the formula: pnorm(-z)
+
+## Details
+
+KAMP Variance

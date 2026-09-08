@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns • KAMP</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns">
 <meta name="description" content="Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.">
@@ -35,7 +35,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/kamp_intro.html">Introduction to KAMP</a></li>
+<li><a class="dropdown-item" href="articles/kamp.html">KAMP</a></li>
   </ul>
 </li>
       </ul>
@@ -53,7 +53,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h1></div>
-<p><code>kperm</code> is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called <strong>KAMP</strong> (K adjusted by Analytical Moments of the Permutation distribution).</p>
+<p><code>KAMP</code> is an R package for efficiently estimating Ripley’s K under complete spatial randomness using a robust statistical approach called <strong>KAMP</strong> (K adjusted by Analytical Moments of the Permutation distribution).</p>
 <p>KAMP avoids the need for computationally expensive permutations while accounting for spatial inhomogeneity, making it suitable for large-scale spatial analyses such as those encountered in spatial proteomics multiplex imaging datasets.</p>
 </div>
 <div class="section level1">
@@ -69,13 +69,13 @@
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dliao1/kperm"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dliao1/KAMP"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">kperm</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate a point pattern</span></span>
 <span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
@@ -92,7 +92,7 @@
 <h2 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">kperm</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Simulate a point pattern</span></span>
 <span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
@@ -109,8 +109,8 @@
 <div class="section level1">
 <h1 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h1>
-<p>Link to documentation and vignettes: <a href="https://dliao1.github.io/KAMP/" class="external-link uri">https://dliao1.github.io/KAMP/</a></p>
-<p><!-- badges: start --> <a href="https://app.codecov.io/gh/dliao1/KAMP" class="external-link"><img src="https://codecov.io/gh/dliao1/kperm/graph/badge.svg" alt="Codecov test coverage"></a> <!-- badges: end --></p>
+<p>Link to documentation and vignettes: <a href="https://dliao1.github.io/KAMP/" class="uri">https://dliao1.github.io/KAMP/</a></p>
+<p><!-- badges: start --> <a href="https://app.codecov.io/gh/dliao1/KAMP" class="external-link"><img src="https://codecov.io/gh/dliao1/KAMP/graph/badge.svg" alt="Codecov test coverage"></a> <!-- badges: end --></p>
 </div>
 
   </main><aside class="col-md-3"><div class="license">
@@ -149,7 +149,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
