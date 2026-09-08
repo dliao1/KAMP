@@ -15,15 +15,20 @@ kamp(
   correction = "trans",
   thin = FALSE,
   p_thin = 0.5,
-  background = NULL,
-  Rcpp = FALSE,
   ...
 )
 }
 \arguments{
+\item{df}{Either a point pattern object of class \code{ppp} from the \code{spatstat} package, or a
+data.frame with \code{x}/\code{y} columns and a marks column named by \code{mark_var} (used to build a \code{ppp}
+internally via a convex-hull window). Should contain one point process at a time.}
+
 \item{rvals}{A vector of distances at which to compute the KAMP expectation and variance.}
 
 \item{univariate}{A logical value indicating whether to compute univariate KAMP (default is TRUE).}
+
+\item{mark_var}{Column name in \code{df} containing the marks, when \code{df} is a data.frame. Ignored
+when \code{df} is already a \code{ppp} object.}
 
 \item{mark1}{Variable used to mark the points in the point pattern object for the first type.}
 
@@ -37,13 +42,7 @@ kamp(
 
 \item{p_thin}{Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.}
 
-\item{background}{Variable used to define the background for the point pattern object.}
-
-\item{Rcpp}{A logical value indicating whether to use Rcpp implementation (default is FALSE).}
-
 \item{...}{Additional arguments passed to the underlying functions.}
-
-\item{ppp_obj}{A point pattern object of class \code{ppp} from the \code{spatstat} package.}
 }
 \value{
 A dataframe with the following columns:
@@ -72,7 +71,7 @@ For expectation, this function uses the \code{spatstat} package under the hood, 
 automatically uses border correction when the number of
 points in the point pattern is more than 3000.
 
-For variance, this function utlizes a matrix-based implementation.
+For variance, this function uses the Rcpp-accelerated implementation.
 
 See \code{?Kcross} and \code{?Kest} for more details on the K calculation methods.
 }
@@ -90,20 +89,30 @@ x_coords <- runif(100)
 y_coords <- runif(100)
 marks_vec <- sample(c("immune", "background"), 100, replace = TRUE)
 win <- owin(c(0,1), c(0,1))
-ppp_obj <- ppp(x_coords, y_coords, window = win, marks = marks_vec)
+ppp_obj <- ppp(x_coords, y_coords, window = win, marks = factor(marks_vec))
 
-# Defines radius values for K-function estimation
-r_vals <- seq(0.01, 0.1, by = 0.01)
+# Defines radius values for K-function estimation (must start at 0 for Kcross/Kest)
+r_vals <- seq(0, 0.1, by = 0.01)
 
-# Computes univariate KAMP expectation
-kamp_result <- kamp(ppp_obj = ppp_obj,
+# Computes univariate KAMP expectation, passing in a ppp object directly
+kamp_result <- kamp(df = ppp_obj,
                     rvals = r_vals,
                     univariate = TRUE,
                     mark1 = "immune")
 head(kamp_result)
 
+# df can also be a plain data.frame with x/y columns and a marks column,
+# identified via mark_var -- kamp() builds the ppp object internally
+pts_df <- data.frame(x = x_coords, y = y_coords, cell_type = marks_vec)
+kamp_from_df <- kamp(df = pts_df,
+                     rvals = r_vals,
+                     univariate = TRUE,
+                     mark_var = "cell_type",
+                     mark1 = "immune")
+head(kamp_from_df)
+
 # Compute univariate KAMP expectation with thinning
-kamp_thin <- kamp(ppp_obj = ppp_obj,
+kamp_thin <- kamp(df = ppp_obj,
                   rvals = r_vals,
                   univariate = TRUE,
                   mark1 = "immune",
@@ -113,12 +122,12 @@ head(kamp_thin)
 
 # Use real data from VectraPolarisData in package
 data(ovarian_df)
-sample_id <- unique(ovarian_df$sample_id)[1]
-ov_df <- subset(ovarian_df, sample_id == sample_id)
+first_sample <- unique(ovarian_df$sample_id)[1]
+ov_df <- subset(ovarian_df, sample_id == first_sample)
 win <- convexhull.xy(ov_df$x, ov_df$y)
 ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
-kamp_real <- kamp(ppp_obj = ppp_real,
-                  rvals = seq(0.01, 0.1, 0.01),
+kamp_real <- kamp(df = ppp_real,
+                  rvals = seq(0, 0.1, 0.01),
                   univariate = TRUE,
                   mark1 = "immune")
 head(kamp_real)

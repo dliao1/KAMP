@@ -42,6 +42,20 @@ test_that("kamp_variance_Rcpp matches kamp_variance for translational correction
   expect_equal(rcpp_result$var, base_result$var, tolerance = 1e-8)
 })
 
+test_that("kamp_variance_Rcpp matches kamp_variance_helper for border correction", {
+  marked_pp <- make_univ_pp(seed = 9, lambda = 200)
+  rvals <- c(0.02, 0.05, 0.1)
+
+  rcpp_result <- kamp_variance_Rcpp(marked_pp, rvals = rvals, correction = "border")
+  helper_result <- purrr::map_dfr(
+    rvals,
+    ~kamp_variance_helper(marked_pp, rvalue = .x, correction = "border")
+  )
+
+  expect_equal(rcpp_result$k, helper_result$k, tolerance = 1e-8)
+  expect_equal(rcpp_result$kamp_csr, helper_result$kamp_csr, tolerance = 1e-8)
+})
+
 test_that("kamp with variance = TRUE validates edge correction argument", {
   set.seed(8)
   df <- data.frame(x = runif(50), y = runif(50),
@@ -50,6 +64,28 @@ test_that("kamp with variance = TRUE validates edge correction argument", {
   expect_error(
     kamp(df, rvals = c(0.05, 0.1), mark_var = "immune", mark1 = "immune",
          variance = TRUE, correction = "border"),
-    "Currently only isotropic and translational edge correction are supported"
+    "correction must be one of 'trans', 'translational', 'iso', 'isotropic', or 'none'"
   )
+})
+
+test_that("kamp accepts full-name correction aliases and 'none' for variance", {
+  marked_pp <- make_univ_pp()
+  rvals <- c(0.05, 0.1)
+
+  trans_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                        variance = TRUE, correction = "trans")
+  translational_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                                variance = TRUE, correction = "translational")
+  expect_equal(trans_result, translational_result)
+
+  iso_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                      variance = TRUE, correction = "iso")
+  isotropic_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                            variance = TRUE, correction = "isotropic")
+  expect_equal(iso_result, isotropic_result)
+
+  none_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                       variance = TRUE, correction = "none")
+  expect_equal(names(none_result), c("r", "k", "theo_csr", "kamp_csr", "kamp", "var", "pvalue"))
+  expect_true(all(none_result$pvalue >= 0 & none_result$pvalue <= 1))
 })

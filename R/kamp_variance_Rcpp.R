@@ -8,9 +8,9 @@
 #' radii in a single call.
 #'
 #' Note: this a matrix-based implementation of the KAMP variance. It relies on
-#' an Rcpp function `kamp_pair_sums` to efficiently compute the necessary
-#' pairwise sums for the KAMP variance calculation, as well as the `spatstat`
-#' package for handling point pattern distances and edge corrections.
+#' Rcpp functions (`kamp_pair_sums_trans_iso`, `kamp_pair_sums_bord`) to do the
+#' pairwise sums, and `spatstat` for point pattern distances/edge corrections.
+#' Translational, isotropic, border, and no ("none") edge corrections are all supported.
 #'
 #'
 #' @param ppp_obj A point pattern object of class "ppp" from the spatstat package.
@@ -36,6 +36,14 @@
 #' @importFrom tibble as_tibble
 #' @useDynLib KAMP, .registration = TRUE
 #' @importFrom Rcpp sourceCpp evalCpp
+#' @examples
+#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+#' pp <- spatstat.random::rpoispp(lambda = 150, win = win)
+#' marks <- sample(c("immune", "background"), pp$n, replace = TRUE, prob = c(0.4, 0.6))
+#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+#'
+#' result <- kamp_variance_Rcpp(marked_pp, rvals = c(0.05, 0.1, 0.15), mark1 = "immune")
+#' print(result)
 kamp_variance_Rcpp = function(ppp_obj,
                               rvals = c(0, .05, .075, .1, .15, .2),
                               correction = "trans",
@@ -58,16 +66,12 @@ kamp_variance_Rcpp = function(ppp_obj,
     stop("Invalid j indices from closepairs")
   }
 
-  #if (npts > 10000) {
-  #  correction = "border"
-  #}
-
 
   bdist <- NULL
   if (correction == "trans") {
-    # edge.Trans returns a matrix so we subset by the indices of the pairs
-    e <- edge.Trans(ppp_obj)
-    w <- e[cbind(cp$i, cp$j)] # w is a vector here
+    # paired = TRUE so this only weights the pairs we actually have,
+    # instead of building the whole n x n matrix and subsetting it
+    w <- edge.Trans(ppp_obj[cp$i], ppp_obj[cp$j], paired = TRUE)
 
     if (any(is.na(w)) || any(!is.finite(w))) {
       stop("Invalid edge correction weights")
@@ -77,20 +81,22 @@ kamp_variance_Rcpp = function(ppp_obj,
     w <- rep(1, length(cp$i))
 
   } else if (correction == "iso") {
-    # full n x n distance matrix
-    d <- spatstat.geom::pairdist(ppp_obj)
-
-    # full n x n isotropic weights
-    e_full <- spatstat.explore::edge.Ripley(ppp_obj, r = d)
-
-    w <- as.numeric(e_full[cbind(cp$i, cp$j)])
+    # same idea -- per-pair, not the full n x n distance/weight matrices
+    bdist_all <- spatstat.geom::bdist.points(ppp_obj)
+    w <- as.numeric(spatstat.explore::edge.Ripley(ppp_obj[cp$i],
+                                                   matrix(cp$d, ncol = 1),
+                                                   bdistX = bdist_all[cp$i]))
 
     if (any(is.na(w)) || any(!is.finite(w))) {
       stop("Invalid isotropic edge correction weights")
     }
 
+  } else if (correction == "none") {
+    # no edge correction at all: every close pair counts with weight 1
+    w <- rep(1, length(cp$i))
+
   } else {
-    stop("Only translational edge correction implemented as of right now.")
+    stop("correction must be one of 'trans', 'iso', 'border', or 'none'.")
   }
 
   ord <- order(cp$d) # orders close pairs by distance
@@ -113,37 +119,24 @@ kamp_variance_Rcpp = function(ppp_obj,
     ))
   }
 
-  rcpp_sums <- NULL
-  # Calls Rcpp helper for sums
-  if (correction == "trans") {
-    rcpp_sums <- kamp_pair_sums_trans(i = i_sorted,
-                                j = j_sorted,
-                                d = d_sorted,
-                                w = w_sorted,
-                                rvals = rvals,
-                                is_mark1 = marks_vec,
-                                npts = npts
-                                )
-  } else if (correction == "border") {
-    rcpp_sums <- kamp_pair_sums_bord(i = i_sorted,
-                                       j = j_sorted,
-                                       d = d_sorted,
-                                       w = w_sorted,
-                                       rvals = rvals,
-                                       is_mark1 = marks_vec,
-                                       bdist = bdist,
-                                       npts = npts
-    )
-  } else { # iso
-    rcpp_sums <- kamp_pair_sums_trans(
-      i = i_sorted,
-      j = j_sorted,
-      d = d_sorted,
-      w = w_sorted,
-      rvals = rvals,
-      is_mark1 = marks_vec,
-      npts = npts
-    )
+  # Calls Rcpp helper for sums -- trans/iso/none all reduce to the same
+  # generic weighted pair-sum kernel, differing only in how w was built above
+  rcpp_sums <- if (correction == "border") {
+    kamp_pair_sums_bord(i = i_sorted,
+                         j = j_sorted,
+                         d = d_sorted,
+                         rvals = rvals,
+                         is_mark1 = marks_vec,
+                         bdist = bdist,
+                         npts = npts)
+  } else {
+    kamp_pair_sums_trans_iso(i = i_sorted,
+                              j = j_sorted,
+                              d = d_sorted,
+                              w = w_sorted,
+                              rvals = rvals,
+                              is_mark1 = marks_vec,
+                              npts = npts)
   }
 
   R0 <- rcpp_sums$R0
@@ -153,15 +146,30 @@ kamp_variance_Rcpp = function(ppp_obj,
 
   R3 <- R0^2 - 2 * R1 - 4 * R2
 
-  # Warning for not enough marked points?
-  f1 <- m * (m - 1) / (npts * (npts - 1))
-  f2 <- f1 * (m - 2) / (npts - 2)
-  f3 <- f2 * (m - 3) / (npts - 3)
+  if (correction == "border") {
+    # border correction restricts eligible reference points per radius, so
+    # the denominators depend on r via n_elig/m_elig instead of npts/m
+    n_elig <- vapply(rvals, function(rv) sum(bdist >= rv), numeric(1))
+    m_elig <- vapply(rvals, function(rv) sum(bdist >= rv & marks_vec), numeric(1))
 
-  K <- (areaW * Ksum) / (m * (m - 1))
-  mu_K <- (areaW * R0) / (npts * (npts - 1))
-  var_K <- (areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) /
-              (m^2 * (m - 1)^2)) - mu_K^2
+    f1 <- m_elig * m / (n_elig * npts)
+    f2 <- f1 * (m_elig - 1) / (n_elig - 1)
+    f3 <- f2 * (m_elig - 2) / (n_elig - 2)
+
+    K <- (areaW * Ksum) / (m * m_elig)
+    mu_K <- (areaW * R0) / (n_elig * npts)
+    var_K <- (areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) /
+                (m^2 * m_elig^2)) - mu_K^2
+  } else {
+    f1 <- m * (m - 1) / (npts * (npts - 1))
+    f2 <- f1 * (m - 2) / (npts - 2)
+    f3 <- f2 * (m - 3) / (npts - 3)
+
+    K <- (areaW * Ksum) / (m * (m - 1))
+    mu_K <- (areaW * R0) / (npts * (npts - 1))
+    var_K <- (areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) /
+                (m^2 * (m - 1)^2)) - mu_K^2
+  }
 
   var_K <- pmax(var_K, 0)
 

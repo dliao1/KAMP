@@ -15,4 +15,6 @@ utils::globalVariables(c("trans",
                          "k",
                          "Cell 2 Assignment",
                          "case_when",
-                         "iso"))
+                         "iso",
+                         "border",
+                         "un"))

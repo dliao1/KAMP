@@ -1,7 +1,8 @@
 Package: KAMP
 Title: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns
 Version: 0.0.0.9000
-Authors@R: 
+Date: 2026-09-08
+Authors@R:
     c(person(given = "Daisy",
            family = "Liao",
            email = "daisy.liao@emory.edu",
@@ -17,11 +18,11 @@ Authors@R:
            email = "julia.wrobel@emory.edu",
            role = c("aut"),
            comment = c(ORCID = "0000-0001-6783-1421")))
-Description: Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.
+Description: Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogeneous spatial point pattern data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp
 Imports:
     Rcpp,
     dplyr,
@@ -31,7 +32,6 @@ Imports:
     magrittr,
     tibble,
     purrr,
-    tictoc,
     stats,
     ggplot2,
     scSpatialSIM

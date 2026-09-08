@@ -18,10 +18,10 @@
 #' over a vector of radii.
 #'
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
-#' @param rvec A vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
+#' @param rvals A vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
+#' @param mark1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
+#' @param mark2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
 #'
 #' @importFrom spatstat.explore Kcross Kest edge.Trans edge.Ripley
 #' @importFrom spatstat.geom area.owin ppp as.owin npoints Window
@@ -29,7 +29,6 @@
 #' @importFrom tibble as_tibble
 #' @importFrom magrittr %>%
 #' @importFrom purrr map_dfr
-#' @importFrom tictoc tic toc
 #' @importFrom stats dist pnorm
 #' @importFrom tibble tibble
 #'
@@ -46,6 +45,16 @@
 #' }
 #'
 #' @export
+#' @examples
+#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+#' pp <- spatstat.random::rpoispp(lambda = 150, win = win)
+#' mark_labels <- c("immune1", "immune2", "background")
+#' marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
+#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+#'
+#' result <- kamp_variance_biv_Rcpp(marked_pp, rvals = c(0.05, 0.1),
+#'                                  mark1 = "immune1", mark2 = "immune2")
+#' print(result)
 kamp_variance_biv_Rcpp <- function(ppp_obj,
                                    rvals = c(0, .05, .075, .1, .15, .2),
                                    correction = "trans",
@@ -73,19 +82,26 @@ kamp_variance_biv_Rcpp <- function(ppp_obj,
   } else {
 
     if (correction == "trans") {
-      e <- spatstat.explore::edge.Trans(ppp_obj)  # n x n
-      w <- e[cbind(cp$i, cp$j)]
+      # paired = TRUE so this only weights the pairs we actually have,
+      # instead of building the whole n x n matrix and subsetting it
+      w <- spatstat.explore::edge.Trans(ppp_obj[cp$i], ppp_obj[cp$j], paired = TRUE)
     } else if (correction == "iso") {
-      d <- spatstat.geom::pairdist(ppp_obj)
-      e_full <- spatstat.explore::edge.Ripley(ppp_obj, r = d)
-      w <- as.numeric(e_full[cbind(cp$i, cp$j)])
+      # same idea -- per-pair, not the full n x n distance/weight matrices
+      bdist_all <- spatstat.geom::bdist.points(ppp_obj)
+      w <- as.numeric(spatstat.explore::edge.Ripley(ppp_obj[cp$i],
+                                                     matrix(cp$d, ncol = 1),
+                                                     bdistX = bdist_all[cp$i]))
 
       if (any(is.na(w)) || any(!is.finite(w))) {
         stop("Invalid isotropic edge correction weights")
       }
 
+    } else if (correction == "none") {
+      # no edge correction at all: every close pair counts with weight 1
+      w <- rep(1, length(cp$i))
+
     } else {
-      stop("correction must be translational or isotropic")
+      stop("correction must be one of 'trans', 'iso', or 'none'.")
     }
 
   }
@@ -96,7 +112,7 @@ kamp_variance_biv_Rcpp <- function(ppp_obj,
   j_sorted <- cp$j[ord]
   w_sorted <- w[ord] # sorted weights
 
-  sums <- kamp_pair_sums_trans_biv(
+  sums <- kamp_pair_sums_trans_iso_biv(
     i = i_sorted,
     j = j_sorted,
     d = d_sorted,

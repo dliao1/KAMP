@@ -15,21 +15,23 @@
 #' automatically uses border correction when the number of
 #' points in the point pattern is more than 3000.
 #'
-#' For variance, this function utlizes a matrix-based implementation.
+#' For variance, this function uses the Rcpp-accelerated implementation.
 #'
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
 #'
-#' @param ppp_obj A point pattern object of class `ppp` from the `spatstat` package.
+#' @param df Either a point pattern object of class `ppp` from the `spatstat` package, or a
+#' data.frame with `x`/`y` columns and a marks column named by `mark_var` (used to build a `ppp`
+#' internally via a convex-hull window). Should contain one point process at a time.
 #' @param rvals A vector of distances at which to compute the KAMP expectation and variance.
 #' @param univariate A logical value indicating whether to compute univariate KAMP (default is TRUE).
+#' @param mark_var Column name in `df` containing the marks, when `df` is a data.frame. Ignored
+#' when `df` is already a `ppp` object.
 #' @param mark1 Variable used to mark the points in the point pattern object for the first type.
 #' @param mark2 Variable used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
 #' @param correction Type of edge correction. Defaults to translational.
 #' @param variance A logical value indicating whether to compute the variance of KAMP (default is FALSE).
 #' @param thin A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
 #' @param p_thin Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
-#' @param background Variable used to define the background for the point pattern object.
-#' @param Rcpp A logical value indicating whether to use Rcpp implementation (default is FALSE).
 #' @param ... Additional arguments passed to the underlying functions.
 #'
 #' @returns
@@ -65,20 +67,30 @@
 #' y_coords <- runif(100)
 #' marks_vec <- sample(c("immune", "background"), 100, replace = TRUE)
 #' win <- owin(c(0,1), c(0,1))
-#' ppp_obj <- ppp(x_coords, y_coords, window = win, marks = marks_vec)
+#' ppp_obj <- ppp(x_coords, y_coords, window = win, marks = factor(marks_vec))
 #'
-#' # Defines radius values for K-function estimation
-#' r_vals <- seq(0.01, 0.1, by = 0.01)
+#' # Defines radius values for K-function estimation (must start at 0 for Kcross/Kest)
+#' r_vals <- seq(0, 0.1, by = 0.01)
 #'
-#' # Computes univariate KAMP expectation
-#' kamp_result <- kamp(ppp_obj = ppp_obj,
+#' # Computes univariate KAMP expectation, passing in a ppp object directly
+#' kamp_result <- kamp(df = ppp_obj,
 #'                     rvals = r_vals,
 #'                     univariate = TRUE,
 #'                     mark1 = "immune")
 #' head(kamp_result)
 #'
+#' # df can also be a plain data.frame with x/y columns and a marks column,
+#' # identified via mark_var -- kamp() builds the ppp object internally
+#' pts_df <- data.frame(x = x_coords, y = y_coords, cell_type = marks_vec)
+#' kamp_from_df <- kamp(df = pts_df,
+#'                      rvals = r_vals,
+#'                      univariate = TRUE,
+#'                      mark_var = "cell_type",
+#'                      mark1 = "immune")
+#' head(kamp_from_df)
+#'
 #' # Compute univariate KAMP expectation with thinning
-#' kamp_thin <- kamp(ppp_obj = ppp_obj,
+#' kamp_thin <- kamp(df = ppp_obj,
 #'                   rvals = r_vals,
 #'                   univariate = TRUE,
 #'                   mark1 = "immune",
@@ -88,17 +100,16 @@
 #'
 #' # Use real data from VectraPolarisData in package
 #' data(ovarian_df)
-#' sample_id <- unique(ovarian_df$sample_id)[1]
-#' ov_df <- subset(ovarian_df, sample_id == sample_id)
+#' first_sample <- unique(ovarian_df$sample_id)[1]
+#' ov_df <- subset(ovarian_df, sample_id == first_sample)
 #' win <- convexhull.xy(ov_df$x, ov_df$y)
 #' ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
-#' kamp_real <- kamp(ppp_obj = ppp_real,
-#'                   rvals = seq(0.01, 0.1, 0.01),
+#' kamp_real <- kamp(df = ppp_real,
+#'                   rvals = seq(0, 0.1, 0.01),
 #'                   univariate = TRUE,
 #'                   mark1 = "immune")
 #' head(kamp_real)
-kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, mark2
-                         # expect this to just be one point process
+kamp = function(df, # expect this to just be one point process
                 rvals,
                 univariate = TRUE,
                 mark_var,
@@ -108,8 +119,6 @@ kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, m
                 correction = "trans",
                 thin = FALSE,
                 p_thin = 0.5,
-                background = NULL,
-                Rcpp = FALSE,
                 ...){
 
   ppp_obj  <- check_inputs(df,
@@ -121,49 +130,41 @@ kamp = function(df, # change to dataframe with x, y, mark_var, (factor) mark1, m
                      mark2,
                      variance,
                      thin,
-                     p_thin,
-                     background)
+                     p_thin)
 
   if (is.null(ppp_obj)) {
     stop("Input checks failed and point process object could not be created.")
   }
 
+  # normalize full-name correction aliases to the short form the functions below expect
+  correction <- switch(correction,
+                        "translational" = "trans",
+                        "isotropic" = "iso",
+                        correction)
 
   if (thin == TRUE) {
     ppp_obj = rthin(ppp_obj, 1 - p_thin)
   }
 
   results <- NULL
-  if (univariate == TRUE && Rcpp == FALSE && variance == FALSE) {
+  if (univariate == TRUE && variance == FALSE) {
     results <- kamp_expectation(ppp_obj = ppp_obj,
                                 rvals = rvals,
                                 correction = correction,
                                 mark1 = mark1)
-  } else if (univariate == TRUE && Rcpp == FALSE && variance == TRUE) {
+  } else if (univariate == TRUE && variance == TRUE) {
     results <- kamp_variance(ppp_obj = ppp_obj,
-                             rvals = rvals,
-                             correction = correction,
-                             mark1 = mark1)
-  }
-  else if (univariate == FALSE && Rcpp == FALSE && variance == FALSE) {
+                                  rvals = rvals,
+                                  correction = correction,
+                                  mark1 = mark1)
+  } else if (univariate == FALSE && variance == FALSE) {
     results <- kamp_expectation_biv(ppp_obj = ppp_obj,
                                     rvals = rvals,
                                     mark1 = mark1,
                                     mark2 = mark2,
                                     correction = correction)
-  } else if (univariate == FALSE && Rcpp == FALSE && variance == TRUE) {
+  } else if (univariate == FALSE && variance == TRUE) {
     results <- kamp_variance_biv(ppp_obj = ppp_obj,
-                                 rvals = rvals,
-                                 mark1 = mark1,
-                                 mark2 = mark2,
-                                 correction = correction)
-  } else if (univariate == TRUE && Rcpp == TRUE && variance == TRUE) {
-    results <- kamp_variance_Rcpp(ppp_obj = ppp_obj,
-                                  rvals = rvals,
-                                  correction = correction,
-                                  mark1 = mark1)
-  } else if (univariate == FALSE && Rcpp == TRUE && variance == TRUE) {
-    results <- kamp_variance_biv_Rcpp(ppp_obj = ppp_obj,
                                       rvals = rvals,
                                       mark1 = mark1,
                                       mark2 = mark2,

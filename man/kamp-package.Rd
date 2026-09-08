@@ -6,12 +6,12 @@
 \alias{KAMP-package}
 \title{KAMP: KAMP: Permutation-Based Ripley's K Analysis for Spatial Point Patterns}
 \description{
-Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogenous spatial point pattern data.
+Provides functions to calculate KAMP, a more robust and scalable K-statistic for inhomogeneous spatial point pattern data.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://dliao1.github.io/kamp/}
+  \item \url{https://dliao1.github.io/KAMP/}
 }
 
 }

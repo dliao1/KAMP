@@ -16,10 +16,10 @@
 #' See `?Kcross` and `?Kest` for more details on the K calculation methods.
 #'
 #' @param ppp_obj A point pattern object from the `spatstat.geom` package.
-#' @param rvec Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
+#' @param rvals Vector of radii at which to calculate the KAMP expectation. Defaults to c(0, 0.05, 0.075, 0.1, 0.15, 0.2).
 #' @param correction Type of edge correction. Defaults to translational.
-#' @param markvar1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
-#' @param markvar2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
+#' @param mark1 Variable used to mark the points in the point pattern object for the first type. Default is "immune1".
+#' @param mark2 Variable used to mark the points in the point pattern object for the second type. Default is "immune2".
 #'
 #' @returns
 #' A dataframe with the following columns:
@@ -52,13 +52,14 @@
 #'   pp <- spatstat.random::rpoispp(lambda = 200, win = win)
 #'
 #'   # Assigns three marks: immune1, immune2, and background
-#'   marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
+#'   mark_labels <- c("immune1", "immune2", "background")
+#'   marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
 #'
 #'   # Creates marked point pattern
 #'   marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
 #'
 #'   # Computes KAMP expectation
-#'   result <- kamp_expectation_biv(marked_pp, markvar1 = "immune1", markvar2 = "immune2")
+#'   result <- kamp_expectation_biv(marked_pp, mark1 = "immune1", mark2 = "immune2")
 #'   print(result)
 #' }
 kamp_expectation_biv <- function(ppp_obj,
@@ -103,6 +104,13 @@ kamp_expectation_biv <- function(ppp_obj,
     kamp_df = kamp_df %>%
       mutate(kamp_csr = border,
              k = k_orig$border,
+             theo_csr = k_orig$theo,
+             kamp = k - kamp_csr) %>%
+      select(r, k, theo_csr, kamp_csr, kamp)
+  } else if (correction == "none") {
+    kamp_df = kamp_df %>%
+      mutate(kamp_csr = un, # spatstat names the uncorrected estimate "un"
+             k = k_orig$un,
              theo_csr = k_orig$theo,
              kamp = k - kamp_csr) %>%
       select(r, k, theo_csr, kamp_csr, kamp)

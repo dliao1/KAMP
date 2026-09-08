@@ -26,8 +26,7 @@
 #' @importFrom tibble as_tibble
 #' @importFrom magrittr %>%
 #' @importFrom purrr map_dfr
-#' @importFrom tictoc tic toc
-#' @importFrom stats dist pnorm
+#' @importFrom stats dist pnorm fft
 #' @importFrom tibble tibble
 #' @keywords internal
 kamp_variance_helper = function(ppp_obj,
@@ -37,71 +36,134 @@ kamp_variance_helper = function(ppp_obj,
   npts = npoints(ppp_obj)
   ppp_window = Window(ppp_obj)
   areaW = spatstat.geom::area(ppp_window)
+  marks_vec <- as.character(ppp_obj$marks)
+  m <- sum(marks_vec == mark1)
 
-  pp_df = as.data.frame(ppp_obj)
-  W = as.matrix(dist(as.matrix(select(pp_df, x, y))))
-  Wr <- NULL
+  if (correction %in% c("trans", "translational", "border", "none")) {
+    # closepairs-based -- only touches pairs within rvalue, never builds
+    # the full n x n distance/weight matrix
+    cp <- spatstat.geom::closepairs(ppp_obj, rmax = rvalue, what = "all", twice = TRUE)
+    i_idx <- cp$i
+    j_idx <- cp$j
 
-  R0 <- NULL
-  R1 <- NULL
-  R2 <- NULL
-  R3 <- NULL
-  npairs <- NULL
+    if (correction == "none") {
+      # no edge correction at all: every close pair counts with weight 1
+      e_vals <- rep(1, length(i_idx))
+      denom_m <- m - 1
+      denom_npts <- npts - 1
 
+    } else if (correction %in% c("trans", "translational")) {
+      if (ppp_window$type == "rectangle") {
+        W_width  <- diff(ppp_window$xrange)
+        W_height <- diff(ppp_window$yrange)
+        area_int <- pmax(0, W_width - abs(cp$dx)) * pmax(0, W_height - abs(cp$dy))
+        e_vals   <- ifelse(area_int > 0, areaW / area_int, 0)
+      } else {
+        # polygonal/mask window -- same pixel approximation edge.Trans uses
+        # internally, via a single 2D FFT autocorrelation of the mask, then
+        # a per-pair lookup by displacement instead of an n x n matrix
+        W_mask <- spatstat.geom::as.mask(ppp_window)
+        m_num  <- as.numeric(W_mask$m)
+        ny <- nrow(W_mask$m); nx <- ncol(W_mask$m)
+        xstep <- W_mask$xstep; ystep <- W_mask$ystep
 
+        F_m <- apply(matrix(m_num, ny, nx), 2, fft)
+        F_m <- t(apply(F_m, 1, fft))
 
-  # TODO: implement border correction
+        ac_step <- apply(Mod(F_m)^2, 2, fft, inverse = TRUE) / ny
+        ac <- Re(t(apply(ac_step, 1, fft, inverse = TRUE))) / nx * xstep * ystep
 
-  if (npts > 10000) {
-    correction = "border"
-  }
+        di <- round(cp$dy / ystep)
+        dj <- round(cp$dx / xstep)
+        ridx <- ((-di) %% ny) + 1L
+        cidx <- ((-dj) %% nx) + 1L
 
- if (correction == "trans") {
-    e = edge.Trans(ppp_obj) #move this out of helper
-    W = ifelse(W <= rvalue, 1, 0) # create weight matrix
-    diag(W) = 0
-    Wr = W * e
- } else if (correction == "border") {
+        overlap <- ac[cbind(ridx, cidx)]
+        e_vals  <- ifelse(overlap > 0, areaW / overlap, 0)
+      }
 
-   dist_to_boundary <- spatstat.geom::bdist.points(ppp_obj)
-   eligible <- (dist_to_boundary >= rvalue)
+      denom_m <- m - 1
+      denom_npts <- npts - 1
 
-   is_m1 <- (ppp_obj$marks == mark1)
-   eligible_m1 <- eligible & is_m1
+    } else {
+      # border correction: only pairs whose *center* point i is far enough
+      # from the boundary count, each with weight 1 so we basically
+      # to zeroing out ineligible rows of the 0/1 adjacency matrix
+      dist_to_boundary <- spatstat.geom::bdist.points(ppp_obj)
+      eligible <- dist_to_boundary >= rvalue
 
-   n_elig <- sum(eligible)
-   m <- sum(is_m1)
-   m_elig <- sum(eligible_m1)
+      keep_elig <- eligible[i_idx]
+      i_idx <- i_idx[keep_elig]
+      j_idx <- j_idx[keep_elig]
+      e_vals <- rep(1, length(i_idx))
 
-   # so m is # of marked points, m_elig is # of eligible marked points
-   # similarly, npts is total # of points, n_elig is # of eligible points
+      denom_m <- sum(eligible & marks_vec == mark1) # m_elig
+      denom_npts <- sum(eligible)                  # n_elig
+    }
 
-   areaW <- spatstat.geom::area(Window(ppp_obj))
+    R0 <- sum(e_vals)
+    R1 <- sum(e_vals^2)
 
-   Wmat <- (W <= rvalue) * 1.0
-   diag(Wmat) <- 0
-   Wr <- Wmat
-   Wr[!eligible, ] <- 0 # zeroes out rows of ineligible points
+    row_sums <- numeric(npts)
+    if (length(i_idx) > 0) {
+      agg <- tapply(e_vals, i_idx, sum)
+      row_sums[as.integer(names(agg))] <- agg
+    }
+    R2 <- sum(row_sums^2) - R1
+    R3 <- R0^2 - 2*R1 - 4*R2
+
+    keep <- marks_vec[i_idx] == mark1 & marks_vec[j_idx] == mark1
+    Ksum <- sum(e_vals[keep])
+
+    f1 <- m*denom_m/npts/denom_npts
+    f2 <- f1*(denom_m-1)/(denom_npts-1)
+    f3 <- f2*(denom_m-2)/(denom_npts-2)
+
+    K <- areaW * Ksum / m / denom_m
+    mu_K <- areaW * R0 / npts / denom_npts
+    var_K <- areaW^2 * (2*R1*f1 + 4*R2*f2 + R3*f3) / m / m / denom_m / denom_m - mu_K^2
+
+    Z_k <- (K - mu_K) / sqrt(var_K)
+    pval_appx <- pnorm(-Z_k)
+
+    return(tibble(
+      r = rvalue,
+      k = K,
+      theo_csr = pi * rvalue^2,
+      kamp_csr = mu_K,
+      kamp = K - mu_K,
+      var = var_K,
+      pvalue = min(1, pval_appx)
+    ))
+
+ } else if (correction %in% c("iso", "isotropic")) {
+   # matrix-based: edge.Ripley needs the full n x n distance matrix, so this
+   # path doesn't benefit from the closepairs shortcut used above
+   pp_df <- as.data.frame(ppp_obj)
+   W <- as.matrix(dist(as.matrix(select(pp_df, x, y))))
+
+   e <- spatstat.explore::edge.Ripley(ppp_obj, r = W)
+   W <- (W <= rvalue) * 1.0
+   diag(W) <- 0
+   Wr <- W * e
 
    R0 <- sum(Wr)
    R1 <- sum(Wr^2)
    R2 <- sum(rowSums(Wr)^2) - R1
    R3 <- R0^2 - 2*R1 - 4*R2
 
-   Kmat <- Wr[which(eligible_m1), which(is_m1), drop = FALSE]
+   Kmat <- Wr[which(marks_vec == mark1), which(marks_vec == mark1)]
 
-   K <- areaW * sum(Kmat) / (m * m_elig) # K = areaW * sum(Kmat)/ m / (m - 1)
-   mu_K <- areaW * R0 / (n_elig * npts) # mu_K = areaW * R0 / npts / (npts - 1)
+   denom_m <- m - 1
+   denom_npts <- npts - 1
 
-   # Original were hypergeometric probabilities so these are probably no longer correct? not sure..
-   f1 <- m_elig*m / (n_elig*npts) # f1 = m*(m-1)/npts/(npts-1)
-   f2 <- f1*(m_elig-1) / (n_elig-1) #f2 = f1*(m-2)/(npts-2)
-   f3 <- f2*(m_elig-2) / (n_elig-2) #f3 = f2*(m-3)/(npts-3)
+   f1 <- m*denom_m/npts/denom_npts
+   f2 <- f1*(denom_m-1)/(denom_npts-1)
+   f3 <- f2*(denom_m-2)/(denom_npts-2)
 
-
-
-  # var_K = areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) / m / m / (m - 1) / (m - 1) - mu_K^2
-   var_K <- areaW^2 * (2*R1*f1 + 4*R2*f2 + R3*f3) / m / m / m_elig/ m_elig - mu_K^2
+   K <- areaW * sum(Kmat) / m / denom_m
+   mu_K <- areaW * R0 / npts / denom_npts
+   var_K <- areaW^2 * (2*R1*f1 + 4*R2*f2 + R3*f3) / m / m / denom_m / denom_m - mu_K^2
 
    Z_k <- (K - mu_K) / sqrt(var_K)
    pval_appx <- pnorm(-Z_k)
@@ -116,55 +178,9 @@ kamp_variance_helper = function(ppp_obj,
      pvalue = min(1, pval_appx)
    ))
 
-
- } else if (correction %in% c("iso", "isotropic")) {
-   e <- spatstat.explore::edge.Ripley(ppp_obj, r = W)
-   W <- (W <= rvalue) * 1.0
-   diag(W) <- 0
-   Wr <- W * e
  } else {
-   stop("Only translational edge correction implemented as of right now.")
+   stop("Only translational and isotropic edge corrections are implemented.")
  }
-
-
-  # COMPUTE ALL THESE SUMS IN C
-
-  # Compute R0 term
-  R0 = sum(Wr)
-
-  # Compute expectation
-  m = sum(ppp_obj$marks == mark1)
-  R1 = sum(Wr^2)
-  R2 = sum(rowSums(Wr)^2) - R1
-  R3 = R0^2 - 2*R1 - 4*R2
-
-  npairs =  npts * (npts - 1)
-  f1 = m*(m-1)/npts/(npts-1)
-  f2 = f1*(m-2)/(npts-2)
-  f3 = f2*(m-3)/(npts-3)
-
-  Kmat = Wr[which(ppp_obj$marks == mark1),which(ppp_obj$marks == mark1)]
-
-
-  K = areaW * sum(Kmat)/ m / (m - 1) # Ripley's K
-  mu_K = areaW * R0 / npts / (npts - 1) # expectation
-  var_K = areaW^2 * (2 * R1 * f1 + 4 * R2 * f2 + R3 * f3) / m / m / (m - 1) / (m - 1) - mu_K^2   # variance
-
-  Z_k = (K - mu_K) / sqrt(var_K) # Test statistic
-  pval_appx = pnorm(-Z_k) # approximated p-value based on normal distribution
-
-
-  result = tibble(
-    r = rvalue,
-    k = K,
-    theo_csr = pi * rvalue^2, # theoretical CSR using area of circle
-    kamp_csr = mu_K, # K expectation under permutation distributions
-    kamp = k - kamp_csr, # difference between K and KAMP CSR
-    var = var_K,
-    pvalue = min(1, pval_appx)
-  )
-
-  return(result)
 }
 
 
@@ -179,10 +195,10 @@ kamp_variance_helper = function(ppp_obj,
 #' @param variance Logical indicating whether to compute the variance of KAMP (default is FALSE).
 #' @param thin Logical indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
 #' @param p_thin Percentage that determines how much to thin
-#' @param background Value used to define the background for the point pattern object.
-#' @param ...
+#' @param ... Additional arguments (currently unused).
 #'
-#' @returns TRUE if all inputs are valid, otherwise throws an error with a descriptive message.
+#' @returns The `ppp` point pattern object (built from `df` if it was a data.frame) if all
+#' inputs are valid, otherwise throws an error with a descriptive message.
 #' @keywords internal
 #'
 check_inputs <- function(df,
@@ -194,8 +210,7 @@ check_inputs <- function(df,
                          mark2,
                          variance,
                          thin,
-                         p_thin,
-                         background,...) {
+                         p_thin,...) {
   ppp_obj <- NULL
   # If it's already a ppp, use it and DO NOT run dataframe checks
   if (inherits(df, "ppp")) {
@@ -236,12 +251,13 @@ check_inputs <- function(df,
 
   # Check if rvec is numeric
   if (!is.numeric(rvals) || any(rvals < 0)) {
-    stop("rvec must be numeric and 0 or more")
+    stop("rvals must be numeric and 0 or more")
   }
 
-  # Check if correction is translational or isotropic - default to trans maybe?
-  if (correction %in% c("trans", "iso") == FALSE) {
-    stop("Currently only isotropic and translational edge correction are supported.")
+  # "translational"/"isotropic" are accepted as full-name aliases for "trans"/"iso"
+  # and get normalized to the short form by kamp() before being dispatched onward
+  if (correction %in% c("trans", "translational", "iso", "isotropic", "none") == FALSE) {
+    stop("correction must be one of 'trans', 'translational', 'iso', 'isotropic', or 'none'.")
   }
 
 
@@ -319,12 +335,9 @@ check_inputs <- function(df,
     message(paste0("Less than 5 target cells marked as '", mark1, "'. This may lead to unreliable results."))
   }
 
-  if (npoints(ppp_obj) > 10000) {
-    message("The point pattern object has more than 10000 points. Switching to border correction")
-  }
 
   if (npoints(ppp_obj) > 100000) {
-    message("Point pattern has more than 100,000 points. At this sample size, we suggest using no edge correction (correction = \"none\") for faster computation. The requested edge correction will still be used.")
+    message("Point pattern has more than 100,000 points. At this time, it is not recommended to use edge correction with KAMP on datasets of this size. Results may be unreliable. Consider using KAMP-lite (thin = TRUE) or subsetting your data.")
   }
 
   return(ppp_obj)

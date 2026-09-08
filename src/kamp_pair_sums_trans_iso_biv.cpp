@@ -2,7 +2,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-List kamp_pair_sums_trans_biv(IntegerVector i,
+List kamp_pair_sums_trans_iso_biv(IntegerVector i,
                                     IntegerVector j,
                                     NumericVector d,
                                     NumericVector w,

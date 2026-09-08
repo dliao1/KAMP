@@ -39,10 +39,19 @@ z-statistic, and p-value. Calculations are performed across a vector of
 radii in a single call.
 
 Note: this a matrix-based implementation of the KAMP variance. It relies on
-an Rcpp function \code{kamp_pair_sums} to efficiently compute the necessary
-pairwise sums for the KAMP variance calculation, as well as the \code{spatstat}
-package for handling point pattern distances and edge corrections.
+Rcpp functions (\code{kamp_pair_sums_trans_iso}, \code{kamp_pair_sums_bord}) to do the
+pairwise sums, and \code{spatstat} for point pattern distances/edge corrections.
+Translational, isotropic, border, and no ("none") edge corrections are all supported.
 }
 \details{
 KAMP Variance
+}
+\examples{
+win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+pp <- spatstat.random::rpoispp(lambda = 150, win = win)
+marks <- sample(c("immune", "background"), pp$n, replace = TRUE, prob = c(0.4, 0.6))
+marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+
+result <- kamp_variance_Rcpp(marked_pp, rvals = c(0.05, 0.1, 0.15), mark1 = "immune")
+print(result)
 }

@@ -30,6 +30,26 @@ test_that("kamp_expectation respects a custom rvals vector and iso correction", 
   expect_true(all(!is.na(result$kamp_csr)))
 })
 
+test_that("kamp_expectation supports 'none' (uncorrected) and kamp() accepts full-name aliases", {
+  marked_pp <- make_univ_pp()
+  rvals <- c(0, 0.05, 0.1)
+
+  none_result <- kamp_expectation(marked_pp, rvals = rvals, correction = "none")
+  expect_equal(names(none_result), c("r", "k", "theo_csr", "kamp_csr", "kamp"))
+  expect_equal(nrow(none_result), length(rvals))
+  expect_true(all(!is.na(none_result$kamp_csr)))
+
+  translational_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                                correction = "translational")
+  trans_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune", correction = "trans")
+  expect_equal(translational_result, trans_result)
+
+  isotropic_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune",
+                            correction = "isotropic")
+  iso_result <- kamp(marked_pp, rvals = rvals, mark1 = "immune", correction = "iso")
+  expect_equal(isotropic_result, iso_result)
+})
+
 test_that("check_inputs notes suggested correction for very large point patterns", {
   win <- spatstat.geom::owin(c(0, 1), c(0, 1))
   n <- 100001
@@ -40,7 +60,7 @@ test_that("check_inputs notes suggested correction for very large point patterns
     suppressWarnings(
       check_inputs(big_pp, rvals = c(0, 0.01), univariate = TRUE, correction = "trans",
                    mark_var = NULL, mark1 = "immune", mark2 = NULL, variance = FALSE,
-                   thin = FALSE, p_thin = 0, background = NULL)
+                   thin = FALSE, p_thin = 0)
     ),
     "more than 100,000 points"
   )
@@ -57,7 +77,7 @@ test_that("check_inputs stays silent about large-N correction below the 100,000 
     suppressWarnings(
       check_inputs(pp, rvals = c(0, 0.01), univariate = TRUE, correction = "trans",
                    mark_var = NULL, mark1 = "immune", mark2 = NULL, variance = FALSE,
-                   thin = FALSE, p_thin = 0, background = NULL)
+                   thin = FALSE, p_thin = 0)
     ),
     message = function(m) { msgs[[length(msgs) + 1]] <<- conditionMessage(m); invokeRestart("muffleMessage") }
   )
