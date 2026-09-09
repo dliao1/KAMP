@@ -89,3 +89,48 @@ test_that("kamp accepts full-name correction aliases and 'none' for variance", {
   expect_equal(names(none_result), c("r", "k", "theo_csr", "kamp_csr", "kamp", "var", "pvalue"))
   expect_true(all(none_result$pvalue >= 0 & none_result$pvalue <= 1))
 })
+
+test_that("kamp_variance matches kamp_variance_helper and accepts the isotropic alias", {
+  marked_pp <- make_univ_pp(seed = 11)
+  rvals <- c(0.05, 0.1)
+
+  iso_result <- kamp_variance(marked_pp, rvals = rvals, correction = "iso")
+  isotropic_result <- purrr::map_dfr(
+    rvals,
+    ~kamp_variance_helper(marked_pp, rvalue = .x, correction = "isotropic")
+  )
+
+  expect_equal(iso_result, isotropic_result)
+  expect_true(all(iso_result$var >= 0))
+  expect_true(all(iso_result$pvalue >= 0 & iso_result$pvalue <= 1))
+})
+
+test_that("kamp_variance_Rcpp matches kamp_variance_helper for isotropic correction", {
+  marked_pp <- make_univ_pp(seed = 12, lambda = 120)
+  rvals <- c(0.02, 0.05, 0.1)
+
+  rcpp_result <- kamp_variance_Rcpp(marked_pp, rvals = rvals, correction = "iso")
+  helper_result <- purrr::map_dfr(
+    rvals,
+    ~kamp_variance_helper(marked_pp, rvalue = .x, correction = "iso")
+  )
+
+  expect_equal(rcpp_result$k, helper_result$k, tolerance = 1e-6)
+  expect_equal(rcpp_result$kamp_csr, helper_result$kamp_csr, tolerance = 1e-6)
+  expect_equal(rcpp_result$var, helper_result$var, tolerance = 1e-6)
+})
+
+test_that("kamp_variance_Rcpp matches kamp_variance_helper for no edge correction", {
+  marked_pp <- make_univ_pp(seed = 13, lambda = 120)
+  rvals <- c(0.02, 0.05, 0.1)
+
+  rcpp_result <- kamp_variance_Rcpp(marked_pp, rvals = rvals, correction = "none")
+  helper_result <- purrr::map_dfr(
+    rvals,
+    ~kamp_variance_helper(marked_pp, rvalue = .x, correction = "none")
+  )
+
+  expect_equal(rcpp_result$k, helper_result$k, tolerance = 1e-8)
+  expect_equal(rcpp_result$kamp_csr, helper_result$kamp_csr, tolerance = 1e-8)
+  expect_equal(rcpp_result$var, helper_result$var, tolerance = 1e-8)
+})

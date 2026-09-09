@@ -81,7 +81,6 @@ kamp_variance_Rcpp = function(ppp_obj,
     w <- rep(1, length(cp$i))
 
   } else if (correction == "iso") {
-    # same idea -- per-pair, not the full n x n distance/weight matrices
     bdist_all <- spatstat.geom::bdist.points(ppp_obj)
     w <- as.numeric(spatstat.explore::edge.Ripley(ppp_obj[cp$i],
                                                    matrix(cp$d, ncol = 1),
@@ -92,7 +91,7 @@ kamp_variance_Rcpp = function(ppp_obj,
     }
 
   } else if (correction == "none") {
-    # no edge correction at all: every close pair counts with weight 1
+    # no edge correction at all so every close pair counts with weight 1
     w <- rep(1, length(cp$i))
 
   } else {
