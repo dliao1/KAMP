@@ -6,14 +6,14 @@ complete spatial randomness using a robust statistical approach called
 distribution).
 
 Rather than repeatedly permuting marks across a point pattern and
-simulating a null distribution – the traditional way to get a
-permutation-based null for K – KAMP computes that permutation
-distribution’s mean and variance analytically, in closed form. This
+simulating a null distribution - the traditional way to get a
+permutation-based null for K - KAMP computes that permutation
+distribution’s mean and variance analytically in a closed form. This
 gives the same permutation-adapted baseline (one that accounts for
 spatial inhomogeneity, unlike the standard theoretical CSR baseline)
 without the computational cost of actually running permutations, making
-it suitable for large-scale spatial analyses such as those encountered
-in spatial proteomics multiplex imaging datasets.
+it more suitable for large-scale spatial analyses such as those
+encountered in spatial proteomics multiplex imaging datasets.
 
 # Overview
 
@@ -21,7 +21,7 @@ This package provides functions to compute both **univariate** and
 **bivariate** KAMP expectation and variance (`spatstat` and matrix-based
 implementation both included). Supported edge corrections are
 translational (`trans`/`translational`), isotropic (`iso`/`isotropic`),
-and no correction (`none`).
+and no edge correction (`none`).
 
 ## Table of Contents
 
