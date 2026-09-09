@@ -427,6 +427,7 @@ univ_kamp_var <- kamp(univ_data,
                       mark1 = "immune",
                       variance = TRUE)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
+#>  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■      91% |  ETA:  0s
 univ_kamp_var
 #> # A tibble: 11 × 7
 #>        r      k theo_csr kamp_csr   kamp      var     pvalue
