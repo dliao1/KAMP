@@ -145,10 +145,5 @@ Link to documentation and vignettes: <https://dliao1.github.io/KAMP/>
 If you run into a bug or have a question, please [open an issue on
 GitHub](https://github.com/dliao1/KAMP/issues).
 
-# Citation
-
-If you use `KAMP` in a publication, please cite the package. Run
-`citation("KAMP")` in R for the current citation info.
-
 [![Codecov test
 coverage](https://codecov.io/gh/dliao1/KAMP/graph/badge.svg)](https://app.codecov.io/gh/dliao1/KAMP)
