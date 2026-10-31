@@ -140,12 +140,12 @@ library(spatstat.geom)
 #> Loading required package: spatstat.data
 #> Loading required package: spatstat.univar
 #> spatstat.univar 3.2-0
-#> spatstat.geom 3.8-2
+#> spatstat.geom 3.8-3
 library(spatstat.explore)
 #> Loading required package: spatstat.random
-#> spatstat.random 3.5-1
+#> spatstat.random 3.5-2
 #> Loading required package: nlme
-#> spatstat.explore 3.8-2
+#> spatstat.explore 3.8-3
 
 # Simulates a simple marked point pattern
 set.seed(100)

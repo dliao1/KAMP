@@ -69,8 +69,8 @@ library(spatstat.random)
 #> Loading required package: spatstat.univar
 #> spatstat.univar 3.2-0
 #> Loading required package: spatstat.geom
-#> spatstat.geom 3.8-2
-#> spatstat.random 3.5-1
+#> spatstat.geom 3.8-3
+#> spatstat.random 3.5-2
 #devtools::load_all()
 set.seed(50)
 ```
@@ -882,13 +882,13 @@ A few messages/errors you may encounter, and what they mean:
 ``` r
 
 sessionInfo()
-#> R version 4.6.1 (2026-06-24)
+#> R version 4.6.2 (2026-10-29)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.5 LTS
+#> Running under: Ubuntu 26.04.1 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.32.so;  LAPACK version 3.12.0
 #> 
 #> locale:
 #>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
@@ -903,26 +903,26 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#>  [1] spatstat.random_3.5-1 spatstat.geom_3.8-2   spatstat.univar_3.2-0
+#>  [1] spatstat.random_3.5-2 spatstat.geom_3.8-3   spatstat.univar_3.2-0
 #>  [4] spatstat.data_3.1-9   lubridate_1.9.5       forcats_1.0.1        
 #>  [7] stringr_1.6.0         dplyr_1.2.1           purrr_1.2.2          
 #> [10] readr_2.2.0           tidyr_1.3.2           tibble_3.3.1         
 #> [13] ggplot2_4.0.3         tidyverse_2.0.0       KAMP_0.0.0.9000      
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6           xfun_0.60              bslib_0.12.0          
-#>  [4] spatstat.sparse_3.2-0  lattice_0.22-9         tzdb_0.5.0            
-#>  [7] vctrs_0.7.3            tools_4.6.1            spatstat.utils_3.2-4  
+#>  [1] gtable_0.3.6           xfun_0.62              bslib_0.12.0          
+#>  [4] spatstat.sparse_3.2-0  lattice_0.23-1         tzdb_0.5.0            
+#>  [7] vctrs_0.7.3            tools_4.6.2            spatstat.utils_3.2-5  
 #> [10] generics_0.1.4         goftest_1.2-3          pkgconfig_2.0.3       
-#> [13] Matrix_1.7-5           RColorBrewer_1.1-3     S7_0.2.2              
-#> [16] desc_1.4.3             lifecycle_1.0.5        compiler_4.6.1        
+#> [13] Matrix_1.7-6           RColorBrewer_1.1-3     S7_0.2.2              
+#> [16] desc_1.4.3             lifecycle_1.0.5        compiler_4.6.2        
 #> [19] farver_2.1.2           deldir_2.0-4           textshaping_1.0.5     
-#> [22] spatstat.explore_3.8-2 htmltools_0.5.9        sass_0.4.10           
+#> [22] spatstat.explore_3.8-3 htmltools_0.5.9        sass_0.4.10           
 #> [25] yaml_2.3.12            pillar_1.11.1          pkgdown_2.2.1         
 #> [28] jquerylib_0.1.4        cachem_1.1.0           abind_1.4-8           
-#> [31] nlme_3.1-169           tidyselect_1.2.1       digest_0.6.39         
+#> [31] nlme_3.1-171           tidyselect_1.2.1       digest_0.6.39         
 #> [34] stringi_1.8.9          labeling_0.4.3         polyclip_1.10-7       
-#> [37] fastmap_1.2.0          grid_4.6.1             cli_3.6.6             
+#> [37] fastmap_1.2.0          grid_4.6.2             cli_3.6.6             
 #> [40] magrittr_2.0.5         withr_3.0.3            tensor_1.5.1          
 #> [43] scales_1.4.0           timechange_0.4.0       rmarkdown_2.32        
 #> [46] otel_0.2.0             scSpatialSIM_0.1.4     ragg_1.5.2            
