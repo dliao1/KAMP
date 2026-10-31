@@ -1,0 +1,59 @@
+#' B-KAMP for scalable clustering inference using Rcpp
+#' 
+#' @title B-KAMP - Rcpp version
+#' 
+#' @description Identify adaptive blocks and combine block-level KAMP statistics
+#'   calculated using [kamp_variance_Rcpp()] or [kamp_variance_biv_Rcpp()].
+#'   
+#' @note Blocks are identified once and reused at all radii. Undefined block
+#'   statistics give combined NA results; radius 0 is typically undefined.
+#'   
+#' @param ppp_obj A marked `ppp` with a rectangular observation window.
+#' @param univariate A logical value indicating whether to compute univariate KAMP (default is TRUE).
+#' @param mark1 Variable used to mark the points in the point pattern object for the first type.
+#' @param mark2 Variable used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
+#' @param split_max Maximum point count per initial grid cell. NULL uses `sqrt(n)`, where n denotes the total number of points in `ppp_obj`.
+#' @param n_min Minimum target/background counts, or type1/type2/background counts.
+#'   NULL uses the paper's square-root thresholds based on full-pattern counts.
+#' @param rho1 Phase I bound on longer/shorter side ratio. NULL uses the full-window ratio.
+#' @param rho2 Phase II aspect ratio bound. Defaults to Inf; must be >= rho1.
+#' @param max_grid_dim Maximum number of grid cells per axis to search. Defaults to 100.
+#' @param rvals Relative radii. Each value is multiplied by each block's shorter
+#'   side to obtain the absolute radius used for within-block K calculations.
+#' @param correction Type of edge correction. Defaults to translational.
+#' 
+#' @returns A tibble with the following columns:
+#' \describe{
+#'   \item{r}{The relative radius at which K was calculated within each block.}
+#'   \item{z}{Weighted statistic combining block-level KAMP z-statistics.}
+#'   \item{pvalue}{right-sided normal p-value, `pnorm(-z)`.}
+#' }
+#' 
+#' @seealso [bkamp_block()], [bkamp()]
+#' 
+#' @importFrom tibble tibble
+#' @importFrom stats pnorm
+#' 
+#' @export
+#' @examples
+#' set.seed(100)
+#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
+#' pp <- spatstat.geom::ppp(runif(500), runif(500), window = win,
+#'   marks = factor(sample(c("immune", "background"), 500, replace = TRUE)))
+#' bkamp_Rcpp(pp, rvals = c(0.15, 0.2), mark1 = "immune")
+bkamp_Rcpp <- function(ppp_obj, rvals = c(0, .05, .075, .1, .15, .2),
+                    univariate = TRUE, correction = "trans",
+                    mark1,
+                    mark2 = NULL,
+                    split_max = NULL, n_min = NULL, rho1 = NULL, rho2 = Inf,
+                    max_grid_dim = 100L) {
+  correction <- check_bkamp_inference(rvals, univariate, correction)
+  
+  blocks <- bkamp_block(ppp_obj = ppp_obj, univariate = univariate,
+                         mark1 = mark1, mark2 = mark2, split_max = split_max,
+                         n_min = n_min, rho1 = rho1, rho2 = rho2,
+                         max_grid_dim = max_grid_dim)
+  
+  bkamp_Rcpp_helper(blocks = blocks, rvals = rvals, univariate = univariate,
+                     correction = correction, mark1 = mark1, mark2 = mark2)
+}
