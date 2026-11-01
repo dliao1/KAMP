@@ -8,7 +8,7 @@ kamp(
   df,
   rvals,
   univariate = TRUE,
-  mark_var,
+  mark_var = NULL,
   mark1,
   mark2 = NULL,
   variance = FALSE,
@@ -27,8 +27,8 @@ internally via a convex-hull window). Should contain one point process at a time
 
 \item{univariate}{A logical value indicating whether to compute univariate KAMP (default is TRUE).}
 
-\item{mark_var}{Column name in \code{df} containing the marks, when \code{df} is a data.frame. Ignored
-when \code{df} is already a \code{ppp} object.}
+\item{mark_var}{Column name in \code{df} containing the marks. Required when \code{df} is a data.frame
+(an error is thrown if it is left as \code{NULL}); ignored when \code{df} is already a \code{ppp} object.}
 
 \item{mark1}{Variable used to mark the points in the point pattern object for the first type.}
 
@@ -40,7 +40,7 @@ when \code{df} is already a \code{ppp} object.}
 
 \item{thin}{A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.}
 
-\item{p_thin}{Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.}
+\item{p_thin}{Proportion of points to remove when \code{thin = TRUE}. Default is 0.5.}
 
 \item{...}{Additional arguments passed to the underlying functions.}
 }

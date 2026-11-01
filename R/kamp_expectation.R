@@ -68,15 +68,27 @@ kamp_expectation <- function(ppp_obj,
     warning("Point pattern has more than 10,000 points. ")
     #correction = "border"
   }
+  # Kest/Kcross need r to start at 0 and increase, so evaluate on sorted
+  # radii (with 0 added) and map back to rvals
+  rvals_sorted <- sort(unique(c(0, rvals)))
+
+  # spatstat bins distances when r is unevenly spaced, which makes the border
+  # estimate approximate (exact with evenly spaced r)
+  if (correction == "border" &&
+      !isTRUE(all.equal(diff(rvals_sorted), rep(rvals_sorted[2], length(rvals_sorted) - 1)))) {
+    warning("rvals are not evenly spaced: border-corrected K from spatstat is approximate. ",
+            "Use evenly spaced rvals or variance = TRUE for exact values.")
+  }
+
   # Pre-existing code that uses spatstat
   # Gets original K using translational correction
   k_orig = Kcross(ppp_obj, i = mark1, j = mark1,
-             r = rvals,
+             r = rvals_sorted,
              correction = correction)
 
   # Gets KAMP CSR using Kest
   kamp_df = Kest(ppp_obj,
-              r = rvals,
+              r = rvals_sorted,
               correction = correction) %>%
     as_tibble()
 
@@ -110,6 +122,6 @@ kamp_expectation <- function(ppp_obj,
       select(r, k, theo_csr, kamp_csr, kamp)
   }
 
-  return(kamp_df)
+  return(kamp_df[match(rvals, rvals_sorted), ])
 }
 

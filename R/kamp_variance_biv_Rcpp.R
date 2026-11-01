@@ -60,63 +60,39 @@ kamp_variance_biv_Rcpp <- function(ppp_obj,
                                    correction = "trans",
                                    mark1 = "immune1",
                                    mark2 = "immune2") {
+  if (!correction %in% c("trans", "iso", "none")) {
+    stop("correction must be one of 'trans', 'iso', or 'none'.")
+  }
 
   npts = npoints(ppp_obj)
   ppp_window = Window(ppp_obj)
   areaW = spatstat.geom::area(ppp_window)
 
-  m1 = sum(ppp_obj$marks == mark1)
-  m2 = sum(ppp_obj$marks == mark2)
+  # NA marks count as neither type
+  is_m1 <- spatstat.geom::marks(ppp_obj) %in% mark1
+  is_m2 <- spatstat.geom::marks(ppp_obj) %in% mark2
 
+  m1 = sum(is_m1)
+  m2 = sum(is_m2)
 
-  is_m1 <- spatstat.geom::marks(ppp_obj) == mark1
-  is_m2 <- spatstat.geom::marks(ppp_obj) == mark2
+  # The sweep accumulates sums as r increases, so radii must be sorted;
+  # results are returned in the original rvals order
+  r_order <- order(rvals)
+  rvals_in <- rvals
+  rvals <- rvals[r_order]
 
-  rmax <- max(rvals)
-  cp <- spatstat.geom::closepairs(ppp_obj, rmax = rmax, what = "all")
-  w <- NULL
+  pairs <- kamp_pair_prep(ppp_obj, rvals, correction)
 
-  # no pairs within rmax
-  if (length(cp$i) == 0L) {
-    R0 <- R1 <- R2 <- Ksum12 <- rep(0, length(rvals))
-  } else {
-
-    if (correction == "trans") {
-      # paired = TRUE so this only weights the pairs we actually have,
-      # instead of building the whole n x n matrix and subsetting it
-      w <- spatstat.explore::edge.Trans(ppp_obj[cp$i], ppp_obj[cp$j], paired = TRUE)
-    } else if (correction == "iso") {
-      # same idea -- per-pair, not the full n x n distance/weight matrices
-      bdist_all <- spatstat.geom::bdist.points(ppp_obj)
-      w <- as.numeric(spatstat.explore::edge.Ripley(ppp_obj[cp$i],
-                                                     matrix(cp$d, ncol = 1),
-                                                     bdistX = bdist_all[cp$i]))
-
-      if (any(is.na(w)) || any(!is.finite(w))) {
-        stop("Invalid isotropic edge correction weights")
-      }
-
-    } else if (correction == "none") {
-      # no edge correction at all: every close pair counts with weight 1
-      w <- rep(1, length(cp$i))
-
-    } else {
-      stop("correction must be one of 'trans', 'iso', or 'none'.")
-    }
-
+  # Returns if no close pairs
+  if (length(pairs$d) == 0L) {
+    return(kamp_empty_result(rvals_in))
   }
 
-  ord <- order(cp$d) # orders close pairs by distance
-  d_sorted <- cp$d[ord] # sorted distances
-  i_sorted <- cp$i[ord] # rearranges i and j indices according to sorted distances
-  j_sorted <- cp$j[ord]
-  w_sorted <- w[ord] # sorted weights
-
-  sums <- kamp_pair_sums_trans_iso_biv(
-    i = i_sorted,
-    j = j_sorted,
-    d = d_sorted,
-    w = w_sorted,
+  sums <- kamp_pair_sums_trans_iso(
+    i = pairs$i,
+    j = pairs$j,
+    d = pairs$d,
+    w = pairs$w,
     rvals = rvals,
     is_mark1 = is_m1,
     is_mark2 = is_m2,
@@ -151,5 +127,5 @@ kamp_variance_biv_Rcpp <- function(ppp_obj,
     kamp = k - kamp_csr,
     var = var_K,
     pvalue = pmin(1, p)
-  )
+  )[order(r_order), ]
 }

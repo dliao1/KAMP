@@ -17,4 +17,6 @@ utils::globalVariables(c("trans",
                          "case_when",
                          "iso",
                          "border",
-                         "un"))
+                         "un",
+                         "g",
+                         "gamp_csr"))

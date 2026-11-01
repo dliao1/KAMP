@@ -48,93 +48,50 @@ kamp_variance_Rcpp = function(ppp_obj,
                               rvals = c(0, .05, .075, .1, .15, .2),
                               correction = "trans",
                               mark1 = "immune") {
+  if (!correction %in% c("trans", "iso", "border", "none")) {
+    stop("correction must be one of 'trans', 'iso', 'border', or 'none'.")
+  }
+
   npts  <- npoints(ppp_obj)
   Wwin  <- Window(ppp_obj)
   areaW <- spatstat.geom::area(Wwin)
 
-  marks_vec <- spatstat.geom::marks(ppp_obj) == mark1
+  marks_vec <- spatstat.geom::marks(ppp_obj) %in% mark1 # NA marks count as unmarked
   m <- sum(marks_vec) # number of marked points
 
-  rmax <- max(rvals) # maximum radius
-  cp <- spatstat.geom::closepairs(ppp_obj, rmax = rmax, what = "all") # get all close pairs up to rmax
+  # The trans/iso sweep accumulates sums as r increases, so radii must be
+  # sorted; results are returned in the original rvals order
+  r_order <- order(rvals)
+  rvals_in <- rvals
+  rvals <- rvals[r_order]
 
-  # Sanity check for indices
-  if (any(cp$i < 1 | cp$i > npts)) {
-    stop("Invalid i indices from closepairs")
-  }
-  if (any(cp$j < 1 | cp$j > npts)) {
-    stop("Invalid j indices from closepairs")
-  }
-
-
-  bdist <- NULL
-  if (correction == "trans") {
-    # paired = TRUE so this only weights the pairs we actually have,
-    # instead of building the whole n x n matrix and subsetting it
-    w <- edge.Trans(ppp_obj[cp$i], ppp_obj[cp$j], paired = TRUE)
-
-    if (any(is.na(w)) || any(!is.finite(w))) {
-      stop("Invalid edge correction weights")
-    }
-  } else if (correction == "border") {
-    bdist <- spatstat.geom::bdist.points(ppp_obj)
-    w <- rep(1, length(cp$i))
-
-  } else if (correction == "iso") {
-    bdist_all <- spatstat.geom::bdist.points(ppp_obj)
-    w <- as.numeric(spatstat.explore::edge.Ripley(ppp_obj[cp$i],
-                                                   matrix(cp$d, ncol = 1),
-                                                   bdistX = bdist_all[cp$i]))
-
-    if (any(is.na(w)) || any(!is.finite(w))) {
-      stop("Invalid isotropic edge correction weights")
-    }
-
-  } else if (correction == "none") {
-    # no edge correction at all so every close pair counts with weight 1
-    w <- rep(1, length(cp$i))
-
-  } else {
-    stop("correction must be one of 'trans', 'iso', 'border', or 'none'.")
-  }
-
-  ord <- order(cp$d) # orders close pairs by distance
-  d_sorted <- cp$d[ord] # sorted distances
-  i_sorted <- cp$i[ord] # rearranges i and j indices according to sorted distances
-  j_sorted <- cp$j[ord]
-  w_sorted <- w[ord] # sorted weights
-
+  pairs <- kamp_pair_prep(ppp_obj, rvals, correction)
 
   # Returns if no close pairs
-  if (length(d_sorted) == 0) {
-    return(tibble::tibble(
-      r = rvals,
-      k = 0,
-      theo_csr = pi * rvals^2,
-      kamp_csr = 0,
-      kamp_diff = 0,
-      var = 0,
-      pvalue = 1
-    ))
+  if (length(pairs$d) == 0) {
+    return(kamp_empty_result(rvals_in))
   }
 
   # Calls Rcpp helper for sums -- trans/iso/none all reduce to the same
-  # generic weighted pair-sum kernel, differing only in how w was built above
+  # generic weighted pair-sum kernel, differing only in how w was built
+  bdist <- NULL
   rcpp_sums <- if (correction == "border") {
-    kamp_pair_sums_bord(i = i_sorted,
-                         j = j_sorted,
-                         d = d_sorted,
+    bdist <- spatstat.geom::bdist.points(ppp_obj)
+    kamp_pair_sums_bord(i = pairs$i,
+                         j = pairs$j,
+                         d = pairs$d,
                          rvals = rvals,
                          is_mark1 = marks_vec,
                          bdist = bdist,
                          npts = npts)
   } else {
-    kamp_pair_sums_trans_iso(i = i_sorted,
-                              j = j_sorted,
-                              d = d_sorted,
-                              w = w_sorted,
+    kamp_pair_sums_trans_iso(i = pairs$i,
+                              j = pairs$j,
+                              d = pairs$d,
+                              w = pairs$w,
                               rvals = rvals,
                               is_mark1 = marks_vec,
+                              is_mark2 = marks_vec,
                               npts = npts)
   }
 
@@ -184,7 +141,7 @@ kamp_variance_Rcpp = function(ppp_obj,
     kamp = k - kamp_csr,
     var = var_K,
     pvalue = pmin(1, pval_appx)
-  )
+  )[order(r_order), ]
 }
 
 

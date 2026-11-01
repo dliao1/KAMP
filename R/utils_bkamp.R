@@ -16,7 +16,7 @@ bkamp_grid <- function(ppp_obj, split_max, max_grid_dim = 100L) {
     xb <- seq(win$xrange[1], win$xrange[2], length.out = N + 1L)
     yb <- seq(win$yrange[1], win$yrange[2], length.out = N + 1L)
     
-    # Each point belongs to one grid cell, including points on internal grid lines.
+    # Each point belongs to one grid cell, including points on internal grid lines
     col <- findInterval(ppp_obj$x, xb, rightmost.closed = TRUE)
     row <- findInterval(ppp_obj$y, yb, rightmost.closed = TRUE)
     ids <- (row - 1L) * N + col
@@ -66,7 +66,7 @@ bkamp_marks <- function(pp, univariate = TRUE,
                          type2_mark = "target2") {
   mk <- as.character(spatstat.geom::marks(pp))
   
-  # Compare against the original labels simultaneously to avoid name collisions.
+  # Compare against the original labels simultaneously to avoid name collisions
   mapped <- if (!univariate) {
     ifelse(mk == type1_mark, "target1",
            ifelse(mk == type2_mark, "target2", "background"))
@@ -696,14 +696,7 @@ bkamp_Rcpp_helper <- function(blocks, rvals = c(0, .05, .075, .1, .15, .2),
     pp <- blocks[[i]]
     radii <- relative * min(diff(pp$window$xrange), diff(pp$window$yrange))
     
-    # The existing bivariate Rcpp wrapper passes NULL weights to C++ when
-    # no pair is present. Handle the zero-variance case before that call.
-    result <- if (min(spatstat.geom::nndist(pp)) > max(radii)) {
-      tibble::tibble(
-        kamp = rep(0, length(radii)),
-        var = rep(0, length(radii))
-      )
-    } else if (univariate) {
+    result <- if (univariate) {
       kamp_variance_Rcpp(ppp_obj = pp, rvals = radii,
                          correction = correction, mark1 = mark1)
     } else {

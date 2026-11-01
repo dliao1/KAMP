@@ -10,12 +10,13 @@ List kamp_pair_sums_bord(IntegerVector i,
                          NumericVector bdist,
                          int npts) {
 
-  // i, j, d are pairs sorted by distance, bdist is bdist.points() per point.
+  // i, j, d are pairs sorted by distance (indices validated in R),
+  // bdist is bdist.points() per point
   //
   // border weight is just 1, but eligibility (bdist[i] >= r) depends on r,
   // and shrinks as r grows -- a pair counted at small r can drop out at a
-  // bigger r. trans/iso can just accumulate as r sweeps up since their
-  // weights don't change, but border can't, so we redo the sums per r here.
+  // bigger r; trans/iso can just accumulate as r sweeps up since their
+  // weights don't change, but border can't, so we redo the sums per r here
 
   int n_r = rvals.size();
   int npairs = d.size();
@@ -39,10 +40,6 @@ List kamp_pair_sums_bord(IntegerVector i,
 
       int ii = i[p] - 1; // converts R index to C index
       int jj = j[p] - 1;
-
-      if (ii < 0 || ii >= npts || jj < 0 || jj >= npts) {
-        stop("Index out of bounds");
-      }
 
       if (bdist[ii] < current_r) continue; // reference point ii not eligible at this r
 

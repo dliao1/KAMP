@@ -24,14 +24,14 @@
 #' internally via a convex-hull window). Should contain one point process at a time.
 #' @param rvals A vector of distances at which to compute the KAMP expectation and variance.
 #' @param univariate A logical value indicating whether to compute univariate KAMP (default is TRUE).
-#' @param mark_var Column name in `df` containing the marks, when `df` is a data.frame. Ignored
-#' when `df` is already a `ppp` object.
+#' @param mark_var Column name in `df` containing the marks. Required when `df` is a data.frame
+#' (an error is thrown if it is left as `NULL`); ignored when `df` is already a `ppp` object.
 #' @param mark1 Variable used to mark the points in the point pattern object for the first type.
 #' @param mark2 Variable used to mark the points in the point pattern object for the second type (optional, only used if `univariate` is FALSE).
 #' @param correction Type of edge correction. Defaults to translational.
 #' @param variance A logical value indicating whether to compute the variance of KAMP (default is FALSE).
 #' @param thin A logical value indicating whether to thin the point pattern before computing KAMP (default is FALSE), called KAMP-lite.
-#' @param p_thin Percentage that determines how much to thin the amount of points in the point pattern object. Default is 0.
+#' @param p_thin Proportion of points to remove when `thin = TRUE`. Default is 0.5.
 #' @param ... Additional arguments passed to the underlying functions.
 #'
 #' @returns
@@ -112,7 +112,7 @@
 kamp = function(df, # expect this to just be one point process
                 rvals,
                 univariate = TRUE,
-                mark_var,
+                mark_var = NULL,
                 mark1,
                 mark2 = NULL,
                 variance = FALSE,

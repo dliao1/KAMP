@@ -215,6 +215,11 @@ check_inputs <- function(df,
   # If it's already a ppp, use it and DO NOT run dataframe checks
   if (inherits(df, "ppp")) {
     ppp_obj <- df
+    # factor marks, as for data.frame input (Kcross/Gcross need multitype patterns)
+    mk <- spatstat.geom::marks(ppp_obj)
+    if (is.atomic(mk) && !is.factor(mk)) {
+      spatstat.geom::marks(ppp_obj) <- factor(mk)
+    }
     all_marks <- unique(spatstat.geom::marks(ppp_obj))
 
   } else if (is.data.frame(df)) {
@@ -304,6 +309,11 @@ check_inputs <- function(df,
 
     if(is.null(mark2) == FALSE) {
       message("mark2 is not used in univariate KAMP. It will be ignored.")
+    }
+
+    # univariate needs at least one other mark1 point to pair with
+    if (sum(spatstat.geom::marks(ppp_obj) == mark1) < 2) {
+      stop("Need at least two points marked as mark1 for univariate analysis.")
     }
 
   } else { #must be bivariate
