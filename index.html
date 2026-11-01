@@ -89,45 +89,42 @@
 <h2 id="input-data">Input data<a class="anchor" aria-label="anchor" href="#input-data"></a>
 </h2>
 <p><code><a href="reference/kamp.html">kamp()</a></code> takes either a <code>ppp</code> point pattern object from <code>spatstat</code>, or a plain data.frame with <code>x</code>/<code>y</code> coordinate columns and a column of marks (cell types) – pass the marks column’s name via <code>mark_var</code>. Either way, it should describe a single point process (e.g. one tissue image); if you have multiple, loop over them and call <code><a href="reference/kamp.html">kamp()</a></code> separately for each.</p>
+<p>The examples below use <code>ovarian_df</code>, a subset of 5 ovarian cancer images from the <code>VectraPolarisData</code> package that ships with <code>KAMP</code> (see <code><a href="reference/ovarian_df.html">?ovarian_df</a></code>). Coordinates are in microns, and each cell has an <code>immune</code> mark (immune/background) and a <code>phenotype</code> mark (cell type).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">ovarian_df</span><span class="op">$</span><span class="va">sample_id</span><span class="op">)</span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="va">ovarian_df</span><span class="op">[</span><span class="va">ovarian_df</span><span class="op">$</span><span class="va">sample_id</span> <span class="op">==</span> <span class="va">ids</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, <span class="op">]</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="univariate">Univariate<a class="anchor" aria-label="anchor" href="#univariate"></a>
 </h2>
 <p>Univariate KAMP compares the spatial pattern of a single mark (e.g. “immune” cells) against the full point pattern.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Simulate a point pattern</span></span>
-<span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data.html">sim_pp_data</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># KAMP expectation</span></span>
-<span><span class="va">kamp_expec_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
-<span>                        univariate <span class="op">=</span> <span class="cn">TRUE</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># KAMP expectation</span></span>
+<span><span class="va">kamp_expec_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">img</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">25</span>, <span class="fl">50</span>, <span class="fl">75</span>, <span class="fl">100</span><span class="op">)</span>,</span>
+<span>                        mark_var <span class="op">=</span> <span class="st">"immune"</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_univ</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># KAMP expectation and variance</span></span>
-<span><span class="va">kamp_var_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
-<span>                      univariate <span class="op">=</span> <span class="cn">TRUE</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span>, variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">kamp_var_univ</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">img</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">25</span>, <span class="fl">50</span>, <span class="fl">75</span>, <span class="fl">100</span><span class="op">)</span>,</span>
+<span>                      mark_var <span class="op">=</span> <span class="st">"immune"</span>, mark1 <span class="op">=</span> <span class="st">"immune"</span>, variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var_univ</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="bivariate">Bivariate<a class="anchor" aria-label="anchor" href="#bivariate"></a>
 </h2>
-<p>Bivariate KAMP compares the spatial relationship between two marks (e.g. “immune1” and “immune2” cells).</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dliao1.github.io/KAMP/">KAMP</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Simulate a point pattern</span></span>
-<span><span class="va">pp_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_pp_data_biv.html">sim_pp_data_biv</a></span><span class="op">(</span>lambda_n <span class="op">=</span> <span class="fl">500</span>, abundance <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># KAMP expectation</span></span>
-<span><span class="va">kamp_expec_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp_biv</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
-<span>                       univariate <span class="op">=</span> <span class="cn">FALSE</span>, mark1 <span class="op">=</span> <span class="st">"immune1"</span>, mark2 <span class="op">=</span> <span class="st">"immune2"</span><span class="op">)</span></span>
+<p>Bivariate KAMP compares the spatial relationship between two marks (e.g. cytotoxic T cells and helper T cells).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># KAMP expectation</span></span>
+<span><span class="va">kamp_expec_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">img</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">25</span>, <span class="fl">50</span>, <span class="fl">75</span>, <span class="fl">100</span><span class="op">)</span>, univariate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                       mark_var <span class="op">=</span> <span class="st">"phenotype"</span>, mark1 <span class="op">=</span> <span class="st">"cytotoxic t cell"</span>, mark2 <span class="op">=</span> <span class="st">"helper t cell"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_expec_biv</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># KAMP expectation and variance</span></span>
-<span><span class="va">kamp_var_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">pp_biv</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
-<span>                     univariate <span class="op">=</span> <span class="cn">FALSE</span>, mark1 <span class="op">=</span> <span class="st">"immune1"</span>, mark2 <span class="op">=</span> <span class="st">"immune2"</span>, variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">kamp_var_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kamp.html">kamp</a></span><span class="op">(</span>df <span class="op">=</span> <span class="va">img</span>, rvals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">25</span>, <span class="fl">50</span>, <span class="fl">75</span>, <span class="fl">100</span><span class="op">)</span>, univariate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                     mark_var <span class="op">=</span> <span class="st">"phenotype"</span>, mark1 <span class="op">=</span> <span class="st">"cytotoxic t cell"</span>, mark2 <span class="op">=</span> <span class="st">"helper t cell"</span>,</span>
+<span>                     variance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">kamp_var_biv</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">

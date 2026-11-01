@@ -2,6 +2,20 @@
 
 ## All functions
 
+- [`bkamp()`](https://dliao1.github.io/KAMP/reference/bkamp.md) : B-KAMP
+- [`bkamp_Rcpp()`](https://dliao1.github.io/KAMP/reference/bkamp_Rcpp.md)
+  : B-KAMP - Rcpp version
+- [`bkamp_block()`](https://dliao1.github.io/KAMP/reference/bkamp_block.md)
+  : Adaptive spatial blocking for B-KAMP
+- [`gamp()`](https://dliao1.github.io/KAMP/reference/gamp.md) : GAMP
+- [`gamp_expectation()`](https://dliao1.github.io/KAMP/reference/gamp_expectation.md)
+  : GAMP univariate expectation
+- [`gamp_expectation_biv()`](https://dliao1.github.io/KAMP/reference/gamp_expectation_biv.md)
+  : GAMP bivariate expectation
+- [`gamp_variance()`](https://dliao1.github.io/KAMP/reference/gamp_variance.md)
+  : GAMP univariate variance
+- [`gamp_variance_biv()`](https://dliao1.github.io/KAMP/reference/gamp_variance_biv.md)
+  : GAMP bivariate variance
 - [`kamp()`](https://dliao1.github.io/KAMP/reference/kamp.md) : KAMP
 - [`kamp_expectation()`](https://dliao1.github.io/KAMP/reference/kamp_expectation.md)
   : KAMP univariate expectation

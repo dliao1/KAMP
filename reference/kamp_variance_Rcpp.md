@@ -80,17 +80,19 @@ KAMP Variance
 ## Examples
 
 ``` r
-win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-marks <- sample(c("immune", "background"), pp$n, replace = TRUE, prob = c(0.4, 0.6))
-marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$immune)
 
-result <- kamp_variance_Rcpp(marked_pp, rvals = c(0.05, 0.1, 0.15), mark1 = "immune")
-print(result)
-#> # A tibble: 3 × 7
-#>       r       k theo_csr kamp_csr      kamp        var pvalue
-#>   <dbl>   <dbl>    <dbl>    <dbl>     <dbl>      <dbl>  <dbl>
-#> 1  0.05 0.00881  0.00785  0.00790  0.000911 0.00000226  0.272
-#> 2  0.1  0.0381   0.0314   0.0348   0.00336  0.0000130   0.176
-#> 3  0.15 0.0753   0.0707   0.0755  -0.000179 0.0000379   0.512
+kamp_variance_Rcpp(pp, rvals = c(25, 50, 75, 100), mark1 = "immune")
+#> # A tibble: 4 × 7
+#>       r       k theo_csr kamp_csr    kamp     var pvalue
+#>   <dbl>   <dbl>    <dbl>    <dbl>   <dbl>   <dbl>  <dbl>
+#> 1    25  17741.    1963.    3541.  14201.  17584.      0
+#> 2    50  55390.    7854.   13628.  41762. 101144.      0
+#> 3    75 103658.   17671.   29464.  74194. 348947.      0
+#> 4   100 159382.   31416.   50719. 108663. 921624.      0
 ```

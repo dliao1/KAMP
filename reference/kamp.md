@@ -25,7 +25,7 @@ kamp(
   df,
   rvals,
   univariate = TRUE,
-  mark_var,
+  mark_var = NULL,
   mark1,
   mark2 = NULL,
   variance = FALSE,
@@ -57,8 +57,9 @@ kamp(
 
 - mark_var:
 
-  Column name in `df` containing the marks, when `df` is a data.frame.
-  Ignored when `df` is already a `ppp` object.
+  Column name in `df` containing the marks. Required when `df` is a
+  data.frame (an error is thrown if it is left as `NULL`); ignored when
+  `df` is already a `ppp` object.
 
 - mark1:
 
@@ -86,8 +87,7 @@ kamp(
 
 - p_thin:
 
-  Percentage that determines how much to thin the amount of points in
-  the point pattern object. Default is 0.
+  Proportion of points to remove when `thin = TRUE`. Default is 0.5.
 
 - ...:
 
@@ -135,104 +135,58 @@ Computes KAMP expectation and variance
 ## Examples
 
 ``` r
-# Loads required packages
-library(spatstat.geom)
-#> Loading required package: spatstat.data
-#> Loading required package: spatstat.univar
-#> spatstat.univar 3.2-0
-#> spatstat.geom 3.8-3
-library(spatstat.explore)
-#> Loading required package: spatstat.random
-#> spatstat.random 3.5-2
-#> Loading required package: nlme
-#> spatstat.explore 3.8-3
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+r_vals <- c(0, 25, 50, 75, 100)
 
-# Simulates a simple marked point pattern
-set.seed(100)
-x_coords <- runif(100)
-y_coords <- runif(100)
-marks_vec <- sample(c("immune", "background"), 100, replace = TRUE)
-win <- owin(c(0,1), c(0,1))
-ppp_obj <- ppp(x_coords, y_coords, window = win, marks = factor(marks_vec))
-
-# Defines radius values for K-function estimation (must start at 0 for Kcross/Kest)
-r_vals <- seq(0, 0.1, by = 0.01)
-
-# Computes univariate KAMP expectation, passing in a ppp object directly
-kamp_result <- kamp(df = ppp_obj,
-                    rvals = r_vals,
-                    univariate = TRUE,
-                    mark1 = "immune")
+# univariate, marks column given by mark_var
+kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune")
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-head(kamp_result)
-#> # A tibble: 6 × 5
-#>       r       k theo_csr kamp_csr      kamp
-#>   <dbl>   <dbl>    <dbl>    <dbl>     <dbl>
-#> 1  0    0       0        0         0       
-#> 2  0.01 0       0.000314 0.000203 -0.000203
-#> 3  0.02 0.00118 0.00126  0.00103   0.000153
-#> 4  0.03 0.00358 0.00283  0.00249   0.00109 
-#> 5  0.04 0.00478 0.00503  0.00565  -0.000872
-#> 6  0.05 0.00724 0.00785  0.0102   -0.00293 
+#> # A tibble: 5 × 5
+#>       r       k theo_csr kamp_csr   kamp
+#>   <dbl>   <dbl>    <dbl>    <dbl>  <dbl>
+#> 1     0      0        0        0      0 
+#> 2    25  14035.    1963.    2801. 11234.
+#> 3    50  43815.    7854.   10780. 33034.
+#> 4    75  82001.   17671.   23309. 58692.
+#> 5   100 126106.   31416.   40133. 85973.
 
-# df can also be a plain data.frame with x/y columns and a marks column,
-# identified via mark_var -- kamp() builds the ppp object internally
-pts_df <- data.frame(x = x_coords, y = y_coords, cell_type = marks_vec)
-kamp_from_df <- kamp(df = pts_df,
-                     rvals = r_vals,
-                     univariate = TRUE,
-                     mark_var = "cell_type",
-                     mark1 = "immune")
+# with variance
+kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune", variance = TRUE)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-head(kamp_from_df)
-#> # A tibble: 6 × 5
-#>       r        k theo_csr kamp_csr      kamp
-#>   <dbl>    <dbl>    <dbl>    <dbl>     <dbl>
-#> 1  0    0        0        0         0       
-#> 2  0.01 0        0.000314 0.000167 -0.000167
-#> 3  0.02 0.000974 0.00126  0.000848  0.000126
-#> 4  0.03 0.00296  0.00283  0.00206   0.000902
-#> 5  0.04 0.00396  0.00503  0.00468  -0.000724
-#> 6  0.05 0.00598  0.00785  0.00842  -0.00244 
+#> # A tibble: 5 × 7
+#>       r       k theo_csr kamp_csr   kamp     var pvalue
+#>   <dbl>   <dbl>    <dbl>    <dbl>  <dbl>   <dbl>  <dbl>
+#> 1     0      0        0        0      0       0     NaN
+#> 2    25  14008.    1963.    2796. 11212.  10961.      0
+#> 3    50  43624.    7854.   10730. 32894.  62689.      0
+#> 4    75  81395.   17671.   23120. 58275. 214741.      0
+#> 5   100 124703.   31416.   39641. 85062. 562437.      0
 
-# Compute univariate KAMP expectation with thinning
-kamp_thin <- kamp(df = ppp_obj,
-                  rvals = r_vals,
-                  univariate = TRUE,
-                  mark1 = "immune",
-                  thin = TRUE,
-                  p_thin = 0.3)
+# bivariate
+kamp(img, rvals = r_vals, univariate = FALSE, mark_var = "phenotype",
+     mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-head(kamp_thin)
-#> # A tibble: 6 × 5
-#>       r       k theo_csr kamp_csr      kamp
-#>   <dbl>   <dbl>    <dbl>    <dbl>     <dbl>
-#> 1  0    0       0        0         0       
-#> 2  0.01 0       0.000314 0.000482 -0.000482
-#> 3  0.02 0.00289 0.00126  0.00195   0.000941
-#> 4  0.03 0.00586 0.00283  0.00345   0.00241 
-#> 5  0.04 0.00586 0.00503  0.00646  -0.000603
-#> 6  0.05 0.00888 0.00785  0.0106   -0.00168 
+#> # A tibble: 5 × 5
+#>       r       k theo_csr kamp_csr    kamp
+#>   <dbl>   <dbl>    <dbl>    <dbl>   <dbl>
+#> 1     0      0        0        0       0 
+#> 2    25  16318.    1963.    2801.  13517.
+#> 3    50  51845.    7854.   10780.  41064.
+#> 4    75 100003.   17671.   23309.  76694.
+#> 5   100 153760.   31416.   40133. 113626.
 
-# Use real data from VectraPolarisData in package
-data(ovarian_df)
-first_sample <- unique(ovarian_df$sample_id)[1]
-ov_df <- subset(ovarian_df, sample_id == first_sample)
-win <- convexhull.xy(ov_df$x, ov_df$y)
-ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
-kamp_real <- kamp(df = ppp_real,
-                  rvals = seq(0, 0.1, 0.01),
-                  univariate = TRUE,
-                  mark1 = "immune")
+# KAMP-lite: randomly remove 30% of points first
+kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune",
+     thin = TRUE, p_thin = 0.3)
 #> We expect the dataframe to be a single point process. If you have multiple point processes, subset the dataframe by ID and please run KAMP separately for each process.
-head(kamp_real)
-#> # A tibble: 6 × 5
-#>       r     k theo_csr kamp_csr  kamp
-#>   <dbl> <dbl>    <dbl>    <dbl> <dbl>
-#> 1  0        0 0               0     0
-#> 2  0.01     0 0.000314        0     0
-#> 3  0.02     0 0.00126         0     0
-#> 4  0.03     0 0.00283         0     0
-#> 5  0.04     0 0.00503         0     0
-#> 6  0.05     0 0.00785         0     0
+#> # A tibble: 5 × 5
+#>       r       k theo_csr kamp_csr   kamp
+#>   <dbl>   <dbl>    <dbl>    <dbl>  <dbl>
+#> 1     0      0        0        0      0 
+#> 2    25  14916.    1963.    2809. 12107.
+#> 3    50  45966.    7854.   10885. 35081.
+#> 4    75  84001.   17671.   23594. 60407.
+#> 5   100 127497.   31416.   40569. 86927.
 ```

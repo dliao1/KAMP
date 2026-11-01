@@ -93,18 +93,20 @@ Computes KAMP Variance for Bivariate Point Patterns
 ## Examples
 
 ``` r
-win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-mark_labels <- c("immune1", "immune2", "background")
-marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
-marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$phenotype)
 
-result <- kamp_variance_biv_Rcpp(marked_pp, rvals = c(0.05, 0.1),
-                                 mark1 = "immune1", mark2 = "immune2")
-print(result)
-#> # A tibble: 2 × 7
-#>       r       k theo_csr kamp_csr      kamp        var pvalue
-#>   <dbl>   <dbl>    <dbl>    <dbl>     <dbl>      <dbl>  <dbl>
-#> 1  0.05 0.00876  0.00785  0.00801  0.000758 0.00000424  0.357
-#> 2  0.1  0.0292   0.0314   0.0298  -0.000569 0.0000158   0.557
+kamp_variance_biv_Rcpp(pp, rvals = c(25, 50, 75, 100),
+                       mark1 = "cytotoxic t cell", mark2 = "helper t cell")
+#> # A tibble: 4 × 7
+#>       r       k theo_csr kamp_csr    kamp      var pvalue
+#>   <dbl>   <dbl>    <dbl>    <dbl>   <dbl>    <dbl>  <dbl>
+#> 1    25  20628.    1963.    3541.  17087.   92171.      0
+#> 2    50  65542.    7854.   13628.  51913.  416484.      0
+#> 3    75 126400.   17671.   29464.  96936. 1136196.      0
+#> 4   100 194327.   31416.   50719. 143608. 2532450.      0
 ```
