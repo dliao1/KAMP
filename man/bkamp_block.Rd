@@ -51,10 +51,13 @@ The observation window must be rectangular. Returned blocks retain their
 original marks. Unassigned points are excluded with a warning.
 }
 \examples{
-set.seed(100)
-win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-pp <- spatstat.geom::ppp(runif(500), runif(500), window = win,
-  marks = factor(sample(c("immune", "background"), 500, replace = TRUE)))
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$immune)
+
 blocks <- bkamp_block(pp, mark1 = "immune")
 length(blocks)
 }

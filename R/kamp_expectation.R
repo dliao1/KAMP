@@ -49,14 +49,14 @@
 #' @export
 #'
 #' @examples
-#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-#' pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-#' marks <- sample(c("immune", "background"), pp$n, replace = TRUE, prob = c(0.4, 0.6))
-#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+#' # one image from the ovarian cancer data in the package
+#' ids <- unique(ovarian_df$sample_id)
+#' img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+#' pp <- spatstat.geom::ppp(img$x, img$y,
+#'                          window = spatstat.geom::owin(range(img$x), range(img$y)),
+#'                          marks = img$immune)
 #'
-#' result <- kamp_expectation(marked_pp, rvals = c(0, 0.05, 0.1), mark1 = "immune")
-#' print(result)
-#'
+#' kamp_expectation(pp, rvals = c(0, 25, 50, 75, 100), mark1 = "immune")
 kamp_expectation <- function(ppp_obj,
                              rvals = c(0, .05, .075, .1, .15, .2),
                              correction = "trans",

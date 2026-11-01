@@ -50,21 +50,17 @@
 #' @importFrom spatstat.random rthin
 #' @export
 #' @examples
-#' set.seed(100)
-#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-#' pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-#' marks <- sample(c("immune1", "immune2", "background"), pp$n, replace = TRUE)
-#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+#' # one image from the ovarian cancer data in the package
+#' ids <- unique(ovarian_df$sample_id)
+#' img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+#' r_vals <- c(0, 10, 20, 30, 40)
 #'
-#' # univariate
-#' gamp_result <- gamp(marked_pp, rvals = seq(0, 0.1, 0.01),
-#'                     univariate = TRUE, mark1 = "immune1", variance = TRUE)
-#' head(gamp_result)
+#' # univariate with variance
+#' gamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune", variance = TRUE)
 #'
 #' # bivariate
-#' gamp_biv <- gamp(marked_pp, rvals = seq(0, 0.1, 0.01),
-#'                  univariate = FALSE, mark1 = "immune1", mark2 = "immune2")
-#' head(gamp_biv)
+#' gamp(img, rvals = r_vals, univariate = FALSE, mark_var = "phenotype",
+#'      mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 gamp = function(df, # expect this to just be one point process
                 rvals,
                 univariate = TRUE,

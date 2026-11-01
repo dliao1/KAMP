@@ -45,12 +45,13 @@ Observed G matches \code{spatstat.explore::Gcross(..., i = mark1, j = mark2, cor
 Computes GAMP Expectation for Bivariate Point Patterns
 }
 \examples{
-win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-mark_labels <- c("immune1", "immune2", "background")
-marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
-marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$phenotype)
 
-result <- gamp_expectation_biv(marked_pp, mark1 = "immune1", mark2 = "immune2")
-print(result)
+gamp_expectation_biv(pp, rvals = c(0, 10, 20, 30, 40),
+                     mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 }

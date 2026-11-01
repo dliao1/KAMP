@@ -63,11 +63,14 @@ Blocks are identified once and reused at all radii. Undefined block
 statistics give combined NA results; radius 0 is typically undefined.
 }
 \examples{
-set.seed(100)
-win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-pp <- spatstat.geom::ppp(runif(500), runif(500), window = win,
-  marks = factor(sample(c("immune", "background"), 500, replace = TRUE)))
-bkamp_Rcpp(pp, rvals = c(0.15, 0.2), mark1 = "immune")
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$immune)
+
+bkamp_Rcpp(pp, rvals = c(0.05, 0.1, 0.15), mark1 = "immune")
 }
 \seealso{
 \code{\link[=bkamp_block]{bkamp_block()}}, \code{\link[=bkamp]{bkamp()}}

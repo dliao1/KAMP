@@ -32,15 +32,15 @@
 #' @export
 #' @useDynLib KAMP, .registration = TRUE
 #' @examples
-#' win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-#' pp <- spatstat.random::rpoispp(lambda = 150, win = win)
-#' mark_labels <- c("immune1", "immune2", "background")
-#' marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
-#' marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
+#' # one image from the ovarian cancer data in the package
+#' ids <- unique(ovarian_df$sample_id)
+#' img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+#' pp <- spatstat.geom::ppp(img$x, img$y,
+#'                          window = spatstat.geom::owin(range(img$x), range(img$y)),
+#'                          marks = img$phenotype)
 #'
-#' result <- gamp_variance_biv(marked_pp, rvals = c(0.05, 0.1),
-#'                             mark1 = "immune1", mark2 = "immune2")
-#' print(result)
+#' gamp_variance_biv(pp, rvals = c(10, 20, 30, 40),
+#'                   mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 gamp_variance_biv <- function(ppp_obj,
                               rvals = c(0, .05, .075, .1, .15, .2),
                               correction = "none",

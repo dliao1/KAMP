@@ -57,58 +57,24 @@
 #'
 #' @export
 #' @examples
-#' # Loads required packages
-#' library(spatstat.geom)
-#' library(spatstat.explore)
+#' # one image from the ovarian cancer data in the package
+#' ids <- unique(ovarian_df$sample_id)
+#' img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+#' r_vals <- c(0, 25, 50, 75, 100)
 #'
-#' # Simulates a simple marked point pattern
-#' set.seed(100)
-#' x_coords <- runif(100)
-#' y_coords <- runif(100)
-#' marks_vec <- sample(c("immune", "background"), 100, replace = TRUE)
-#' win <- owin(c(0,1), c(0,1))
-#' ppp_obj <- ppp(x_coords, y_coords, window = win, marks = factor(marks_vec))
+#' # univariate, marks column given by mark_var
+#' kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune")
 #'
-#' # Defines radius values for K-function estimation (must start at 0 for Kcross/Kest)
-#' r_vals <- seq(0, 0.1, by = 0.01)
+#' # with variance
+#' kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune", variance = TRUE)
 #'
-#' # Computes univariate KAMP expectation, passing in a ppp object directly
-#' kamp_result <- kamp(df = ppp_obj,
-#'                     rvals = r_vals,
-#'                     univariate = TRUE,
-#'                     mark1 = "immune")
-#' head(kamp_result)
+#' # bivariate
+#' kamp(img, rvals = r_vals, univariate = FALSE, mark_var = "phenotype",
+#'      mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 #'
-#' # df can also be a plain data.frame with x/y columns and a marks column,
-#' # identified via mark_var -- kamp() builds the ppp object internally
-#' pts_df <- data.frame(x = x_coords, y = y_coords, cell_type = marks_vec)
-#' kamp_from_df <- kamp(df = pts_df,
-#'                      rvals = r_vals,
-#'                      univariate = TRUE,
-#'                      mark_var = "cell_type",
-#'                      mark1 = "immune")
-#' head(kamp_from_df)
-#'
-#' # Compute univariate KAMP expectation with thinning
-#' kamp_thin <- kamp(df = ppp_obj,
-#'                   rvals = r_vals,
-#'                   univariate = TRUE,
-#'                   mark1 = "immune",
-#'                   thin = TRUE,
-#'                   p_thin = 0.3)
-#' head(kamp_thin)
-#'
-#' # Use real data from VectraPolarisData in package
-#' data(ovarian_df)
-#' first_sample <- unique(ovarian_df$sample_id)[1]
-#' ov_df <- subset(ovarian_df, sample_id == first_sample)
-#' win <- convexhull.xy(ov_df$x, ov_df$y)
-#' ppp_real <- ppp(ov_df$x, ov_df$y, window = win, marks = ov_df$immune)
-#' kamp_real <- kamp(df = ppp_real,
-#'                   rvals = seq(0, 0.1, 0.01),
-#'                   univariate = TRUE,
-#'                   mark1 = "immune")
-#' head(kamp_real)
+#' # KAMP-lite: randomly remove 30% of points first
+#' kamp(img, rvals = r_vals, mark_var = "immune", mark1 = "immune",
+#'      thin = TRUE, p_thin = 0.3)
 kamp = function(df, # expect this to just be one point process
                 rvals,
                 univariate = TRUE,
