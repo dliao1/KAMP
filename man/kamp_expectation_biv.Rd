@@ -51,25 +51,13 @@ See \code{?Kcross} and \code{?Kest} for more details on the K calculation method
 Computes KAMP Expectation for Bivariate Point Patterns
 }
 \examples{
+# one image from the ovarian cancer data in the package
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+pp <- spatstat.geom::ppp(img$x, img$y,
+                         window = spatstat.geom::owin(range(img$x), range(img$y)),
+                         marks = img$phenotype)
 
-if (requireNamespace("spatstat.geom", quietly = TRUE) &&
-    requireNamespace("spatstat.random", quietly = TRUE)) {
-
-  # Simulates a window
-  win <- spatstat.geom::owin(c(0, 1), c(0, 1))
-
-  # Generates 200 total points
-  pp <- spatstat.random::rpoispp(lambda = 200, win = win)
-
-  # Assigns three marks: immune1, immune2, and background
-  mark_labels <- c("immune1", "immune2", "background")
-  marks <- sample(mark_labels, pp$n, replace = TRUE, prob = c(0.3, 0.3, 0.4))
-
-  # Creates marked point pattern
-  marked_pp <- spatstat.geom::ppp(pp$x, pp$y, window = win, marks = factor(marks))
-
-  # Computes KAMP expectation
-  result <- kamp_expectation_biv(marked_pp, mark1 = "immune1", mark2 = "immune2")
-  print(result)
-}
+kamp_expectation_biv(pp, rvals = c(0, 25, 50, 75, 100),
+                     mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 }

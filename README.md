@@ -28,43 +28,43 @@ devtools::install_github("dliao1/KAMP")
 ## Input data
 `kamp()` takes either a `ppp` point pattern object from `spatstat`, or a plain data.frame with `x`/`y` coordinate columns and a column of marks (cell types) -- pass the marks column's name via `mark_var`. Either way, it should describe a single point process (e.g. one tissue image); if you have multiple, loop over them and call `kamp()` separately for each.
 
+The examples below use `ovarian_df`, a subset of 5 ovarian cancer images from the `VectraPolarisData` package that ships with `KAMP` (see `?ovarian_df`). Coordinates are in microns, and each cell has an `immune` mark (immune/background) and a `phenotype` mark (cell type).
+
+```r
+library(KAMP)
+
+ids <- unique(ovarian_df$sample_id)
+img <- ovarian_df[ovarian_df$sample_id == ids[4], ]
+```
+
 ## Univariate
 Univariate KAMP compares the spatial pattern of a single mark (e.g. "immune" cells) against the full point pattern.
 
 ```r
-library(KAMP)
-
-# Simulate a point pattern
-pp <- sim_pp_data(lambda_n = 500, abundance = 0.3)
-
 # KAMP expectation
-kamp_expec_univ <- kamp(df = pp, rvals = seq(0, 0.1, by = 0.01),
-                        univariate = TRUE, mark1 = "immune")
+kamp_expec_univ <- kamp(df = img, rvals = c(0, 25, 50, 75, 100),
+                        mark_var = "immune", mark1 = "immune")
 print(kamp_expec_univ)
 
 # KAMP expectation and variance
-kamp_var_univ <- kamp(df = pp, rvals = seq(0, 0.1, by = 0.01),
-                      univariate = TRUE, mark1 = "immune", variance = TRUE)
+kamp_var_univ <- kamp(df = img, rvals = c(0, 25, 50, 75, 100),
+                      mark_var = "immune", mark1 = "immune", variance = TRUE)
 print(kamp_var_univ)
 ```
 
 ## Bivariate
-Bivariate KAMP compares the spatial relationship between two marks (e.g. "immune1" and "immune2" cells).
+Bivariate KAMP compares the spatial relationship between two marks (e.g. cytotoxic T cells and helper T cells).
 
 ```r
-library(KAMP)
-
-# Simulate a point pattern
-pp_biv <- sim_pp_data_biv(lambda_n = 500, abundance = 0.3)
-
 # KAMP expectation
-kamp_expec_biv <- kamp(df = pp_biv, rvals = seq(0, 0.1, by = 0.01),
-                       univariate = FALSE, mark1 = "immune1", mark2 = "immune2")
+kamp_expec_biv <- kamp(df = img, rvals = c(0, 25, 50, 75, 100), univariate = FALSE,
+                       mark_var = "phenotype", mark1 = "cytotoxic t cell", mark2 = "helper t cell")
 print(kamp_expec_biv)
 
 # KAMP expectation and variance
-kamp_var_biv <- kamp(df = pp_biv, rvals = seq(0, 0.1, by = 0.01),
-                     univariate = FALSE, mark1 = "immune1", mark2 = "immune2", variance = TRUE)
+kamp_var_biv <- kamp(df = img, rvals = c(0, 25, 50, 75, 100), univariate = FALSE,
+                     mark_var = "phenotype", mark1 = "cytotoxic t cell", mark2 = "helper t cell",
+                     variance = TRUE)
 print(kamp_var_biv)
 ```
 

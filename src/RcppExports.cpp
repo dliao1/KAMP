@@ -10,6 +10,24 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// gamp_sums
+List gamp_sums(IntegerVector nbr, NumericVector d, IntegerVector start, NumericVector rvals, int npts, int m1, int m2, bool univariate);
+RcppExport SEXP _KAMP_gamp_sums(SEXP nbrSEXP, SEXP dSEXP, SEXP startSEXP, SEXP rvalsSEXP, SEXP nptsSEXP, SEXP m1SEXP, SEXP m2SEXP, SEXP univariateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type nbr(nbrSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rvals(rvalsSEXP);
+    Rcpp::traits::input_parameter< int >::type npts(nptsSEXP);
+    Rcpp::traits::input_parameter< int >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< int >::type m2(m2SEXP);
+    Rcpp::traits::input_parameter< bool >::type univariate(univariateSEXP);
+    rcpp_result_gen = Rcpp::wrap(gamp_sums(nbr, d, start, rvals, npts, m1, m2, univariate));
+    return rcpp_result_gen;
+END_RCPP
+}
 // kamp_pair_sums_bord
 List kamp_pair_sums_bord(IntegerVector i, IntegerVector j, NumericVector d, NumericVector rvals, LogicalVector is_mark1, NumericVector bdist, int npts);
 RcppExport SEXP _KAMP_kamp_pair_sums_bord(SEXP iSEXP, SEXP jSEXP, SEXP dSEXP, SEXP rvalsSEXP, SEXP is_mark1SEXP, SEXP bdistSEXP, SEXP nptsSEXP) {
@@ -28,25 +46,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // kamp_pair_sums_trans_iso
-List kamp_pair_sums_trans_iso(IntegerVector i, IntegerVector j, NumericVector d, NumericVector w, NumericVector rvals, LogicalVector is_mark1, int npts);
-RcppExport SEXP _KAMP_kamp_pair_sums_trans_iso(SEXP iSEXP, SEXP jSEXP, SEXP dSEXP, SEXP wSEXP, SEXP rvalsSEXP, SEXP is_mark1SEXP, SEXP nptsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type j(jSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type rvals(rvalsSEXP);
-    Rcpp::traits::input_parameter< LogicalVector >::type is_mark1(is_mark1SEXP);
-    Rcpp::traits::input_parameter< int >::type npts(nptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(kamp_pair_sums_trans_iso(i, j, d, w, rvals, is_mark1, npts));
-    return rcpp_result_gen;
-END_RCPP
-}
-// kamp_pair_sums_trans_iso_biv
-List kamp_pair_sums_trans_iso_biv(IntegerVector i, IntegerVector j, NumericVector d, NumericVector w, NumericVector rvals, LogicalVector is_mark1, LogicalVector is_mark2, int npts);
-RcppExport SEXP _KAMP_kamp_pair_sums_trans_iso_biv(SEXP iSEXP, SEXP jSEXP, SEXP dSEXP, SEXP wSEXP, SEXP rvalsSEXP, SEXP is_mark1SEXP, SEXP is_mark2SEXP, SEXP nptsSEXP) {
+List kamp_pair_sums_trans_iso(IntegerVector i, IntegerVector j, NumericVector d, NumericVector w, NumericVector rvals, LogicalVector is_mark1, LogicalVector is_mark2, int npts);
+RcppExport SEXP _KAMP_kamp_pair_sums_trans_iso(SEXP iSEXP, SEXP jSEXP, SEXP dSEXP, SEXP wSEXP, SEXP rvalsSEXP, SEXP is_mark1SEXP, SEXP is_mark2SEXP, SEXP nptsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,15 +59,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< LogicalVector >::type is_mark1(is_mark1SEXP);
     Rcpp::traits::input_parameter< LogicalVector >::type is_mark2(is_mark2SEXP);
     Rcpp::traits::input_parameter< int >::type npts(nptsSEXP);
-    rcpp_result_gen = Rcpp::wrap(kamp_pair_sums_trans_iso_biv(i, j, d, w, rvals, is_mark1, is_mark2, npts));
+    rcpp_result_gen = Rcpp::wrap(kamp_pair_sums_trans_iso(i, j, d, w, rvals, is_mark1, is_mark2, npts));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_KAMP_gamp_sums", (DL_FUNC) &_KAMP_gamp_sums, 8},
     {"_KAMP_kamp_pair_sums_bord", (DL_FUNC) &_KAMP_kamp_pair_sums_bord, 7},
-    {"_KAMP_kamp_pair_sums_trans_iso", (DL_FUNC) &_KAMP_kamp_pair_sums_trans_iso, 7},
-    {"_KAMP_kamp_pair_sums_trans_iso_biv", (DL_FUNC) &_KAMP_kamp_pair_sums_trans_iso_biv, 8},
+    {"_KAMP_kamp_pair_sums_trans_iso", (DL_FUNC) &_KAMP_kamp_pair_sums_trans_iso, 8},
     {NULL, NULL, 0}
 };
 

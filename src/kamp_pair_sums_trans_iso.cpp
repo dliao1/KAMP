@@ -3,19 +3,20 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 List kamp_pair_sums_trans_iso(IntegerVector i,
-                          IntegerVector j,
-                          NumericVector d,
-                          NumericVector w,
-                          NumericVector rvals,
-                          LogicalVector is_mark1,
-                          int npts) {
+                              IntegerVector j,
+                              NumericVector d,
+                              NumericVector w,
+                              NumericVector rvals,
+                              LogicalVector is_mark1,
+                              LogicalVector is_mark2,
+                              int npts) {
 
-  // i =
-  // j =
-  // d = distance for each pair
-  // w = weight for each pair
-  // rvals = vector of radius values at which to compute sums
-  // is_mark1 = logical vector indicating whether each point has mark 1
+  // i, j = 1-based point indices for each close pair (validated in R)
+  // d = distance for each pair, sorted ascending
+  // w = edge correction weight for each pair
+  // rvals = radii at which to compute sums, sorted ascending
+  // is_mark1, is_mark2 = whether each point has mark 1 / mark 2;
+  //   univariate passes the same vector for both, bivariate passes two
   // npts = total number of points
 
   int n_r = rvals.size(); // num radii
@@ -41,10 +42,6 @@ List kamp_pair_sums_trans_iso(IntegerVector i,
       int ii = i[pair_index] - 1; // converts R index to C index
       int jj = j[pair_index] - 1;
 
-      if (ii < 0 || ii >= npts || jj < 0 || jj >= npts) {
-        stop("Index out of bounds");
-      }
-
       curr_R0 += wk; // sums all R0
       curr_R1 += wk * wk;
 
@@ -64,7 +61,7 @@ List kamp_pair_sums_trans_iso(IntegerVector i,
       curr_R2 += (deg[ii]*deg[ii] - prev_deg_i*prev_deg_i);
 
       // Filters which pairs contribute to K for the current radius
-      if (is_mark1[ii] && is_mark1[jj]) {
+      if (is_mark1[ii] && is_mark2[jj]) {
         curr_Ksum += wk;
       }
 
