@@ -1,9 +1,13 @@
-# image 5 of ovarian_df: blocks quickly and leaves some residual points
-bk_ids <- unique(ovarian_df$sample_id)
-bk_img <- ovarian_df[ovarian_df$sample_id == bk_ids[5], ]
-bk_win <- spatstat.geom::owin(range(bk_img$x), range(bk_img$y))
-bk_pp  <- spatstat.geom::ppp(bk_img$x, bk_img$y, window = bk_win, marks = bk_img$immune)
-bk_ppb <- spatstat.geom::ppp(bk_img$x, bk_img$y, window = bk_win, marks = bk_img$phenotype)
+# toy pattern: 1500 uniform points, seed chosen so blocking leaves some residual points
+set.seed(2)
+bk_n <- 1500
+bk_x <- runif(bk_n, 0, 10)
+bk_y <- runif(bk_n, 0, 10)
+bk_mk  <- sample(c("immune", "background"), bk_n, replace = TRUE, prob = c(0.2, 0.8))
+bk_mkb <- sample(c("a", "b", "c"), bk_n, replace = TRUE, prob = c(0.2, 0.2, 0.6))
+bk_win <- spatstat.geom::owin(c(0, 10), c(0, 10))
+bk_pp  <- spatstat.geom::ppp(bk_x, bk_y, window = bk_win, marks = factor(bk_mk))
+bk_ppb <- spatstat.geom::ppp(bk_x, bk_y, window = bk_win, marks = factor(bk_mkb))
 bk_rel <- c(0.05, 0.1, 0.15)
 
 bk_blocks <- suppressWarnings(bkamp_block(bk_pp, mark1 = "immune"))
@@ -65,9 +69,9 @@ test_that("bkamp and bkamp_Rcpp agree", {
   expect_equal(a, b, tolerance = 1e-8)
 
   a2 <- suppressWarnings(bkamp(bk_ppb, rvals = bk_rel, univariate = FALSE,
-                               mark1 = "cytotoxic t cell", mark2 = "helper t cell"))
+                               mark1 = "a", mark2 = "b"))
   b2 <- suppressWarnings(bkamp_Rcpp(bk_ppb, rvals = bk_rel, univariate = FALSE,
-                                    mark1 = "cytotoxic t cell", mark2 = "helper t cell"))
+                                    mark1 = "a", mark2 = "b"))
   expect_equal(a2, b2, tolerance = 1e-8)
 })
 
@@ -96,14 +100,14 @@ test_that("bkamp_Rcpp keeps the order of unsorted rvals and gives NA at r = 0", 
 })
 
 test_that("bkamp input checks", {
-  hull <- spatstat.geom::ppp(bk_img$x, bk_img$y,
-                             window = spatstat.geom::convexhull.xy(bk_img$x, bk_img$y),
-                             marks = bk_img$immune)
+  hull <- spatstat.geom::ppp(bk_x, bk_y,
+                             window = spatstat.geom::convexhull.xy(bk_x, bk_y),
+                             marks = factor(bk_mk))
   expect_error(bkamp_block(hull, mark1 = "immune"), "rectangular observation window")
   expect_error(bkamp_block(bk_pp, mark1 = "nope"), "mark1 is not a mark")
-  expect_error(bkamp_block(bk_ppb, univariate = FALSE, mark1 = "cytotoxic t cell"),
+  expect_error(bkamp_block(bk_ppb, univariate = FALSE, mark1 = "a"),
                "Both mark1 and mark2 must be specified")
-  expect_error(bkamp_block(bk_ppb, univariate = FALSE, mark1 = "b cell", mark2 = "b cell"),
+  expect_error(bkamp_block(bk_ppb, univariate = FALSE, mark1 = "a", mark2 = "a"),
                "cannot be the same")
   expect_error(bkamp_block(bk_pp, mark1 = "immune", rho1 = 3, rho2 = 2), "rho2 must be at least rho1")
   expect_error(bkamp_block(bk_pp, mark1 = "immune", split_max = 0), "split_max must be finite")
@@ -112,6 +116,6 @@ test_that("bkamp input checks", {
   expect_error(bkamp(bk_pp, rvals = c(0.1, 0.1), mark1 = "immune"), "distinct nonnegative")
   expect_error(bkamp(bk_pp, rvals = -0.1, mark1 = "immune"), "distinct nonnegative")
   expect_error(bkamp_Rcpp(bk_ppb, univariate = FALSE, correction = "border",
-                          mark1 = "cytotoxic t cell", mark2 = "helper t cell"),
+                          mark1 = "a", mark2 = "b"),
                "Unsupported edge correction")
 })
