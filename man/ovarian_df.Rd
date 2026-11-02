@@ -23,6 +23,6 @@ ovarian_df
 }
 \description{
 A processed dataframe derived from the VectraPolaris ovarian cancer dataset.
-It is a snapshot of 5 images from the \code{HumanOvarianCancerVP()} dataset in the \code{VectraPolarisData} package
+It is a snapshot of 9 images from the \code{HumanOvarianCancerVP()} dataset in the \code{VectraPolarisData} package
 }
 \keyword{datasets}

@@ -64,7 +64,8 @@ rm(spe_ovarian, assays_slot, intensities_df, nucleus_intensities_df, membrane_in
 
 
 ovarian_df = ovarian_df %>% filter(tissue_category == "Tumor")
-sample_index = c(15, 5, 11, 8, 9)
+# 46 = high_k, 107 = low_k, 68 = patchy_k, 58 = patchy_k2
+sample_index = c(15, 5, 11, 8, 9, 46, 107, 68, 58)
 ids = unique(ovarian_df$sample_id)
 
 ovarian_df = ovarian_df %>%
