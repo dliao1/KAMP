@@ -118,7 +118,7 @@ analyses.
 ## Ovarian Dataset
 
 The `ovarian_df` dataset is a small dataframe that contains a snapshot
-of 5 images of ovarian cancer cells from the `HumanOvarianCancerVP()`
+of 9 images of ovarian cancer cells from the `HumanOvarianCancerVP()`
 dataset in the `VectraPolarisData` package. Each image is represented by
 a unique sample ID, and within each image, there are multiple cells with
 their respective x and y coordinates. The dataset includes an `immune`
@@ -149,12 +149,22 @@ head(ovarian_df)
 ```
 
 Since we have a dataframe of multiple images, let’s go through, subset
-our dataframe by id, and plot it.
+our dataframe by id, and plot it. The last four images were picked to
+show different patterns of immune cell clustering: one with high K, one
+with low K, and two with patchy clustering.
 
 ``` r
 
 ids <- unique(ovarian_df$sample_id)
 mark_var <- "immune"
+
+# labels for the images that show specific clustering patterns
+k_labels <- c(
+  "030120 P9HuP6 TMA 1-B_Core[1,7,E]_[14474,48365].im3" = "high K",
+  "030120 P9HuP6 TMA 1-A_Core[1,6,C]_[10353,49826].im3" = "low K",
+  "030120 P9HuP6 TMA 1-A_Core[1,1,C]_[10162,38841].im3" = "patchy K",
+  "030120 P9HuP6 TMA 1-B_Core[1,9,G]_[18855,52556].im3" = "patchy K"
+)
 
 for (id in ids) {
   df_sub <- ovarian_df %>% filter(sample_id == id)
@@ -163,14 +173,21 @@ for (id in ids) {
   
   p <- ggplot(as_tibble(pp_obj), aes(x, y, color = marks)) +
     geom_point(size = 0.6) +
-    labs(title = paste("Sample:", id)) +
-    theme_minimal()
+    scale_color_manual(values = c(immune = "#B2182B", background = "grey85")) +
+    guides(color = guide_legend(override.aes = list(size = 3))) +
+    coord_equal() +
+    labs(title = paste0("Image ", match(id, ids),
+                        if (id %in% names(k_labels)) paste0(" (", k_labels[[id]], ")") else ""),
+         caption = id, color = NULL) +
+    theme_minimal() +
+    theme(legend.position = "bottom",
+          plot.caption = element_text(size = 7, hjust = 0))
   
   print(p)
 }
 ```
 
-![](kamp_files/figure-html/unnamed-chunk-5-1.png)![](kamp_files/figure-html/unnamed-chunk-5-2.png)![](kamp_files/figure-html/unnamed-chunk-5-3.png)![](kamp_files/figure-html/unnamed-chunk-5-4.png)![](kamp_files/figure-html/unnamed-chunk-5-5.png)
+![](kamp_files/figure-html/unnamed-chunk-5-1.png)![](kamp_files/figure-html/unnamed-chunk-5-2.png)![](kamp_files/figure-html/unnamed-chunk-5-3.png)![](kamp_files/figure-html/unnamed-chunk-5-4.png)![](kamp_files/figure-html/unnamed-chunk-5-5.png)![](kamp_files/figure-html/unnamed-chunk-5-6.png)![](kamp_files/figure-html/unnamed-chunk-5-7.png)![](kamp_files/figure-html/unnamed-chunk-5-8.png)![](kamp_files/figure-html/unnamed-chunk-5-9.png)
 
 ## KAMP
 

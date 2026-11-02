@@ -1,7 +1,7 @@
 # Ovarian Cancer Example Dataframe
 
 A processed dataframe derived from the VectraPolaris ovarian cancer
-dataset. It is a snapshot of 5 images from the `HumanOvarianCancerVP()`
+dataset. It is a snapshot of 9 images from the `HumanOvarianCancerVP()`
 dataset in the `VectraPolarisData` package
 
 ## Usage
